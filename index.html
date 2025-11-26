@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Dia's World</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Collectible Objects floating on the page -->
+    <div id="collectibles-container">
+        <div class="collectible" data-item="star" style="top: 20%; left: 10%;">⭐</div>
+        <div class="collectible" data-item="heart" style="top: 40%; right: 15%;">❤️</div>
+        <div class="collectible" data-item="gem" style="top: 70%; left: 25%;">💎</div>
+        <div class="collectible" data-item="flower" style="bottom: 30%; right: 30%;">🌸</div>
+        <div class="collectible" data-item="moon" style="top: 15%; right: 40%;">🌙</div>
+    </div>
+
+    <!-- Inventory display -->
+    <div id="inventory">
+        <h4>🎒 Inventory</h4>
+        <div id="inventory-items"></div>
+        <p id="inventory-count">Items: 0/5</p>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="main-nav">
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#games">Mini Games</a></li>
+            <li><a href="#gallery">Gallery</a></li>
+        </ul>
+    </nav>
+
+    <!-- Home Section -->
+    <section id="home" class="section">
+        <div class="hero">
+            <h1>Welcome to Dia's World! 🌟</h1>
+            <p>Explore, play games, and collect hidden treasures!</p>
+            <p class="hint">💡 Look for floating objects around the page - click them to collect!</p>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section">
+        <div class="container">
+            <h2>About Dia</h2>
+            <div class="about-content">
+                <div class="profile-image">
+                    <div class="avatar">👤</div>
+                </div>
+                <div class="bio">
+                    <h3>Hello, I'm Dia! 👋</h3>
+                    <p><strong>Full Name:</strong> Diana Rose</p>
+                    <p><strong>Age:</strong> 25 years old</p>
+                    <p><strong>Location:</strong> Creative City, Imagination Land</p>
+                    <p><strong>Occupation:</strong> Digital Artist & Web Developer</p>
+                    
+                    <h4>About Me</h4>
+                    <p>I'm a passionate creative soul who loves bringing ideas to life through art and technology. 
+                       When I'm not coding or designing, you can find me exploring nature, reading fantasy novels, 
+                       or playing video games.</p>
+                    
+                    <h4>Fun Facts</h4>
+                    <ul>
+                        <li>🎨 I've been drawing since I was 5 years old</li>
+                        <li>☕ Coffee is my creative fuel</li>
+                        <li>🎮 Favorite game genre: RPGs</li>
+                        <li>📚 Currently reading: "The Starless Sea"</li>
+                        <li>🐱 Proud cat parent to Luna</li>
+                    </ul>
+
+                    <h4>Skills</h4>
+                    <div class="skills">
+                        <span class="skill-tag">HTML/CSS</span>
+                        <span class="skill-tag">JavaScript</span>
+                        <span class="skill-tag">Digital Art</span>
+                        <span class="skill-tag">UI/UX Design</span>
+                        <span class="skill-tag">Photography</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Games Section -->
+    <section id="games" class="section">
+        <div class="container">
+            <h2>Mini Games 🎮</h2>
+            <p class="section-intro">Take a break and play some fun interactive games!</p>
+            
+            <div class="games-grid">
+                <!-- Click Away Game -->
+                <div class="game-card">
+                    <h3>🎯 Click Away!</h3>
+                    <p>Click all the bubbles before time runs out!</p>
+                    <button onclick="startClickAwayGame()" class="game-btn">Play Now</button>
+                </div>
+
+                <!-- Picture Picker Game -->
+                <div class="game-card">
+                    <h3>🖼️ Picture Picker</h3>
+                    <p>Find the correct picture that matches the description!</p>
+                    <button onclick="startPictureGame()" class="game-btn">Play Now</button>
+                </div>
+
+                <!-- Riddle Game -->
+                <div class="game-card">
+                    <h3>🧩 Riddle Me This</h3>
+                    <p>Solve fun riddles and test your brain!</p>
+                    <button onclick="startRiddleGame()" class="game-btn">Play Now</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="section">
+        <div class="container">
+            <h2>Gallery 📸</h2>
+            <p class="section-intro">Some of my favorite moments and creations</p>
+            
+            <div class="gallery-grid">
+                <div class="gallery-item">🌅<span>Sunset View</span></div>
+                <div class="gallery-item">🎨<span>Art Studio</span></div>
+                <div class="gallery-item">🌿<span>Nature Walk</span></div>
+                <div class="gallery-item">☕<span>Cozy Corner</span></div>
+                <div class="gallery-item">🐱<span>Luna</span></div>
+                <div class="gallery-item">📖<span>Book Nook</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Game Modals -->
+    <!-- Click Away Game Modal -->
+    <div id="click-away-modal" class="modal">
+        <div class="modal-content game-modal">
+            <span class="close" onclick="closeModal('click-away-modal')">&times;</span>
+            <h2>🎯 Click Away!</h2>
+            <div id="click-away-stats">
+                <span id="click-score">Score: 0</span>
+                <span id="click-timer">Time: 30s</span>
+            </div>
+            <div id="click-away-area">
+                <p>Click "Start" to begin!</p>
+            </div>
+            <button onclick="beginClickAway()" id="start-click-game" class="game-btn">Start Game</button>
+        </div>
+    </div>
+
+    <!-- Picture Picker Game Modal -->
+    <div id="picture-modal" class="modal">
+        <div class="modal-content game-modal">
+            <span class="close" onclick="closeModal('picture-modal')">&times;</span>
+            <h2>🖼️ Picture Picker</h2>
+            <p id="picture-question">Find the picture that shows:</p>
+            <h3 id="picture-target"></h3>
+            <div id="picture-grid"></div>
+            <p id="picture-feedback"></p>
+        </div>
+    </div>
+
+    <!-- Riddle Game Modal -->
+    <div id="riddle-modal" class="modal">
+        <div class="modal-content game-modal">
+            <span class="close" onclick="closeModal('riddle-modal')">&times;</span>
+            <h2>🧩 Riddle Me This</h2>
+            <div id="riddle-container">
+                <p id="riddle-text" class="riddle-question"></p>
+                <input type="text" id="riddle-answer" placeholder="Type your answer...">
+                <button onclick="checkRiddleAnswer()" class="game-btn">Submit Answer</button>
+                <p id="riddle-feedback"></p>
+                <button onclick="nextRiddle()" id="next-riddle-btn" class="game-btn" style="display:none;">Next Riddle</button>
+            </div>
+            <p id="riddle-score">Score: 0</p>
+        </div>
+    </div>
+
+    <!-- Message Box for achievements -->
+    <div id="message-box" class="message-box">
+        <div class="message-content">
+            <span class="message-icon">🎉</span>
+            <p id="message-text"></p>
+            <button onclick="closeMessageBox()" class="game-btn">OK</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>Made with ❤️ by Dia | © 2024</p>
+        <p>Collect all 5 items to unlock a secret message!</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
