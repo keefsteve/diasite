@@ -334,7 +334,7 @@ function checkRiddleAnswer() {
     
     if (userAnswer === riddle.answer) {
         riddleScore++;
-        feedback.textContent = '🎉 Correct! You\'re so smart!';
+        feedback.textContent = "🎉 Correct! You're so smart!";
         feedback.style.color = '#4CAF50';
     } else {
         feedback.textContent = `❌ The answer was: ${riddle.answer}`;
@@ -392,4 +392,4 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 // ============================================
 // INITIALIZATION
 // ============================================
-console.log('🌟 Welcome to Dia\'s World! Explore and have fun! 🌟');
+console.log("🌟 Welcome to Dia's World! Explore and have fun! 🌟");
