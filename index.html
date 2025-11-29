@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Interactive Profile - MVP</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Landing Page -->
+  <div id="landing-page" class="page active">
+    <div class="center-text">
+      <h1 class="parent-title"></h1>
+    </div>
+    <div class="object" data-id="key" data-page="landing" style="left:50%;top:60%">🔑</div>
+    <div class="object" data-id="salamander" data-page="landing" style="left:23%;top:12%">🦎</div>
+    <div class="object" data-id="blanket" data-page="landing" style="left:68%;top:25%">🛏️</div>
+    <div class="object" data-id="pasxa" data-page="landing" style="left:35%;top:82%">🍰</div>
+    <div class="object" data-id="wet-clothes" data-page="landing" style="left:80%;top:55%">👔💧</div>
+    <div class="object" data-id="yellow-shorts" data-page="landing" style="left:12%;top:45%">🩳🇧🇷</div>
+    <div class="object" data-id="snail" data-page="landing" style="left:58%;top:72%">🐌</div>
+    <div class="object" data-id="sheep" data-page="landing" style="left:45%;top:35%">🐑</div>
+    
+    <!-- Instructions Panel -->
+    <div id="instructions-panel">
+      <p><strong>Press L to zoom</strong></p>
+      <p class="instruction-text">You still need to collect:</p>
+      <div id="uncollected-list"></div>
+    </div>
+    
+    <!-- Map Hotspots -->
+    <button class="map-hotspot" data-target="home" style="left:21%;top:25%"></button>
+    <button class="map-hotspot" data-target="tanke" style="left:16%;top:16%"></button>
+    <button class="map-hotspot" data-target="barashki" style="left:30%;top:10%"></button>
+    <button class="map-hotspot" data-target="krivaya" style="left:43%;top:48%"></button>
+    <button class="map-hotspot" data-target="fountain" style="left:58%;top:4%"></button>
+    <button class="map-hotspot" data-target="oma-opa-morg" style="left:53%;top:13%"></button>
+    <button class="map-hotspot" data-target="oma-opa-shnol" style="left:58%;top:81%"></button>
+    <button class="map-hotspot" data-target="hustadt-dub" style="left:65.5%;top:79.5%"></button>
+    <button class="map-hotspot" data-target="school" style="left:21%;top:18%"></button>
+    
+    <div class="arrow-nav">
+      <button class="arrow-btn" data-target="krivaya">←</button>
+      <button class="arrow-btn" data-target="school">→</button>
+    </div>
+  </div>
+
+  <!-- Minigame Page -->
+  <div id="krivaya" class="page">
+    <div class="page-header">
+      <h2>Click Challenge</h2>
+      <button class="back-btn" data-target="landing-page">← Back</button>
+    </div>
+    <div class="game-container">
+      <p class="game-instructions">Click the red circles as fast as you can! Time: <span id="game-timer">10</span>s</p>
+      <div id="game-area"></div>
+      <div id="game-score">Score: 0</div>
+    </div>
+  </div>
+
+  <!-- CV Page -->
+  <div id="school" class="page">
+    <div class="page-header">
+      <h2>About Me</h2>
+      <button class="back-btn" data-target="landing-page">← Back</button>
+    </div>
+    <div class="cv-content">
+      <section class="cv-section">
+        <h3>Profile</h3>
+        <p>A passionate individual with diverse interests in technology, arts, and exploration.</p>
+      </section>
+      <section class="cv-section">
+        <h3>Experience</h3>
+        <ul>
+          <li><strong>Creative Director</strong> - XYZ Studio (2020-Present)</li>
+          <li><strong>Digital Designer</strong> - ABC Agency (2018-2020)</li>
+          <li><strong>Junior Developer</strong> - StartupCo (2016-2018)</li>
+        </ul>
+      </section>
+      <section class="cv-section">
+        <h3>Skills</h3>
+        <p>Web Design • JavaScript • Creative Problem Solving • Team Leadership</p>
+      </section>
+      <section class="cv-section">
+        <h3>Interests</h3>
+        <p>Hiking, Photography, Cooking, and Collecting vintage books</p>
+      </section>
+    </div>
+  </div>
+
+  <!-- Home Page - Memory Card Game -->
+  <div id="home" class="page">
+    <div class="page-header">
+      <h2>Memory Match</h2>
+      <button class="back-btn" data-target="landing-page">← Back</button>
+    </div>
+    <div class="game-container">
+      <p class="game-instructions">Match all pairs! Moves: <span id="memory-moves">0</span> | Time: <span id="memory-timer">0</span>s</p>
+      <div id="memory-grid"></div>
+    </div>
+  </div>
+
+  <!-- Tanke Page - Snail Picking Game -->
+  <div id="tanke" class="page">
+    <div class="page-header">
+      <h2>Snail Wall</h2>
+      <button class="back-btn" data-target="landing-page">← Back</button>
+    </div>
+    <div class="game-container">
+      <p class="game-instructions">Click all snails! Caught: <span id="snails-caught">0</span> / <span id="snails-total">20</span> | Time: <span id="snail-timer">0</span>s</p>
+      <div id="snail-wall"></div>
+    </div>
+  </div>
+
+  <!-- Barashki Page - Typing Speed Challenge -->
+  <div id="barashki" class="page">
+    <div class="page-header">
+      <h2>Type Fast!</h2>
+      <button class="back-btn" data-target="landing-page">← Back</button>
+    </div>
+    <div class="game-container">
+      <p class="game-instructions">Type the words as they appear! Score: <span id="typing-score">0</span> | Time: <span id="typing-timer">30</span>s</p>
+      <div id="typing-word" style="font-size:2rem;font-weight:700;margin:20px 0;color:var(--pink)"></div>
+      <input type="text" id="typing-input" placeholder="Type here..." style="padding:12px;font-size:1.1rem;width:300px;border:2px solid var(--pink);border-radius:8px" />
+      <div id="typing-feedback" style="margin-top:10px;font-weight:600"></div>
+    </div>
+  </div>
+
+  <!-- Fountain Page - Maze Navigator -->
+  <div id="fountain" class="page">
+    <div class="page-header">
+      <h2>Maze Escape</h2>
+      <button class="back-btn" data-target="landing-page">← Back</button>
+    </div>
+    <div class="game-container">
+      <p class="game-instructions">Use arrow keys to reach the goal! Time: <span id="maze-timer">0</span>s</p>
+      <div id="maze-canvas"></div>
+    </div>
+  </div>
+
+  <!-- Oma Opa Morg Page - Simon Says -->
+  <div id="oma-opa-morg" class="page">
+    <div class="page-header">
+      <h2>Simon Says</h2>
+      <button class="back-btn" data-target="landing-page">← Back</button>
+    </div>
+    <div class="game-container">
+      <p class="game-instructions">Watch and repeat the sequence! Level: <span id="simon-level">1</span></p>
+      <div id="simon-grid" style="display:grid;grid-template-columns:repeat(2,120px);gap:10px;margin:20px auto;width:fit-content"></div>
+      <div id="simon-message" style="margin-top:10px;font-weight:600"></div>
+    </div>
+  </div>
+
+  <!-- Oma Opa Shnol Page - Pattern Lock -->
+  <div id="oma-opa-shnol" class="page">
+    <div class="page-header">
+      <h2>Pattern Unlock</h2>
+      <button class="back-btn" data-target="landing-page">← Back</button>
+    </div>
+    <div class="game-container">
+      <p class="game-instructions">Memorize and draw the pattern! Attempts: <span id="pattern-attempts">3</span></p>
+      <div id="pattern-display" style="margin:20px auto;width:fit-content"></div>
+      <div id="pattern-grid" style="display:grid;grid-template-columns:repeat(3,80px);gap:10px;margin:20px auto;width:fit-content"></div>
+      <button id="pattern-check" style="padding:10px 20px;background:var(--pink);color:white;border:none;border-radius:8px;cursor:pointer">Check Pattern</button>
+    </div>
+  </div>
+
+  <!-- Hustadt Dub Page - Math Lightning -->
+  <div id="hustadt-dub" class="page">
+    <div class="page-header">
+      <h2>Math Lightning</h2>
+      <button class="back-btn" data-target="landing-page">← Back</button>
+    </div>
+    <div class="game-container">
+      <p class="game-instructions">Solve as many as you can! Score: <span id="math-score">0</span> | Time: <span id="math-timer">60</span>s</p>
+      <div id="math-problem" style="font-size:2.5rem;font-weight:700;margin:30px 0;color:var(--pink)"></div>
+      <div id="math-options" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"></div>
+    </div>
+  </div>
+
+  <!-- Inventory Bar (persistent across pages) -->
+  <aside id="inventory">
+    <div class="inventory-title">Inventory</div>
+    <div id="items"></div>
+  </aside>
+
+  <!-- Map placeholder (for future) -->
+  <!-- <div id="map-overlay" class="hidden">
+    <div class="map-container">
+      <div class="map-hotspot" data-target="school" style="left:20%;top:30%">🏠</div>
+      <div class="map-hotspot" data-target="krivaya" style="left:60%;top:50%">🎮</div>
+    </div>
+  </div> -->
+
+  <script src="app.js"></script>
+  <script src="minigames.js"></script>
+</body>
+</html>
