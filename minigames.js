@@ -191,10 +191,11 @@ function initMazeGame(){
   
   if(!canvas) return;
   
-  // Size defined in CSS
+  // Size defined in CSS (450px × 350px)
   canvas.style.position = 'relative';
   canvas.innerHTML = '';
   
+  // Grid sized to fit standardized canvas: 8 rows × 10 cols with 45px cells = 360px × 450px
   const cellSize = 45;
   const rows = 8, cols = 10;
   let playerPos = {x:0, y:0};
