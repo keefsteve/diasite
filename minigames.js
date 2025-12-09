@@ -15,15 +15,10 @@ function initSnailWall(){
   
   wall.innerHTML = '';
   wall.style.position = 'relative';
-  wall.style.width = '90vw';
-  wall.style.height = '70vh';
-  wall.style.maxWidth = '1400px';
-  wall.style.backgroundImage = 'url("wall1.jpeg")';
+  // Removed size overrides - using CSS styles instead
+  wall.style.backgroundImage = 'url("wall.jpeg")';
   wall.style.backgroundSize = 'cover';
   wall.style.backgroundPosition = 'center';
-  wall.style.borderRadius = '12px';
-  wall.style.border = '4px solid #8b5a3c';
-  wall.style.boxShadow = 'inset 0 0 20px rgba(0,0,0,0.3)'
   
   totalEl.textContent = totalSnails;
   
@@ -84,26 +79,22 @@ function initMemoryGame(){
   let startTime = Date.now();
   
   grid.innerHTML = '';
-  grid.style.display = 'grid';
-  grid.style.gridTemplateColumns = 'repeat(4, 90px)';
-  grid.style.gap = '10px';
-  grid.style.margin = '20px auto';
-  grid.style.width = 'fit-content';
+  // Grid layout defined in CSS
   
   cards.forEach((symbol, idx)=>{
     const card = document.createElement('div');
     card.className = 'memory-card';
     card.dataset.symbol = symbol;
     card.dataset.idx = idx;
-    card.style.width = '90px';
-    card.style.height = '90px';
+    card.style.width = '85px';
+    card.style.height = '85px';
     card.style.background = 'var(--pink)';
     card.style.borderRadius = '8px';
     card.style.cursor = 'pointer';
     card.style.display = 'flex';
     card.style.alignItems = 'center';
     card.style.justifyContent = 'center';
-    card.style.fontSize = '2.5rem';
+    card.style.fontSize = '2.2rem';
     card.style.transition = 'all 0.3s';
     card.textContent = '?';
     
@@ -200,17 +191,13 @@ function initMazeGame(){
   
   if(!canvas) return;
   
-  canvas.style.width = '500px';
-  canvas.style.height = '500px';
-  canvas.style.border = '3px solid var(--pink)';
-  canvas.style.borderRadius = '8px';
-  canvas.style.margin = '20px auto';
+  // Size defined in CSS (450px × 350px)
   canvas.style.position = 'relative';
-  canvas.style.background = '#fff';
   canvas.innerHTML = '';
   
-  const cellSize = 50;
-  const rows = 10, cols = 10;
+  // Grid sized to fit standardized canvas: 8 rows × 10 cols with 45px cells = 360px × 450px
+  const cellSize = 45;
+  const rows = 8, cols = 10;
   let playerPos = {x:0, y:0};
   let startTime = Date.now();
   
@@ -317,8 +304,8 @@ function initSimonGame(){
   grid.innerHTML = '';
   colors.forEach((color, idx)=>{
     const btn = document.createElement('button');
-    btn.style.width = '120px';
-    btn.style.height = '120px';
+    btn.style.width = '110px';
+    btn.style.height = '110px';
     btn.style.background = color;
     btn.style.border = '3px solid #333';
     btn.style.borderRadius = '12px';
@@ -426,12 +413,12 @@ function initPatternGame(){
   for(let i=0; i<9; i++){
     const dot = document.createElement('button');
     dot.textContent = i;
-    dot.style.width = '80px';
-    dot.style.height = '80px';
+    dot.style.width = '75px';
+    dot.style.height = '75px';
     dot.style.background = '#fff';
     dot.style.border = '3px solid var(--pink)';
     dot.style.borderRadius = '50%';
-    dot.style.fontSize = '1.5rem';
+    dot.style.fontSize = '1.4rem';
     dot.style.cursor = 'pointer';
     dot.style.transition = 'all 0.2s';
     
