@@ -1,198 +1,721 @@
 <!doctype html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Interactive Profile - MVP</title>
+  <title>Diasite - Eine Reise durch die Kindheit</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="js/systems/ui.css" />
 </head>
 <body>
   <!-- Landing Page -->
-  <div id="landing-page" class="page active">
+  <div id="landing-page" class="page">
+    <!-- Clock in upper right corner -->
+    <div id="game-clock" style="position:absolute;top:20px;right:20px;background:#222;color:#00ff88;padding:12px 30px;border:3px solid #00ff88;border-radius:0px;font-family:'Nineteen Ninety Seven';font-size:2rem;font-weight:normal;text-align:center;box-shadow:0 0 15px rgba(0,255,136,0.4),inset 0 0 8px rgba(0,255,136,0.15);z-index:200;text-transform:uppercase;image-rendering:pixelated;min-width:220px;">
+      <div id="clock-date" style="font-size:0.8rem;margin-bottom:6px;"></div>
+      <div id="clock-day" style="font-size:0.95rem;letter-spacing:2px;margin-bottom:6px;"></div>
+      <div id="clock-time" style="font-size:1.05rem;letter-spacing:3px;"></div>
+    </div>
+
+    <!-- Mission box on the right side -->
+    <div class="riddle-note landing-riddle-note" style="position:absolute;bottom:150px;right:40px;left:auto;max-width:380px;text-align:left;">
+      Your first mission: Find the home on the map. The journey begins where family gathers.
+    </div>
+
+    <!-- Permanent Steve and Jen sprites in lower left, overlapping -->
+    <div style="position:absolute;bottom:-30px;left:-80px;z-index:150;">
+      <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="landing-jen-sprite" style="position:absolute;left:0;bottom:0;width:420px;height:420px;object-fit:contain;filter:drop-shadow(0 8px 20px rgba(0,0,0,0.4));z-index:151;" />
+      <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="landing-steve-sprite" style="position:absolute;left:200px;bottom:0;width:420px;height:420px;object-fit:contain;filter:drop-shadow(0 8px 20px rgba(0,0,0,0.4));z-index:152;" />
+    </div>
+
     <div class="center-text">
       <h1 class="parent-title"></h1>
     </div>
     <div class="object" data-id="key" data-page="landing" style="left:50%;top:60%">🔑</div>
-    <div class="object" data-id="salamander" data-page="landing" style="left:23%;top:12%">🦎</div>
-    <div class="object" data-id="blanket" data-page="landing" style="left:68%;top:25%">🛏️</div>
-    <div class="object" data-id="pasxa" data-page="landing" style="left:35%;top:82%">🍰</div>
-    <div class="object" data-id="wet-clothes" data-page="landing" style="left:80%;top:55%">👔💧</div>
-    <div class="object" data-id="yellow-shorts" data-page="landing" style="left:12%;top:45%">🩳🇧🇷</div>
-    <div class="object" data-id="snail" data-page="landing" style="left:58%;top:72%">🐌</div>
-    <div class="object" data-id="sheep" data-page="landing" style="left:45%;top:35%">🐑</div>
-    
+    <div class="object" data-id="salamander" data-page="landing" style="left:23%;top:12%;display:none;">🦎</div>
+    <div class="object" data-id="blanket" data-page="landing" style="left:68%;top:25%;display:none;">🛏️</div>
+    <div class="object" data-id="pasxa" data-page="landing" style="left:35%;top:82%;display:none;">🍰</div>
+    <div class="object" data-id="wet-clothes" data-page="landing" style="left:80%;top:55%;display:none;">👔💧</div>
+    <div class="object" data-id="yellow-shorts" data-page="landing" style="left:12%;top:45%;display:none;">🩳🇧🇷</div>
+    <div class="object" data-id="snail" data-page="landing" style="left:58%;top:72%;display:none;">🐌</div>
+    <div class="object" data-id="sheep" data-page="landing" style="left:45%;top:35%;display:none;">🐑</div>
+
     <!-- Instructions Panel -->
     <div id="instructions-panel">
       <p><strong>Press L to zoom</strong></p>
       <p class="instruction-text">You still need to collect:</p>
       <div id="uncollected-list"></div>
     </div>
-    
+
     <!-- Map Hotspots -->
     <button class="map-hotspot" data-target="home" style="left:21%;top:25%"></button>
     <button class="map-hotspot" data-target="tanke" style="left:16%;top:16%"></button>
-    <button class="map-hotspot" data-target="barashki" style="left:30%;top:10%"></button>
+    <button class="map-hotspot" data-target="bunker" style="left:27%;top:16%"></button>
     <button class="map-hotspot" data-target="krivaya" style="left:43%;top:48%"></button>
     <button class="map-hotspot" data-target="fountain" style="left:58%;top:4%"></button>
     <button class="map-hotspot" data-target="oma-opa-morg" style="left:53%;top:13%"></button>
     <button class="map-hotspot" data-target="oma-opa-shnol" style="left:58%;top:81%"></button>
-    <button class="map-hotspot" data-target="hustadt-dub" style="left:65.5%;top:79.5%"></button>
+    <button class="map-hotspot" data-target="snails" style="left:65.5%;top:79.5%"></button>
     <button class="map-hotspot" data-target="school" style="left:21%;top:18%"></button>
-    
-    <div class="arrow-nav">
-      <button class="arrow-btn" data-target="krivaya">←</button>
-      <button class="arrow-btn" data-target="school">→</button>
-    </div>
+
+    <!-- Hot/Cold Tracker -->
+    <div id="hotcold-tracker"></div>
+
+    <script>
+      // Hot/Cold Tracker for Snails Location
+      (function() {
+        const tracker = document.getElementById('hotcold-tracker');
+        const snailsHotspot = document.querySelector('[data-target="snails"]');
+        let isActive = false;
+
+        const temperatures = {
+          cold: ['Eiskalt', 'Frostig', 'Eisig', 'Arktisch', 'Gefroren', 'Klirrend'],
+          warm: ['Lauwarm', 'Warm', 'Gemütlich', 'Mollig', 'Heißer', 'Glühend']
+        };
+
+        const levels = [
+          { max: 30, temp: 'molten', text: () => 'Vulkanisch!' },
+          { max: 50, temp: 'blazing', text: () => temperatures.warm[5] },
+          { max: 80, temp: 'scorching', text: () => temperatures.warm[4] },
+          { max: 120, temp: 'hot', text: () => temperatures.warm[3] },
+          { max: 180, temp: 'toasty', text: () => temperatures.warm[2] },
+          { max: 260, temp: 'warm', text: () => temperatures.warm[1] },
+          { max: 370, temp: 'lukewarm', text: () => temperatures.warm[0] },
+          { max: 520, temp: 'cool', text: () => temperatures.cold[0] },
+          { max: 720, temp: 'chilly', text: () => temperatures.cold[1] },
+          { max: 1000, temp: 'cold', text: () => temperatures.cold[2] },
+          { max: 1400, temp: 'icy', text: () => temperatures.cold[3] },
+          { max: Infinity, temp: 'freezing', text: () => temperatures.cold[4] }
+        ];
+
+        function getDistance(x1, y1, x2, y2) {
+          return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        }
+
+        function updateTracker(e) {
+          if (!isActive) return;
+
+          const rect = snailsHotspot.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+
+          const rawDistance = getDistance(e.clientX, e.clientY, centerX, centerY);
+          const distance = rawDistance < 400
+            ? rawDistance * (1 + Math.log(400 - rawDistance + 1) / 10)
+            : rawDistance;
+
+          const level = levels.find(l => distance < l.max);
+          if (level) {
+            tracker.textContent = level.text();
+            tracker.className = 'active ' + level.temp;
+            tracker.style.left = (e.clientX + 20) + 'px';
+            tracker.style.top = (e.clientY + 20) + 'px';
+          }
+        }
+
+        window.addEventListener('gameWon', (e) => {
+          if (e.detail.gameId === 'fountain') {
+            isActive = true;
+            tracker.classList.add('active');
+          }
+        });
+
+        document.getElementById('landing-page').addEventListener('mousemove', updateTracker);
+
+        snailsHotspot.addEventListener('click', () => {
+          isActive = false;
+          tracker.classList.remove('active');
+        });
+      })();
+
+      // Update clock every second
+      function updateClock() {
+        const now = new Date();
+        const date = now.getDate() + '/' + (now.getMonth() + 1) + '/' + now.getFullYear();
+        const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+        const day = days[now.getDay()];
+        const time = String(now.getHours()).padStart(2, '0') + ':' +
+                     String(now.getMinutes()).padStart(2, '0') + ':' +
+                     String(now.getSeconds()).padStart(2, '0');
+
+        const clockDate = document.getElementById('clock-date');
+        const clockDay = document.getElementById('clock-day');
+        const clockTime = document.getElementById('clock-time');
+
+        if (clockDate) clockDate.textContent = date;
+        if (clockDay) clockDay.textContent = day;
+        if (clockTime) clockTime.textContent = time;
+      }
+
+      updateClock();
+      setInterval(updateClock, 1000);
+    </script>
   </div>
 
-  <!-- Minigame Page -->
-  <div id="krivaya" class="page">
+  <!-- Krivaya Page -->
+  <div id="krivaya" class="page" style="align-items: flex-start; justify-content: flex-start;">
     <div class="page-header">
-      <h2>Click Challenge</h2>
+      <h2>Zip Line Rescue</h2>
       <button class="back-btn" data-target="landing-page">← Back</button>
     </div>
-    <div class="game-container">
-      <p class="game-instructions">Click the red circles as fast as you can! Time: <span id="game-timer">10</span>s</p>
-      <div id="game-area"></div>
-      <div id="game-score">Score: 0</div>
+    <div class="location-content">
+      <div class="location-top-row">
+        <div class="location-image-container">
+          <img src="/assets/sprites/places/krivaya.jpeg" alt="Krivaya" class="location-image" onerror="this.style.display='none'" />
+        </div>
+
+        <div class="game-container">
+          <div class="play-overlay">
+            <button class="play-btn" onclick="startGame('krivaya')">▶ Play</button>
+          </div>
+          <p class="game-instructions">Move people across the zip lines! Rescued: <span id="zipline-score">0</span> | Time: <span id="zipline-timer">30</span>s</p>
+          <div id="zipline-area"></div>
+        </div>
+      </div>
+
+      <div class="location-message-row">
+        <div class="riddle-note location-message-box">
+          Изогнутая горка — великан из металла, что возвышался над нашим детством. С дедушкой и бабушкой мы приходили сюда, зная правило: только тот, кто съел всё до последней ложки, кто победил овощи на тарелке — тот заслужит, чтобы тросовая дорога ожила.
+        </div>
+        <div class="location-sprites">
+          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
+          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- CV Page -->
-  <div id="school" class="page">
+  <!-- School Page -->
+  <div id="school" class="page" style="align-items: flex-start; justify-content: flex-start;">
     <div class="page-header">
-      <h2>About Me</h2>
+      <h2>School</h2>
+      <button class="back-btn" data-target="landing-page">← Zurück</button>
+    </div>
+    <div class="location-content">
+      <div class="location-top-row">
+        <div class="location-image-container">
+          <img src="/assets/sprites/places/school.jpeg" alt="School" class="location-image" onerror="this.style.display='none'" />
+        </div>
+
+        <div class="cv-content">
+          <section class="cv-section">
+            <h3>Profile</h3>
+            <p>A passionate individual with diverse interests in technology, arts, and exploration.</p>
+          </section>
+          <section class="cv-section">
+            <h3>Experience</h3>
+            <ul>
+              <li><strong>Creative Director</strong> - XYZ Studio (2020-Present)</li>
+              <li><strong>Digital Designer</strong> - ABC Agency (2018-2020)</li>
+              <li><strong>Junior Developer</strong> - StartupCo (2016-2018)</li>
+            </ul>
+          </section>
+          <section class="cv-section">
+            <h3>Skills</h3>
+            <p>Web Design • JavaScript • Creative Problem Solving • Team Leadership</p>
+          </section>
+        </div>
+      </div>
+
+      <div class="location-message-row">
+        <div class="riddle-note location-message-box">
+          Your riddle text here
+        </div>
+        <div class="location-sprites">
+          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
+          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Home Page -->
+  <div id="home" class="page" style="align-items: flex-start; justify-content: flex-start;">
+    <div class="page-header">
+      <h2>Home</h2>
+      <button class="back-btn" data-target="landing-page">← Zurück</button>
+    </div>
+    <div class="location-content">
+      <div class="location-top-row">
+        <div class="location-image-container">
+          <img src="/assets/sprites/places/home.png" alt="Home" class="location-image" onerror="this.style.display='none'" />
+        </div>
+
+        <div class="game-container">
+          <div class="play-overlay">
+            <button class="play-btn" onclick="startGame('home')">▶ Play</button>
+          </div>
+          <p class="game-instructions">Click to smash the wall! Hits: <span id="wall-hits">0</span> / 60</p>
+          <div id="wall-container"></div>
+        </div>
+      </div>
+
+      <div class="location-message-row">
+        <div class="riddle-note location-message-box">
+          Your riddle text here
+        </div>
+        <div class="location-sprites">
+          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
+          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tanke Page -->
+  <div id="tanke" class="page" style="align-items: flex-start; justify-content: flex-start;">
+    <div class="page-header">
+      <h2>Curved Slide Race</h2>
       <button class="back-btn" data-target="landing-page">← Back</button>
     </div>
-    <div class="cv-content">
-      <section class="cv-section">
-        <h3>Profile</h3>
-        <p>A passionate individual with diverse interests in technology, arts, and exploration.</p>
-      </section>
-      <section class="cv-section">
-        <h3>Experience</h3>
-        <ul>
-          <li><strong>Creative Director</strong> - XYZ Studio (2020-Present)</li>
-          <li><strong>Digital Designer</strong> - ABC Agency (2018-2020)</li>
-          <li><strong>Junior Developer</strong> - StartupCo (2016-2018)</li>
-        </ul>
-      </section>
-      <section class="cv-section">
-        <h3>Skills</h3>
-        <p>Web Design • JavaScript • Creative Problem Solving • Team Leadership</p>
-      </section>
-      <section class="cv-section">
-        <h3>Interests</h3>
-        <p>Hiking, Photography, Cooking, and Collecting vintage books</p>
-      </section>
+    <div class="location-content">
+      <div class="location-top-row">
+        <div class="location-image-container">
+          <img src="/assets/sprites/places/tanke.jpeg" alt="Tanke" class="location-image" onerror="this.style.display='none'" />
+        </div>
+
+        <div class="game-container">
+          <div class="play-overlay">
+            <button class="play-btn" onclick="startGame('tanke')">▶ Play</button>
+          </div>
+          <p class="game-instructions">Race down the curved slide! Avoid obstacles! Score: <span id="slide-score">0</span> | Lives: <span id="slide-lives">3</span></p>
+          <div id="slide-area"></div>
+        </div>
+      </div>
+
+      <div class="location-message-row">
+        <div class="riddle-note location-message-box">
+          Заправка. Место, где правила встретились с желанием. Леденец — сладкая награда за первый бунт. Помнишь? Ты пересекла черту, которую не следовало пересекать.
+        </div>
+        <div class="location-sprites">
+          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
+          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Home Page - Memory Card Game -->
-  <div id="home" class="page">
-    <div class="page-header">
-      <h2>Memory Match</h2>
-      <button class="back-btn" data-target="landing-page">← Back</button>
-    </div>
-    <div class="game-container">
-      <p class="game-instructions">Match all pairs! Moves: <span id="memory-moves">0</span> | Time: <span id="memory-timer">0</span>s</p>
-      <div id="memory-grid"></div>
-    </div>
-  </div>
-
-  <!-- Tanke Page - Snail Picking Game -->
-  <div id="tanke" class="page">
-    <div class="page-header">
-      <h2>Snail Wall</h2>
-      <button class="back-btn" data-target="landing-page">← Back</button>
-    </div>
-    <div class="game-container">
-      <p class="game-instructions">Click all snails! Caught: <span id="snails-caught">0</span> / <span id="snails-total">20</span> | Time: <span id="snail-timer">0</span>s</p>
-      <div id="snail-wall"></div>
-    </div>
-  </div>
-
-  <!-- Barashki Page - Typing Speed Challenge -->
-  <div id="barashki" class="page">
+  <!-- Bunker Page -->
+  <div id="bunker" class="page" style="align-items: flex-start; justify-content: flex-start;">
     <div class="page-header">
       <h2>Type Fast!</h2>
       <button class="back-btn" data-target="landing-page">← Back</button>
     </div>
-    <div class="game-container">
-      <p class="game-instructions">Type the words as they appear! Score: <span id="typing-score">0</span> | Time: <span id="typing-timer">30</span>s</p>
-      <div id="typing-word" style="font-size:2rem;font-weight:700;margin:20px 0;color:var(--pink)"></div>
-      <input type="text" id="typing-input" placeholder="Type here..." style="padding:12px;font-size:1.1rem;width:300px;border:2px solid var(--pink);border-radius:8px" />
-      <div id="typing-feedback" style="margin-top:10px;font-weight:600"></div>
+    <div class="location-content">
+      <div class="location-top-row">
+        <div class="location-image-container">
+          <img src="/assets/sprites/places/bunker.jpeg" alt="Bunker" class="location-image" onerror="this.style.display='none'" />
+        </div>
+
+        <div class="game-container">
+          <div class="play-overlay">
+            <button class="play-btn" onclick="startGame('bunker')">▶ Play</button>
+          </div>
+          <p class="game-instructions">Type the words as they appear! Score: <span id="typing-score">0</span> | Time: <span id="typing-timer">30</span>s</p>
+          <div id="typing-word" style="font-size:2rem;font-weight:700;margin:20px 0;color:var(--pink)"></div>
+          <input type="text" id="typing-input" placeholder="Type here..." style="padding:12px;font-size:1.1rem;width:300px;border:2px solid var(--pink);border-radius:8px" />
+          <div id="typing-feedback" style="margin-top:10px;font-weight:600"></div>
+        </div>
+      </div>
+
+      <div class="location-message-row">
+        <div class="riddle-note location-message-box">
+          Your riddle text here
+        </div>
+        <div class="location-sprites">
+          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
+          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Fountain Page - Maze Navigator -->
-  <div id="fountain" class="page">
+  <!-- Fountain Page -->
+  <div id="fountain" class="page" style="align-items: flex-start; justify-content: flex-start;">
     <div class="page-header">
-      <h2>Maze Escape</h2>
-      <button class="back-btn" data-target="landing-page">← Back</button>
+      <h2>Botanischer Garten</h2>
+      <button class="back-btn" data-target="landing-page">← Zurück</button>
     </div>
-    <div class="game-container">
-      <p class="game-instructions">Use arrow keys to reach the goal! Time: <span id="maze-timer">0</span>s</p>
-      <div id="maze-canvas"></div>
+    <div class="location-content">
+      <div class="location-top-row">
+        <div class="location-image-container">
+          <img src="/assets/sprites/places/botanischer-garten.jpeg" alt="Botanischer Garten" class="location-image" onerror="this.style.display='none'" />
+        </div>
+
+        <div class="game-container">
+          <div class="play-overlay">
+            <button class="play-btn" onclick="startFountainGame()">▶ Play</button>
+          </div>
+          <canvas id="fountainCanvas" width="800" height="450" style="background: #4A90E2;"></canvas>
+        </div>
+      </div>
+
+      <div class="location-message-row">
+        <div class="riddle-note location-message-box">
+          Spring zwischen den Steinen zum Wasserfall! ⬅️ ➡️ = Bewegen | Leertaste = Springen
+        </div>
+        <div class="location-sprites">
+          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
+          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Oma Opa Morg Page - Simon Says -->
-  <div id="oma-opa-morg" class="page">
+  <script>
+    // Fountain Jump Game - Inline Version with Camera
+    let fountainGame = null;
+
+    function startFountainGame() {
+      const overlay = document.querySelector('#fountain .play-overlay');
+      if (overlay) overlay.classList.add('hidden');
+
+      const canvas = document.getElementById('fountainCanvas');
+      const ctx = canvas.getContext('2d');
+
+      const worldWidth = 2400;
+      let cameraX = 0;
+
+      let player = { x: 100, y: 300, width: 25, height: 35, dy: 0, dx: 0, onGround: false };
+      let platforms = [
+        { x: 0, y: 380, width: 120, height: 70 },
+        { x: 180, y: 320, width: 100, height: 30 },
+        { x: 340, y: 280, width: 90, height: 25 },
+        { x: 500, y: 240, width: 100, height: 30 },
+        { x: 660, y: 200, width: 140, height: 50 },
+        { x: 900, y: 250, width: 120, height: 40 },
+        { x: 1100, y: 300, width: 100, height: 30 },
+        { x: 1280, y: 250, width: 90, height: 35 },
+        { x: 1450, y: 200, width: 110, height: 40 },
+        { x: 1650, y: 280, width: 100, height: 30 },
+        { x: 1820, y: 240, width: 120, height: 35 },
+        { x: 2000, y: 200, width: 100, height: 40 },
+        { x: 2180, y: 180, width: 140, height: 50 }
+      ];
+      let goal = { x: 2250, y: 150, width: 40, height: 80 };
+      let keys = {};
+      let running = true;
+      const gravity = 0.45;
+
+      document.addEventListener('keydown', e => keys[e.code] = true);
+      document.addEventListener('keyup', e => keys[e.code] = false);
+
+      function update() {
+        if (keys['ArrowLeft'] || keys['KeyA']) player.dx = -4;
+        else if (keys['ArrowRight'] || keys['KeyD']) player.dx = 4;
+        else player.dx = 0;
+
+        if ((keys['Space'] || keys['ArrowUp']) && player.onGround) {
+          player.dy = -11;
+          player.onGround = false;
+        }
+
+        player.dy += gravity;
+        player.x += player.dx;
+        player.y += player.dy;
+
+        player.onGround = false;
+        platforms.forEach(p => {
+          if (player.x < p.x + p.width && player.x + player.width > p.x &&
+              player.y < p.y + p.height && player.y + player.height > p.y) {
+            if (player.dy > 0) {
+              player.y = p.y - player.height;
+              player.dy = 0;
+              player.onGround = true;
+            }
+          }
+        });
+
+        cameraX = player.x - canvas.width / 3;
+        if (cameraX < 0) cameraX = 0;
+        if (cameraX > worldWidth - canvas.width) cameraX = worldWidth - canvas.width;
+
+        if (player.x < 0) player.x = 0;
+        if (player.x + player.width > worldWidth) player.x = worldWidth - player.width;
+
+        if (player.x < goal.x + goal.width && player.x + player.width > goal.x &&
+            player.y < goal.y + goal.height && player.y + player.height > goal.y) {
+          running = false;
+          window.dispatchEvent(new CustomEvent('gameWon', {
+            detail: { gameId: 'fountain', collectible: 'nudeCalendar' }
+          }));
+        }
+
+        if (player.y > canvas.height) {
+          player.x = 50;
+          player.y = 300;
+          player.dy = 0;
+        }
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.translate(-cameraX, 0);
+
+        ctx.fillStyle = '#5ba3d0';
+        ctx.fillRect(cameraX, 0, canvas.width, canvas.height);
+
+        platforms.forEach(p => {
+          if (p.x + p.width > cameraX && p.x < cameraX + canvas.width) {
+            ctx.fillStyle = '#7c8a95';
+            ctx.fillRect(p.x, p.y, p.width, p.height);
+          }
+        });
+
+        if (goal.x + goal.width > cameraX && goal.x < cameraX + canvas.width) {
+          ctx.fillStyle = '#93c5fd';
+          ctx.fillRect(goal.x, goal.y, goal.width, goal.height);
+        }
+
+        ctx.fillStyle = '#f87171';
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+
+        ctx.restore();
+      }
+
+      function loop() {
+        if (!running) return;
+        update();
+        draw();
+        requestAnimationFrame(loop);
+      }
+
+      loop();
+    }
+  </script>
+
+  <!-- Oma Opa Morg Page -->
+  <div id="oma-opa-morg" class="page" style="align-items: flex-start; justify-content: flex-start;">
     <div class="page-header">
       <h2>Simon Says</h2>
       <button class="back-btn" data-target="landing-page">← Back</button>
     </div>
-    <div class="game-container">
-      <p class="game-instructions">Watch and repeat the sequence! Level: <span id="simon-level">1</span></p>
-      <div id="simon-grid" style="display:grid;grid-template-columns:repeat(2,120px);gap:10px;margin:20px auto;width:fit-content"></div>
-      <div id="simon-message" style="margin-top:10px;font-weight:600"></div>
+    <div class="location-content">
+      <div class="location-top-row">
+        <div class="location-image-container">
+          <img src="/assets/sprites/places/oma-opa-morg.jpeg" alt="Oma Opa Morg" class="location-image" onerror="this.style.display='none'" />
+        </div>
+
+        <div class="game-container">
+          <div class="play-overlay">
+            <button class="play-btn" onclick="startGame('oma-opa-morg')">▶ Play</button>
+          </div>
+          <p class="game-instructions">Watch and repeat the sequence! Level: <span id="simon-level">1</span></p>
+          <div id="simon-grid" style="display:grid;grid-template-columns:repeat(2,120px);gap:10px;margin:20px auto;width:fit-content"></div>
+          <div id="simon-message" style="margin-top:10px;font-weight:600"></div>
+        </div>
+      </div>
+
+      <div class="location-message-row">
+        <div class="riddle-note location-message-box">
+          Your riddle text here
+        </div>
+        <div class="location-sprites">
+          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
+          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Oma Opa Shnol Page - Pattern Lock -->
-  <div id="oma-opa-shnol" class="page">
+  <!-- Oma Opa Shnol Page -->
+  <div id="oma-opa-shnol" class="page" style="align-items: flex-start; justify-content: flex-start;">
     <div class="page-header">
       <h2>Pattern Unlock</h2>
       <button class="back-btn" data-target="landing-page">← Back</button>
     </div>
-    <div class="game-container">
-      <p class="game-instructions">Memorize and draw the pattern! Attempts: <span id="pattern-attempts">3</span></p>
-      <div id="pattern-display" style="margin:20px auto;width:fit-content"></div>
-      <div id="pattern-grid" style="display:grid;grid-template-columns:repeat(3,80px);gap:10px;margin:20px auto;width:fit-content"></div>
-      <button id="pattern-check" style="padding:10px 20px;background:var(--pink);color:white;border:none;border-radius:8px;cursor:pointer">Check Pattern</button>
+    <div class="location-content">
+      <div class="location-top-row">
+        <div class="location-image-container">
+          <img src="/assets/sprites/places/oma-opa-shnol.jpeg" alt="Oma Opa Shnol" class="location-image" onerror="this.style.display='none'" />
+        </div>
+
+        <div class="game-container">
+          <div class="play-overlay">
+            <button class="play-btn" onclick="startGame('oma-opa-shnol')">▶ Play</button>
+          </div>
+          <p class="game-instructions">Memorize and draw the pattern! Attempts: <span id="pattern-attempts">3</span></p>
+          <div id="pattern-display" style="margin:20px auto;width:fit-content"></div>
+          <div id="pattern-grid" style="display:grid;grid-template-columns:repeat(3,80px);gap:10px;margin:20px auto;width:fit-content"></div>
+          <button id="pattern-check" style="padding:10px 20px;background:var(--pink);color:white;border:none;border-radius:8px;cursor:pointer">Check Pattern</button>
+        </div>
+      </div>
+
+      <div class="location-message-row">
+        <div class="riddle-note location-message-box">
+          Your riddle text here
+        </div>
+        <div class="location-sprites">
+          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
+          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Hustadt Dub Page - Math Lightning -->
-  <div id="hustadt-dub" class="page">
+  <!-- Snails/Uni-Center Page -->
+  <div id="snails" class="page" style="align-items: flex-start; justify-content: flex-start; position: relative;">
+    <div class="page-header">
+      <h2>Uni-Center</h2>
+      <button class="back-btn" data-target="landing-page">← Zurück</button>
+    </div>
+    <div class="location-content">
+      <div class="location-top-row">
+        <div class="location-image-container">
+          <img src="/assets/sprites/places/unicenter.jpeg" alt="Uni-Center" class="location-image" onerror="this.style.display='none'" />
+        </div>
+
+        <div class="game-container">
+          <div class="play-overlay">
+            <button class="play-btn" onclick="startSnailsGame()">▶ Play</button>
+          </div>
+          <p class="game-instructions">Click all snails! Caught: <span id="snails-caught">0</span> / <span id="snails-total">20</span> | Time: <span id="snail-timer">0</span>s</p>
+          <div id="snail-wall"></div>
+        </div>
+      </div>
+
+      <div class="location-message-row">
+        <div class="riddle-note location-message-box">
+          Oma muss hier einen Steckling klauen, lass uns die Menschen drumherum ablenken, indem wir die Schnecken abreissen!
+        </div>
+        <div class="location-sprites">
+          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
+          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function startSnailsGame() {
+      const overlay = document.querySelector('#snails .play-overlay');
+      if (overlay) overlay.classList.add('hidden');
+
+      if (typeof startGame === 'function') {
+        startGame('snails');
+      }
+    }
+  </script>
+
+  <!-- Hustadt Dub Page -->
+  <div id="hustadt-dub" class="page" style="align-items: flex-start; justify-content: flex-start;">
     <div class="page-header">
       <h2>Math Lightning</h2>
       <button class="back-btn" data-target="landing-page">← Back</button>
     </div>
-    <div class="game-container">
-      <p class="game-instructions">Solve as many as you can! Score: <span id="math-score">0</span> | Time: <span id="math-timer">60</span>s</p>
-      <div id="math-problem" style="font-size:2.5rem;font-weight:700;margin:30px 0;color:var(--pink)"></div>
-      <div id="math-options" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"></div>
+    <div class="location-content">
+      <div class="location-top-row">
+        <div class="location-image-container">
+          <img src="/assets/sprites/places/hustadt-dub.jpeg" alt="Hustadt Dub" class="location-image" onerror="this.style.display='none'" />
+        </div>
+
+        <div class="game-container">
+          <div class="play-overlay">
+            <button class="play-btn" onclick="startGame('hustadt-dub')">▶ Play</button>
+          </div>
+          <p class="game-instructions">Solve as many as you can! Score: <span id="math-score">0</span> | Time: <span id="math-timer">60</span>s</p>
+          <div id="math-problem" style="font-size:2.5rem;font-weight:700;margin:30px 0;color:var(--pink)"></div>
+          <div id="math-options" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"></div>
+        </div>
+      </div>
+
+      <div class="location-message-row">
+        <div class="riddle-note location-message-box">
+          Your riddle text here
+        </div>
+        <div class="location-sprites">
+          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
+          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Inventory Bar (persistent across pages) -->
+  <!-- Inventory Bar -->
   <aside id="inventory">
     <div class="inventory-title">Inventory</div>
     <div id="items"></div>
   </aside>
 
-  <!-- Map placeholder (for future) -->
-  <!-- <div id="map-overlay" class="hidden">
-    <div class="map-container">
-      <div class="map-hotspot" data-target="school" style="left:20%;top:30%">🏠</div>
-      <div class="map-hotspot" data-target="krivaya" style="left:60%;top:50%">🎮</div>
-    </div>
-  </div> -->
+  <!-- Pre-load check -->
+  <script>
+    (function() {
+      try {
+        const savedState = localStorage.getItem('diasite_state');
+        if (savedState) {
+          const state = JSON.parse(savedState);
+          if (!state.player || !state.player.name || state.player.name.trim() === '') {
+            window.location.href = 'welcome.html';
+            return;
+          }
+        } else {
+          window.location.href = 'welcome.html';
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking state:', error);
+        window.location.href = 'welcome.html';
+      }
+    })();
 
-  <script src="app.js"></script>
-  <script src="minigames.js"></script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const hash = window.location.hash.substring(1);
+      if (hash) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        const targetPage = document.getElementById(hash);
+        if (targetPage) {
+          targetPage.classList.add('active');
+        }
+      }
+    });
+  </script>
+
+  <!-- Scripts -->
+  <script type="module" src="/js/main.js"></script>
+  <script src="/js/games/fountain-jump.js"></script>
+  <script src="/js/games/fountain-integration.js"></script>
+  <script defer src="app.js"></script>
+  <script defer src="minigames.js"></script>
+
+  <!-- Steve Speaking Animation Helper -->
+  <script>
+    window.makeSteveTalk = function() {
+      const steveSprites = document.querySelectorAll('.steve-sprite-static');
+      steveSprites.forEach(sprite => {
+        sprite.classList.add('speaking');
+      });
+    };
+
+    window.makeSteveStopTalking = function() {
+      const steveSprites = document.querySelectorAll('.steve-sprite-static');
+      steveSprites.forEach(sprite => {
+        sprite.classList.remove('speaking');
+      });
+    };
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node.classList && node.classList.contains('steve-greeting')) {
+            window.makeSteveTalk();
+            setTimeout(() => {
+              if (!document.querySelector('.steve-greeting.show')) {
+                window.makeSteveStopTalking();
+              }
+            }, 4000);
+          }
+        });
+
+        mutation.removedNodes.forEach((node) => {
+          if (node.classList && node.classList.contains('steve-greeting')) {
+            window.makeSteveStopTalking();
+          }
+        });
+      });
+    });
+
+    observer.observe(document.body, { childList: true, subtree: false });
+  </script>
 </body>
 </html>

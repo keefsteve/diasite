@@ -1,102 +1,879 @@
-:root{
-  --beige:#f5f5dc;--pink:#ff69b4;--dark-pink:#d14293;--panel:#ffffff;--muted:#6b7280;
+@font-face {
+  font-family: 'Nineteen Ninety Seven';
+  src: local('Monaco'), local('Menlo'), local('Consolas');
+  font-weight: normal;
+  font-style: normal;
 }
-*{box-sizing:border-box;font-family:Inter,system-ui,Arial,Helvetica,sans-serif}
-body{margin:0;background:var(--beige);color:#111;overflow:hidden}
+
+:root {
+  /* Pastel 90s color palette with desaturated tones */
+  --cream: #e8dfd0;
+  --sage-green: #c5d4c8;
+  --terracotta: #aae5b9;
+  --sky-blue: #d0dfe8;
+  --warm-brown: #b8a898;
+  --soft-orange: #f5d4ba;
+  --forest-green: #a8baa5;
+  --muted-red: #dab8b3;
+  --paper-white: #f0ebe5;
+  --ink-black: #5a5a5a;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: 'Nineteen Ninety Seven';
+}
+
+body {
+  margin: 0;
+  background: #dfe3e8;
+  color: var(--ink-black);
+  overflow: hidden;
+  font-family: 'Nineteen Ninety Seven';
+  /* Subtle paper texture */
+  background-image: 
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(139, 111, 71, 0.03) 2px, rgba(139, 111, 71, 0.03) 4px),
+    repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(139, 111, 71, 0.03) 2px, rgba(139, 111, 71, 0.03) 4px);
+  image-rendering: pixelated;
+}
+
+/* Prevent flash of wrong page on load */
+body:not(.app-ready) .page {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+body.app-ready .page {
+  transition: opacity 0.3s ease-in;
+}
 
 /* Page system */
-.page{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px}
-.page.active{display:flex}
-
-/* Landing page */
-#landing-page{
-  background:url('map1.png') center center/contain no-repeat;
-  background-color:var(--beige);
-  position:relative;
-  width:100vw;
-  height:100vh;
+.page {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
-#landing-page.magnifying{cursor:none}
-.center-text{text-align:center}
-.parent-title{font-size:5rem;color:var(--pink);font-weight:700;margin:0;letter-spacing:2px;text-shadow:2px 2px 4px rgba(0,0,0,0.1)}
-.arrow-nav{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);display:flex;gap:24px}
-.arrow-btn{font-size:0.7rem;padding:5px 10px;border:none;background:var(--pink);color:white;border-radius:50%;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 8px rgba(0,0,0,0.15)}
-.arrow-btn:hover{background:var(--dark-pink);transform:scale(1.1)}
+.page.active {
+  display: flex;
+}
 
-/* Map hotspots */
-.map-hotspot{position:absolute;width:30px;height:30px;border:2px solid rgba(255,105,180,0.5);background:rgba(255,105,180,0.2);border-radius:50%;cursor:pointer;transition:all 0.3s;padding:0}
-.map-hotspot:hover{background:rgba(255,105,180,0.4);transform:scale(1.15);border-color:rgba(255,105,180,0.8)}
+/* Landing page - Ghibli meadow vibes */
+#landing-page {
+  background: url('assets/sprites/map1.png') center center/contain no-repeat;
+  background-color: #d4dcc4;
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  /* Soft vignette effect */
+  box-shadow: inset 0 0 150px rgba(74, 103, 65, 0.2);
+}
+#landing-page.magnifying {
+  cursor: none;
+}
 
-/* Objects */
-.object{position:absolute;font-size:2.5rem;cursor:pointer;user-select:none;transition:transform 0.2s;animation:float 3s ease-in-out infinite;transform:translate(-50%,-50%)}
-.object:hover{animation-play-state:paused;transform:translate(-50%,-50%) scale(1.2)}
-@keyframes float{0%,100%{transform:translate(-50%,-50%) translateY(0)}50%{transform:translate(-50%,-50%) translateY(-10px)}}
+.center-text {
+  text-align: center;
+}
 
-/* Instructions Panel */
-#instructions-panel{position:absolute;left:15%;top:70%;background:rgba(255,255,255,0.92);padding:14px 18px;border-radius:10px;box-shadow:0 3px 10px rgba(0,0,0,0.2);max-width:280px;z-index:100}
-#instructions-panel p{margin:4px 0;font-size:13px;color:#333}
-#instructions-panel strong{color:var(--pink);font-size:14px}
-.instruction-text{font-weight:600;margin-top:10px}
-#uncollected-list{font-size:12px;line-height:1.6;color:#555;margin-top:6px}
+.parent-title {
+  font-size: 5rem;
+  color: var(--terracotta);
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 3px;
+  text-shadow: 
+    3px 3px 0px rgba(244, 164, 96, 0.3),
+    6px 6px 0px rgba(139, 111, 71, 0.1);
+  font-family: 'Nineteen Ninety Seven';
+  /* Slight pixelated edge */
+  filter: drop-shadow(2px 2px 0px var(--warm-brown));
+}
 
-/* Inventory */
-#inventory{position:fixed;bottom:12px;right:12px;background:rgba(255,255,255,0.9);padding:10px 14px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.1);min-width:140px}
-.inventory-title{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px}
-#items{display:flex;gap:6px;flex-wrap:wrap}
-.item{padding:6px 8px;background:#f0f0f0;border-radius:6px;cursor:pointer;font-size:11px;border:2px solid transparent}
-.item.selected{border-color:var(--pink)}
+/* 90s-style navigation arrows */
+.arrow-nav {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 24px;
+}
+
+.arrow-btn {
+  font-size: 0.7rem;
+  padding: 8px 12px;
+  border: 3px solid var(--warm-brown);
+  background: var(--soft-orange);
+  color: var(--paper-white);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: 
+    4px 4px 0px var(--warm-brown),
+    0 0 0 1px rgba(139, 111, 71, 0.2);
+  font-family: 'Nineteen Ninety Seven';
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.arrow-btn:hover {
+  background: var(--terracotta);
+  transform: translate(-2px, -2px);
+  box-shadow: 
+    6px 6px 0px var(--warm-brown),
+    0 0 0 1px rgba(139, 111, 71, 0.2);
+}
+
+.arrow-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 
+    2px 2px 0px var(--warm-brown);
+}
+
+/* Map hotspots - Ghibli portals */
+.map-hotspot {
+  position: absolute;
+  width: 35px;
+  height: 35px;
+  border: 3px dashed var(--forest-green);
+  background: radial-gradient(circle, rgba(168, 197, 217, 0.4), rgba(157, 180, 160, 0.2));
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s;
+  padding: 0;
+  /* Soft glow */
+  box-shadow: 
+    0 0 15px rgba(168, 197, 217, 0.4),
+    inset 0 0 10px rgba(255, 255, 255, 0.3);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% { 
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+.map-hotspot:hover {
+  background: radial-gradient(circle, rgba(168, 197, 217, 0.6), rgba(157, 180, 160, 0.4));
+  transform: scale(1.2);
+  border-color: var(--sage-green);
+  animation: none;
+}
+
+/* Objects - floating magical items */
+.object {
+  position: absolute;
+  font-size: 2.5rem;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.2s;
+  animation: float 3s ease-in-out infinite;
+  transform: translate(-50%, -50%);
+  filter: 
+    drop-shadow(2px 4px 6px rgba(74, 103, 65, 0.3))
+    drop-shadow(0 0 8px rgba(244, 164, 96, 0.2));
+}
+
+.object:hover {
+  animation-play-state: paused;
+  transform: translate(-50%, -50%) scale(1.25) rotate(5deg);
+}
+
+@keyframes float {
+  0%, 100% { 
+    transform: translate(-50%, -50%) translateY(0) rotate(-2deg);
+  }
+  50% { 
+    transform: translate(-50%, -50%) translateY(-15px) rotate(2deg);
+  }
+}
+
+/* Instructions Panel - Vintage note */
+#instructions-panel {
+  position: absolute;
+  left: 800px;
+  bottom: 20px;
+  background: var(--paper-white);
+  padding: 16px 20px;
+  border-radius: 4px;
+  border: 2px solid var(--warm-brown);
+  box-shadow: 
+    5px 5px 0px rgba(139, 111, 71, 0.3),
+    0 0 0 1px rgba(139, 111, 71, 0.1);
+  max-width: 300px;
+  z-index: 160;
+  display: none;
+  /* Paper texture */
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    rgba(139, 111, 71, 0.02) 1px,
+    rgba(139, 111, 71, 0.02) 2px
+  );
+}
+
+#instructions-panel p {
+  margin: 6px 0;
+  font-size: 14px;
+  color: var(--ink-black);
+  font-family: 'Nineteen Ninety Seven';
+}
+
+#instructions-panel strong {
+  color: var(--muted-red);
+  font-size: 15px;
+}
+
+.instruction-text {
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+#uncollected-list {
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--warm-brown);
+  margin-top: 8px;
+}
+
+/* Inventory - 90s RPG style */
+#inventory {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  background: var(--paper-white);
+  padding: 12px 16px;
+  border-radius: 4px;
+  border: 3px solid var(--warm-brown);
+  box-shadow: 
+    4px 4px 0px rgba(139, 111, 71, 0.4),
+    inset 0 0 20px rgba(244, 234, 213, 0.5);
+  min-width: 160px;
+}
+
+.inventory-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--forest-green);
+  margin-bottom: 8px;
+  font-family: 'Nineteen Ninety Seven';
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+#items {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.item {
+  padding: 8px 10px;
+  background: linear-gradient(135deg, var(--sage-green), var(--sky-blue));
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  border: 2px solid var(--forest-green);
+  box-shadow: 2px 2px 0px rgba(74, 103, 65, 0.3);
+  transition: all 0.15s;
+  font-weight: 600;
+  color: var(--paper-white);
+}
+
+.item:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px rgba(74, 103, 65, 0.5);
+}
+
+.item.selected {
+  border-color: var(--terracotta);
+  border-width: 3px;
+  background: linear-gradient(135deg, var(--soft-orange), var(--terracotta));
+}
 
 /* Page header */
-.page-header{position:absolute;top:20px;left:20px;right:20px;display:flex;justify-content:space-between;align-items:center}
-.page-header h2{margin:0;color:var(--pink);font-size:2rem}
-.back-btn{padding:10px 16px;border:none;background:var(--pink);color:white;border-radius:8px;cursor:pointer;font-size:1rem;transition:background 0.2s}
-.back-btn:hover{background:var(--dark-pink)}
-
-/* Minigame page */
-#minigame-page{background:var(--beige)}
-.game-container{width:100%;max-width:700px;text-align:center;margin-top:60px}
-.game-instructions{font-size:1.1rem;margin-bottom:16px;color:#333}
-#game-area{min-height:360px;border:3px dashed var(--pink);border-radius:12px;position:relative;background:rgba(255,255,255,0.6);margin:20px 0}
-#game-score{font-size:1.5rem;font-weight:600;color:var(--pink)}
-.dot{width:40px;height:40px;border-radius:50%;background:#dc2626;position:absolute;cursor:pointer;transition:transform 0.1s}
-.dot:hover{transform:scale(1.15)}
-
-/* CV page */
-#cv-page{background:var(--beige);align-items:flex-start;overflow-y:auto}
-.cv-content{max-width:800px;margin-top:80px;background:rgba(255,255,255,0.85);padding:32px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
-.cv-section{margin-bottom:28px}
-.cv-section h3{color:var(--pink);font-size:1.5rem;margin-bottom:10px}
-.cv-section p,.cv-section ul{font-size:1.05rem;line-height:1.6;color:#333}
-.cv-section ul{list-style:none;padding:0}
-.cv-section li{margin-bottom:8px}
-
-/* Map overlay (future) */
-.map-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center}
-.map-overlay.hidden{display:none}
-.map-container{position:relative;width:80vw;height:80vh;background:#eee;border-radius:12px}
-.map-hotspot{position:absolute;font-size:3rem;cursor:pointer;transition:transform 0.2s}
-.map-hotspot:hover{transform:scale(1.3)}
-
-/* Magnifying glass */
-.magnifying-glass{
-  position:fixed;
-  width:120px;
-  height:120px;
-  border:4px solid #333;
-  border-radius:50%;
-  pointer-events:none;
-  z-index:10000;
-  box-shadow:0 4px 12px rgba(0, 0, 0, 0.4);
-  overflow:hidden;
-  background-image:url('map1.png');
-  background-repeat:no-repeat;
-  background-color:var(--beige);
+.page-header {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+  pointer-events: none;
 }
 
-/* responsive */
-@media(max-width:720px){
-  .parent-title{font-size:3.5rem}
-  .arrow-btn{font-size:1.5rem;padding:10px 16px}
-  .cv-content{padding:20px;margin-top:60px}
-  #inventory{bottom:8px;right:8px;min-width:100px}
+.page-header > * {
+  pointer-events: auto;
+}
+
+.page-header h2 {
+  margin: 0;
+  color: var(--terracotta);
+  font-size: 2.2rem;
+  font-family: 'Nineteen Ninety Seven';
+  text-shadow: 
+    2px 2px 0px rgba(96, 202, 244, 0.4),
+    4px 4px 0px rgba(139, 111, 71, 0.2);
+}
+
+.back-btn {
+  padding: 10px 18px;
+  border: 3px solid var(--warm-brown);
+  background: var(--sage-green);
+  color: var(--paper-white);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: all 0.15s;
+  box-shadow: 3px 3px 0px var(--warm-brown);
+  font-family: 'Nineteen Ninety Seven';
+  text-transform: uppercase;
+}
+
+.back-btn:hover {
+  background: var(--forest-green);
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px var(--warm-brown);
+}
+
+.back-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0px var(--warm-brown);
+}
+
+/* Riddle note - Vintage letter */
+.riddle-note {
+  background: #f5f0e8;
+  border: 3px double var(--warm-brown);
+  border-radius: 0;
+  padding: 18px 22px;
+  max-width: 340px;
+  min-height: 80px;
+  box-shadow:
+    6px 6px 0px rgba(139, 111, 71, 0.25),
+    inset 0 0 30px rgba(244, 234, 213, 0.4);
+  font-family: 'Nineteen Ninety Seven';
+  font-size: 1rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  text-align: left;
+  /* Aged paper effect */
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 20px,
+      rgba(139, 111, 71, 0.05) 20px,
+      rgba(139, 111, 71, 0.05) 21px
+    );
+}
+
+/* Mission box on landing page - absolute positioning with animation */
+#landing-page .riddle-note {
+  position: absolute;
+  bottom: 100px;
+  left: 20px;
+  z-index: 150;
+  animation: missionBounce 5s ease-in-out infinite !important;
+}
+
+@keyframes missionBounce {
+  0%, 50%, 100% { transform: translateY(0); }
+  10% { transform: translateY(-20px); }
+  17% { transform: translateY(-5px); }
+  23% { transform: translateY(-12px); }
+  28% { transform: translateY(-3px); }
+  33% { transform: translateY(-8px); }
+  38% { transform: translateY(-2px); }
+}
+
+.riddle-note:empty::before {
+  content: '📜 Rätsel erscheint hier...';
+  color: var(--warm-brown);
+  font-style: italic;
+  opacity: 0.7;
+}
+
+/* Minigame page */
+#minigame-page {
+  background: var(--cream);
+}
+
+.game-container {
+  position: relative;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.game-instructions {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  color: var(--ink-black);
+  font-family: 'Nineteen Ninety Seven';
+  font-weight: 600;
+  padding: 12px 15px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+}
+
+.play-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: transparent;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  z-index: 200;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: none;
+}
+
+.play-overlay:hover {
+  opacity: 0.8;
+}
+
+.play-overlay.hidden {
+  display: none;
+}
+
+.play-btn {
+  font-size: 2rem;
+  color: var(--warm-brown);
+  font-family: 'Nineteen Ninety Seven';
+  font-weight: bold;
+  text-transform: uppercase;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px 20px;
+  margin: 0;
+  letter-spacing: 4px;
+  transition: all 0.2s;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.play-btn:hover {
+  transform: scale(1.15);
+  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+}
+
+/* Hot/Cold Tracker */
+#hotcold-tracker {
+  position: fixed;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 8px 16px;
+  border: 2px solid #333;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  z-index: 9999;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: all 0.3s ease;
+  display: none;
+}
+
+#hotcold-tracker.active {
+  display: block;
+}
+
+#hotcold-tracker.freezing { color: #0066ff; border-color: #0066ff; }
+#hotcold-tracker.icy { color: #0088ff; border-color: #0088ff; }
+#hotcold-tracker.cold { color: #00aaff; border-color: #00aaff; }
+#hotcold-tracker.chilly { color: #00ccff; border-color: #00ccff; }
+#hotcold-tracker.cool { color: #00ddff; border-color: #00ddff; }
+#hotcold-tracker.lukewarm { color: #66ccff; border-color: #66ccff; }
+#hotcold-tracker.warm { color: #ffaa00; border-color: #ffaa00; }
+#hotcold-tracker.toasty { color: #ff8800; border-color: #ff8800; }
+#hotcold-tracker.hot { color: #ff6600; border-color: #ff6600; }
+#hotcold-tracker.scorching { color: #ff4400; border-color: #ff4400; }
+#hotcold-tracker.blazing { color: #ff2200; border-color: #ff2200; }
+#hotcold-tracker.molten { color: #ff0000; border-color: #ff0000; }
+
+.play-btn:hover {
+  color: var(--terracotta);
+}
+
+.play-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 4px 4px 0px var(--warm-brown);
+}
+
+#game-area {
+  min-height: 380px;
+  border: 4px dashed var(--forest-green);
+  border-radius: 8px;
+  position: relative;
+  background: linear-gradient(135deg, rgba(250, 248, 243, 0.8), rgba(212, 220, 196, 0.3));
+  margin: 20px 0;
+  box-shadow: 
+    inset 0 0 30px rgba(74, 103, 65, 0.1),
+    4px 4px 0px rgba(74, 103, 65, 0.2);
+}
+
+#game-score {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--muted-red);
+  font-family: 'Nineteen Ninety Seven';
+  text-shadow: 2px 2px 0px rgba(193, 112, 102, 0.3);
+}
+
+.dot {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--terracotta), var(--muted-red));
+  position: absolute;
+  cursor: pointer;
+  transition: transform 0.1s;
+  border: 3px solid var(--warm-brown);
+  box-shadow: 
+    3px 3px 0px rgba(139, 111, 71, 0.4),
+    inset 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.dot:hover {
+  transform: scale(1.2) rotate(10deg);
+}
+
+/* CV page */
+#cv-page {
+  background: var(--cream);
+  align-items: flex-start;
+  overflow-y: auto;
+}
+
+.cv-content {
+  background: var(--paper-white);
+  padding: 36px;
+  border-radius: 8px;
+  border: 3px solid var(--warm-brown);
+  box-shadow:
+    8px 8px 0px rgba(139, 111, 71, 0.3),
+    inset 0 0 40px rgba(244, 234, 213, 0.4);
+  /* Aged paper texture */
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 25px,
+    rgba(139, 111, 71, 0.03) 25px,
+    rgba(139, 111, 71, 0.03) 26px
+  );
+}
+
+.cv-section {
+  margin-bottom: 32px;
+}
+
+.cv-section h3 {
+  color: var(--terracotta);
+  font-size: 1.6rem;
+  margin-bottom: 12px;
+  font-family: 'Nineteen Ninety Seven';
+  text-shadow: 2px 2px 0px rgba(244, 164, 96, 0.3);
+}
+
+.cv-section p,
+.cv-section ul {
+  font-size: 1.08rem;
+  line-height: 1.7;
+  color: var(--ink-black);
+  font-family: 'Nineteen Ninety Seven';
+}
+
+.cv-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.cv-section li {
+  margin-bottom: 10px;
+  padding-left: 20px;
+  position: relative;
+}
+
+.cv-section li::before {
+  content: '🌿';
+  position: absolute;
+  left: 0;
+}
+
+/* Standardized Location Page Layout - VIDEO GAME UI STYLE */
+.location-content {
+  width: 100vw;
+  height: calc(100vh - 80px);
+  padding: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+/* Top row container for image + game side by side - LARGE */
+.location-top-row {
+  display: flex;
+  gap: 40px;
+  height: calc(100vh - 280px);
+  padding: 80px 40px 0 40px;
+  flex: 1;
+}
+
+/* Image - fixed position and size - LEFT SIDE - LARGER */
+.location-image-container {
+  width: 45%;
+  max-width: 600px;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+.location-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  display: block;
+}
+
+/* Game container - RIGHT SIDE - LARGER */
+.game-container,
+.cv-content {
+  flex: 1;
+  height: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 25px;
+  background: transparent;
+  border-radius: 0;
+}
+
+/* Message row - GAME UI DIALOGUE BOX at bottom */
+.location-message-row {
+  width: 100%;
+  display: flex;
+  gap: 30px;
+  align-items: flex-end;
+  height: 200px;
+  box-sizing: border-box;
+  padding: 0 40px 30px 40px;
+  background: linear-gradient(to top, rgba(232, 223, 208, 0.95) 0%, rgba(232, 223, 208, 0.7) 70%, transparent 100%);
+  position: relative;
+}
+
+.location-message-box {
+  flex: 1;
+  align-self: flex-end;
+  overflow-y: auto;
+  max-height: 160px;
+  padding: 20px 25px;
+  background: rgba(245, 240, 232, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.location-sprites {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+  align-items: flex-end;
+  height: 320px;
+  width: 400px;
+  position: relative;
+  margin-bottom: -200px;
+}
+
+.location-sprites .jen-sprite {
+  width: 420px !important;
+  height: 420px !important;
+  object-fit: contain;
+  object-position: bottom;
+  filter: drop-shadow(4px 4px 8px rgba(0,0,0,0.4));
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.location-sprites .jen-sprite:hover {
+  transform: translateY(-5px);
+}
+
+.location-sprites .steve-sprite-static {
+  width: 420px !important;
+  height: 420px !important;
+  object-fit: 420pxcontain;
+  object-position: bottom;
+  margin-left: -80px;
+  filter: drop-shadow(4px 4px 8px rgba(0,0,0,0.4));
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.location-sprites .steve-sprite-static:hover {
+  transform: translateY(-5px);
+}
+
+/* Map overlay */
+.map-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(45, 45, 45, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.map-overlay.hidden {
+  display: none;
+}
+
+.map-container {
+  position: relative;
+  width: 80vw;
+  height: 80vh;
+  background: var(--cream);
+  border-radius: 8px;
+  border: 4px solid var(--warm-brown);
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.5),
+    8px 8px 0px rgba(139, 111, 71, 0.4);
+}
+
+/* Magnifying glass - Vintage lens */
+.magnifying-glass {
+  position: fixed;
+  width: 130px;
+  height: 130px;
+  border: 5px solid var(--warm-brown);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10000;
+  box-shadow: 
+    0 0 20px rgba(139, 111, 71, 0.4),
+    inset 0 0 20px rgba(255, 255, 255, 0.3),
+    0 8px 16px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  background-image: url('assets/sprites/map1.png');
+  background-repeat: no-repeat;
+  background-color: var(--cream);
+  /* Glass reflection effect */
+  background-image: 
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4), transparent 50%),
+    url('assets/sprites/map1.png');
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+  .parent-title {
+    font-size: 3.5rem;
+  }
+  .arrow-btn {
+    font-size: 1.4rem;
+    padding: 10px 16px;
+  }
+  .cv-content {
+    padding: 24px;
+    margin-top: 60px;
+  }
+  #inventory {
+    bottom: 8px;
+    right: 8px;
+    min-width: 120px;
+  }
+}
+
+/* Extra Ghibli touches */
+@keyframes shimmer {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Subtle sparkle effect on hover for interactive elements */
+.object::after {
+  content: '✨';
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  font-size: 0.8rem;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.object:hover::after {
+  opacity: 1;
+  animation: shimmer 1s infinite;
+}
+
+/* Static Sprite Styling */
+.steve-sprite-static,
+.jen-sprite {
+  transition: transform 0.3s ease;
+}
+
+/* Steve Speaking Animation - Bounces when speaking */
+.steve-sprite-static.speaking {
+  animation: steveTalking 1s ease-in-out infinite !important;
+  z-index: 10;
+}
+
+@keyframes steveTalking {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+  }
+  25% {
+    transform: translateY(-12px) translateX(3px);
+  }
+  50% {
+    transform: translateY(-20px) translateX(0);
+  }
+  75% {
+    transform: translateY(-12px) translateX(-3px);
+  }
+}
+
+/* Landing Page Sprites Animation */
+.landing-steve-sprite {
+  animation: gentleBounce 3s ease-in-out infinite;
+  animation-delay: 0.2s;
+}
+
+.landing-jen-sprite {
+  animation: gentleBounce 3s ease-in-out infinite;
+}
+
+.landing-riddle-note {
+  animation: gentleBounce 3s ease-in-out infinite;
+  animation-delay: 0.1s;
+}
+
+@keyframes gentleBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }

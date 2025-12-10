@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Fountain Test</title>
+  <style>
+    body { margin: 0; padding: 20px; background: #333; }
+    canvas { border: 3px solid white; display: block; margin: 20px auto; }
+    button { display: block; margin: 20px auto; padding: 15px 30px; font-size: 18px; }
+  </style>
+</head>
+<body>
+  <h1 style="color: white; text-align: center;">Fountain Jump Test</h1>
+  <button onclick="startTest()">START GAME</button>
+  <canvas id="gameCanvas" width="800" height="450"></canvas>
+  
+  <script>
+    // Simple test game
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    let player = { x: 50, y: 350, width: 30, height: 40, dy: 0, onGround: false };
+    let platforms = [
+      { x: 0, y: 400, width: 200, height: 50 },
+      { x: 250, y: 350, width: 150, height: 30 },
+      { x: 450, y: 300, width: 150, height: 30 },
+      { x: 650, y: 250, width: 150, height: 50 }
+    ];
+    let keys = {};
+    let running = false;
+    const gravity = 0.5;
+    
+    document.addEventListener('keydown', e => keys[e.code] = true);
+    document.addEventListener('keyup', e => keys[e.code] = false);
+    
+    function startTest() {
+      running = true;
+      loop();
+    }
+    
+    function update() {
+      // Horizontal movement
+      if (keys['ArrowLeft']) player.x -= 5;
+      if (keys['ArrowRight']) player.x += 5;
+      
+      // Jump
+      if (keys['Space'] && player.onGround) {
+        player.dy = -12;
+        player.onGround = false;
+      }
+      
+      // Gravity
+      player.dy += gravity;
+      player.y += player.dy;
+      
+      // Collision with platforms
+      player.onGround = false;
+      platforms.forEach(p => {
+        if (player.x < p.x + p.width &&
+            player.x + player.width > p.x &&
+            player.y < p.y + p.height &&
+            player.y + player.height > p.y) {
+          if (player.dy > 0) {
+            player.y = p.y - player.height;
+            player.dy = 0;
+            player.onGround = true;
+          }
+        }
+      });
+      
+      // Bounds
+      if (player.x < 0) player.x = 0;
+      if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+      
+      // Win condition
+      if (player.x > 700) {
+        alert('YOU WIN!');
+        running = false;
+      }
+      
+      // Lose condition
+      if (player.y > canvas.height) {
+        alert('FELL INTO WATER!');
+        player.x = 50;
+        player.y = 350;
+        player.dy = 0;
+      }
+    }
+    
+    function draw() {
+      // Clear
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Background (water)
+      ctx.fillStyle = '#4A90E2';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Platforms (stones)
+      ctx.fillStyle = '#666';
+      platforms.forEach(p => {
+        ctx.fillRect(p.x, p.y, p.width, p.height);
+        ctx.strokeStyle = '#444';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(p.x, p.y, p.width, p.height);
+      });
+      
+      // Player
+      ctx.fillStyle = '#FF6B6B';
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+      
+      // Instructions
+      ctx.fillStyle = 'white';
+      ctx.font = '20px Arial';
+      ctx.fillText('← → Arrow Keys | SPACE = Jump | Reach the end!', 20, 30);
+    }
+    
+    function loop() {
+      if (!running) return;
+      update();
+      draw();
+      requestAnimationFrame(loop);
+    }
+  </script>
+</body>
+</html>

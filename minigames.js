@@ -15,15 +15,17 @@ function initSnailWall(){
   
   wall.innerHTML = '';
   wall.style.position = 'relative';
-  wall.style.width = '90vw';
-  wall.style.height = '70vh';
-  wall.style.maxWidth = '1400px';
-  wall.style.backgroundImage = 'url("wall1.jpeg")';
+  wall.style.width = '100%';
+  wall.style.height = '65vh';
+  wall.style.maxWidth = '650px';
+  wall.style.margin = '0';
+  wall.style.backgroundImage = 'url("assets/sprites/places/wall.jpeg")';
   wall.style.backgroundSize = 'cover';
   wall.style.backgroundPosition = 'center';
   wall.style.borderRadius = '12px';
   wall.style.border = '4px solid #8b5a3c';
-  wall.style.boxShadow = 'inset 0 0 20px rgba(0,0,0,0.3)'
+  wall.style.boxShadow = 'inset 0 0 20px rgba(0,0,0,0.3)';
+  wall.style.overflow = 'hidden';
   
   totalEl.textContent = totalSnails;
   
@@ -52,7 +54,9 @@ function initSnailWall(){
       caughtEl.textContent = caught;
       snail.remove();
       if(caught === totalSnails){
-        flashMessage(`All snails caught in ${Math.floor((Date.now()-startTime)/1000)}s!`);
+        const time = Math.floor((Date.now()-startTime)/1000);
+        flashMessage(`All snails caught in ${time}s!`);
+        if(typeof gameManager !== 'undefined') gameManager.markWon('snails');
       }
     });
     
@@ -67,84 +71,104 @@ function initSnailWall(){
   }, 100);
 }
 
-// 2. MEMORY CARD GAME (Home)
-function initMemoryGame(){
-  const grid = document.getElementById('memory-grid');
-  const movesEl = document.getElementById('memory-moves');
-  const timerEl = document.getElementById('memory-timer');
+// 2. WALL SMASHING GAME (Home)
+function initWallSmashGame(){
+  const container = document.getElementById('wall-container');
+  const hitsEl = document.getElementById('wall-hits');
   
-  if(!grid) return;
+  if(!container) return;
   
-  const symbols = ['🎨','🎭','🎪','🎬','🎤','🎧','🎼','🎹'];
-  const cards = [...symbols, ...symbols].sort(() => Math.random() - 0.5);
+  container.innerHTML = '';
+  container.style.position = 'relative';
+  container.style.width = '100%';
+  container.style.height = '400px';
+  container.style.display = 'flex';
+  container.style.alignItems = 'center';
+  container.style.justifyContent = 'center';
+  container.style.cursor = 'pointer';
+  container.style.userSelect = 'none';
   
-  let flipped = [];
-  let matched = 0;
-  let moves = 0;
-  let startTime = Date.now();
+  let hits = 0;
+  let wallState = 0; // 0: intact, 1: cracked, 2: crumbling, 3: broken
   
-  grid.innerHTML = '';
-  grid.style.display = 'grid';
-  grid.style.gridTemplateColumns = 'repeat(4, 90px)';
-  grid.style.gap = '10px';
-  grid.style.margin = '20px auto';
-  grid.style.width = 'fit-content';
+  const wall = document.createElement('div');
+  wall.style.width = '300px';
+  wall.style.height = '300px';
+  wall.style.background = '#8b4513';
+  wall.style.border = '5px solid #654321';
+  wall.style.borderRadius = '8px';
+  wall.style.display = 'flex';
+  wall.style.alignItems = 'center';
+  wall.style.justifyContent = 'center';
+  wall.style.fontSize = '4rem';
+  wall.style.transition = 'all 0.3s';
+  wall.style.boxShadow = 'inset 0 0 20px rgba(0,0,0,0.3)';
+  wall.textContent = '🧱';
   
-  cards.forEach((symbol, idx)=>{
-    const card = document.createElement('div');
-    card.className = 'memory-card';
-    card.dataset.symbol = symbol;
-    card.dataset.idx = idx;
-    card.style.width = '90px';
-    card.style.height = '90px';
-    card.style.background = 'var(--pink)';
-    card.style.borderRadius = '8px';
-    card.style.cursor = 'pointer';
-    card.style.display = 'flex';
-    card.style.alignItems = 'center';
-    card.style.justifyContent = 'center';
-    card.style.fontSize = '2.5rem';
-    card.style.transition = 'all 0.3s';
-    card.textContent = '?';
+  const hand = document.createElement('div');
+  hand.textContent = '✊';
+  hand.style.fontSize = '3rem';
+  hand.style.position = 'absolute';
+  hand.style.opacity = '0';
+  hand.style.transition = 'all 0.2s';
+  
+  container.appendChild(wall);
+  container.appendChild(hand);
+  
+  function updateWall(){
+    hitsEl.textContent = hits;
     
-    card.addEventListener('click', ()=>{
-      if(flipped.length >= 2 || card.classList.contains('flipped')) return;
-      
-      card.textContent = symbol;
-      card.style.background = '#fff';
-      card.classList.add('flipped');
-      flipped.push(card);
-      
-      if(flipped.length === 2){
-        moves++;
-        movesEl.textContent = moves;
-        
-        if(flipped[0].dataset.symbol === flipped[1].dataset.symbol){
-          matched += 2;
-          flipped.forEach(c => c.style.opacity = '0.5');
-          flipped = [];
-          if(matched === cards.length){
-            setTimeout(()=> flashMessage(`Won in ${moves} moves and ${Math.floor((Date.now()-startTime)/1000)}s!`), 300);
-          }
-        } else {
-          setTimeout(()=>{
-            flipped.forEach(c => {
-              c.textContent = '?';
-              c.style.background = 'var(--pink)';
-              c.classList.remove('flipped');
-            });
-            flipped = [];
-          }, 1000);
-        }
-      }
-    });
+    if(hits >= 30 && wallState === 0){
+      wallState = 1;
+      wall.style.background = 'linear-gradient(135deg, #8b4513 0%, #6b3410 50%, #8b4513 100%)';
+      wall.textContent = '🧱💥';
+      flashMessage('The wall is starting to crack!');
+    }
     
-    grid.appendChild(card);
+    if(hits >= 50 && wallState === 1){
+      wallState = 2;
+      wall.style.background = 'linear-gradient(135deg, #6b3410 0%, #4b2408 50%, #6b3410 100%)';
+      wall.style.transform = 'rotate(2deg)';
+      wall.textContent = '🧱💥💥';
+      flashMessage('The wall is crumbling!');
+    }
+    
+    if(hits >= 60){
+      wallState = 3;
+      wall.style.background = '#333';
+      wall.style.opacity = '0.3';
+      wall.textContent = '💥✨🎉';
+      wall.style.transform = 'scale(0.8) rotate(5deg)';
+      setTimeout(()=>{
+        flashMessage('You broke through the wall! 🎉');
+        if(typeof gameManager !== 'undefined') gameManager.markWon('home');
+      }, 500);
+    }
+  }
+  
+  container.addEventListener('click', (e)=>{
+    if(hits >= 60) return;
+    
+    hits++;
+    updateWall();
+    
+    // Animate hand
+    hand.style.left = (e.offsetX - 30) + 'px';
+    hand.style.top = (e.offsetY - 30) + 'px';
+    hand.style.opacity = '1';
+    hand.style.transform = 'scale(1.5) rotate(-20deg)';
+    
+    setTimeout(()=>{
+      hand.style.opacity = '0';
+      hand.style.transform = 'scale(1) rotate(0deg)';
+    }, 200);
+    
+    // Shake wall
+    wall.style.transform = `translateX(${Math.random() * 10 - 5}px) rotate(${Math.random() * 4 - 2}deg)`;
+    setTimeout(()=>{
+      if(wallState < 2) wall.style.transform = 'translateX(0) rotate(0)';
+    }, 100);
   });
-  
-  setInterval(()=>{
-    timerEl.textContent = Math.floor((Date.now()-startTime)/1000);
-  }, 100);
 }
 
 // 3. TYPING SPEED GAME (Barashki)
@@ -188,7 +212,13 @@ function initTypingGame(){
     if(timeLeft <= 0){
       clearInterval(interval);
       input.disabled = true;
-      flashMessage(`Game over! You typed ${score} words!`);
+      if(score >= 10){
+        flashMessage(`You won! You typed ${score} words!`);
+        if(typeof gameManager !== 'undefined') gameManager.markWon('bunker');
+      } else {
+        flashMessage(`Game over! You typed ${score} words. Need 10+ to win.`);
+        if(typeof gameManager !== 'undefined') gameManager.markLost('bunker');
+      }
     }
   }, 1000);
 }
@@ -272,6 +302,7 @@ function initMazeGame(){
     
     if(playerPos.x === cols-1 && playerPos.y === rows-1){
       flashMessage(`Maze completed in ${Math.floor((Date.now()-startTime)/1000)}s!`);
+      if(typeof gameManager !== 'undefined') gameManager.markWon('fountain');
     }
   }
   
@@ -334,13 +365,21 @@ function initSimonGame(){
       playerSeq.push(idx);
       
       if(playerSeq[playerSeq.length-1] !== sequence[playerSeq.length-1]){
-        messageEl.textContent = 'Wrong! Starting over...';
+        messageEl.textContent = 'Wrong! Game over.';
         messageEl.style.color = 'red';
-        setTimeout(resetGame, 1500);
+        canPlay = false;
+        if(typeof gameManager !== 'undefined') gameManager.markLost('oma-opa-morg');
         return;
       }
       
       if(playerSeq.length === sequence.length){
+        if(level >= 5){
+          messageEl.textContent = 'You won! Level 5 reached!';
+          messageEl.style.color = 'green';
+          canPlay = false;
+          if(typeof gameManager !== 'undefined') gameManager.markWon('oma-opa-morg');
+          return;
+        }
         level++;
         levelEl.textContent = level;
         messageEl.textContent = 'Correct! Next level...';
@@ -450,12 +489,15 @@ function initPatternGame(){
       flashMessage('Pattern unlocked! 🎉');
       displayEl.textContent = 'Success!';
       displayEl.style.color = 'green';
+      checkBtn.disabled = true;
+      if(typeof gameManager !== 'undefined') gameManager.markWon('oma-opa-shnol');
     } else {
       attempts--;
       attemptsEl.textContent = attempts;
       if(attempts <= 0){
         flashMessage('Failed! The pattern was: ' + correctPattern.join('-'));
         checkBtn.disabled = true;
+        if(typeof gameManager !== 'undefined') gameManager.markLost('oma-opa-shnol');
       } else {
         displayEl.textContent = `Wrong! ${attempts} attempts left. Try again.`;
         displayEl.style.color = 'red';
@@ -537,22 +579,231 @@ function initMathGame(){
     timerEl.textContent = timeLeft;
     if(timeLeft <= 0){
       clearInterval(interval);
-      flashMessage(`Game over! Final score: ${score}`);
       optionsEl.innerHTML = '<p style="color:var(--pink);font-weight:700">Time\'s up!</p>';
+      if(score >= 15){
+        flashMessage(`You won! Final score: ${score}`);
+        if(typeof gameManager !== 'undefined') gameManager.markWon('hustadt-dub');
+      } else {
+        flashMessage(`Game over! Score: ${score}. Need 15+ to win.`);
+        if(typeof gameManager !== 'undefined') gameManager.markLost('hustadt-dub');
+      }
     }
   }, 1000);
+}
+
+// 8. ZIP LINE RESCUE (Krivaya)
+function initZipLineGame(){
+  const area = document.getElementById('zipline-area');
+  const scoreEl = document.getElementById('zipline-score');
+  const timerEl = document.getElementById('zipline-timer');
+  
+  if(!area) return;
+  
+  area.innerHTML = '';
+  area.style.position = 'relative';
+  area.style.width = '100%';
+  area.style.height = '400px';
+  area.style.background = 'linear-gradient(180deg, #87ceeb 0%, #e0f6ff 100%)';
+  area.style.border = '3px solid var(--pink)';
+  area.style.borderRadius = '12px';
+  area.style.overflow = 'hidden';
+  
+  let score = 0;
+  let timeLeft = 30;
+  const platforms = [
+    { x: 10, y: 50, side: 'left' },
+    { x: 70, y: 50, side: 'right' },
+    { x: 10, y: 150, side: 'left' },
+    { x: 70, y: 150, side: 'right' },
+    { x: 10, y: 250, side: 'left' },
+    { x: 70, y: 250, side: 'right' }
+  ];
+  
+  // Draw zip lines
+  platforms.forEach((p, i) => {
+    if(i < platforms.length - 1 && p.side !== platforms[i+1].side){
+      const line = document.createElement('div');
+      line.style.position = 'absolute';
+      line.style.left = p.x + '%';
+      line.style.top = p.y + 'px';
+      line.style.width = Math.abs(platforms[i+1].x - p.x) + '%';
+      line.style.height = '2px';
+      line.style.background = '#333';
+      line.style.transformOrigin = 'left';
+      const angle = Math.atan2(platforms[i+1].y - p.y, (platforms[i+1].x - p.x) * 4);
+      line.style.transform = `rotate(${angle}rad)`;
+      area.appendChild(line);
+    }
+  });
+  
+  // Spawn people
+  function spawnPerson(){
+    const platform = platforms[Math.floor(Math.random() * platforms.length)];
+    const person = document.createElement('div');
+    person.textContent = '🧍';
+    person.style.position = 'absolute';
+    person.style.left = platform.x + '%';
+    person.style.top = platform.y + 'px';
+    person.style.fontSize = '2rem';
+    person.style.cursor = 'pointer';
+    person.style.transition = 'all 0.8s ease-in-out';
+    person.dataset.platformIndex = platforms.indexOf(platform);
+    
+    person.addEventListener('click', ()=>{
+      const currentIndex = parseInt(person.dataset.platformIndex);
+      let targetIndex = currentIndex === platforms.length - 1 ? 0 : currentIndex + 1;
+      
+      // Find opposite side platform
+      const currentPlatform = platforms[currentIndex];
+      for(let i = currentIndex + 1; i < platforms.length; i++){
+        if(platforms[i].side !== currentPlatform.side){
+          targetIndex = i;
+          break;
+        }
+      }
+      
+      const target = platforms[targetIndex];
+      person.style.left = target.x + '%';
+      person.style.top = target.y + 'px';
+      person.dataset.platformIndex = targetIndex;
+      
+      // Check if reached safe side (right)
+      if(target.side === 'right'){
+        score++;
+        scoreEl.textContent = score;
+        setTimeout(()=> person.remove(), 800);
+      }
+    });
+    
+    area.appendChild(person);
+  }
+  
+  const spawnInterval = setInterval(spawnPerson, 2000);
+  spawnPerson();
+  
+  const gameInterval = setInterval(()=>{
+    timeLeft--;
+    timerEl.textContent = timeLeft;
+    if(timeLeft <= 0){
+      clearInterval(gameInterval);
+      clearInterval(spawnInterval);
+      if(score >= 8){
+        flashMessage(`You won! Rescued ${score} people!`);
+        if(typeof gameManager !== 'undefined') gameManager.markWon('krivaya');
+      } else {
+        flashMessage(`Game over! Rescued ${score}. Need 8+ to win.`);
+        if(typeof gameManager !== 'undefined') gameManager.markLost('krivaya');
+      }
+    }
+  }, 1000);
+}
+
+// 9. CURVED SLIDE RACE (Tanke)
+function initSlideGame(){
+  const area = document.getElementById('slide-area');
+  const scoreEl = document.getElementById('slide-score');
+  const livesEl = document.getElementById('slide-lives');
+  
+  if(!area) return;
+  
+  area.innerHTML = '';
+  area.style.position = 'relative';
+  area.style.width = '100%';
+  area.style.height = '500px';
+  area.style.background = 'linear-gradient(180deg, #d4af37 0%, #ffd700 50%, #d4af37 100%)';
+  area.style.border = '3px solid var(--pink)';
+  area.style.borderRadius = '12px';
+  area.style.overflow = 'hidden';
+  
+  let score = 0;
+  let lives = 3;
+  let speed = 3;
+  let playerX = 50;
+  
+  const player = document.createElement('div');
+  player.textContent = '🛷';
+  player.style.position = 'absolute';
+  player.style.left = playerX + '%';
+  player.style.top = '20px';
+  player.style.fontSize = '2.5rem';
+  player.style.transition = 'left 0.1s';
+  area.appendChild(player);
+  
+  const obstacles = [];
+  
+  function spawnObstacle(){
+    const obstacle = document.createElement('div');
+    obstacle.textContent = ['🪨', '🌲', '⚠️'][Math.floor(Math.random() * 3)];
+    obstacle.style.position = 'absolute';
+    obstacle.style.left = (Math.random() * 80 + 10) + '%';
+    obstacle.style.top = '0px';
+    obstacle.style.fontSize = '2rem';
+    obstacle.dataset.y = 0;
+    area.appendChild(obstacle);
+    obstacles.push(obstacle);
+  }
+  
+  // Player controls
+  document.addEventListener('keydown', (e)=>{
+    if(state.currentPage !== 'tanke') return;
+    if(e.key === 'ArrowLeft') playerX = Math.max(5, playerX - 8);
+    if(e.key === 'ArrowRight') playerX = Math.min(85, playerX + 8);
+    player.style.left = playerX + '%';
+  });
+  
+  const spawnInterval = setInterval(spawnObstacle, 1500);
+  
+  const gameLoop = setInterval(()=>{
+    obstacles.forEach((obs, idx)=>{
+      const y = parseFloat(obs.dataset.y) + speed;
+      obs.dataset.y = y;
+      obs.style.top = y + 'px';
+      
+      // Check collision
+      const obsX = parseFloat(obs.style.left);
+      const obsY = y;
+      if(obsY > 10 && obsY < 60 && Math.abs(obsX - playerX) < 8){
+        lives--;
+        livesEl.textContent = lives;
+        obs.remove();
+        obstacles.splice(idx, 1);
+        
+        if(lives <= 0){
+          clearInterval(gameLoop);
+          clearInterval(spawnInterval);
+          if(score >= 30){
+            flashMessage(`You won! Score: ${score}`);
+            if(typeof gameManager !== 'undefined') gameManager.markWon('tanke');
+          } else {
+            flashMessage(`Game over! Score: ${score}. Need 30+ to win.`);
+            if(typeof gameManager !== 'undefined') gameManager.markLost('tanke');
+          }
+        }
+      }
+      
+      // Remove off-screen
+      if(y > 500){
+        score++;
+        scoreEl.textContent = score;
+        obs.remove();
+        obstacles.splice(idx, 1);
+        speed = Math.min(6, 3 + score * 0.05);
+      }
+    });
+  }, 50);
 }
 
 // Initialize games based on current page
 function initGamesForPage(pageId){
   setTimeout(()=>{
-    if(pageId === 'home') initMemoryGame();
-    else if(pageId === 'tanke') initSnailWall();
-    else if(pageId === 'barashki') initTypingGame();
+    if(pageId === 'home') initWallSmashGame();
+    else if(pageId === 'snails') initSnailWall();
+    else if(pageId === 'bunker') initTypingGame();
     else if(pageId === 'fountain') initMazeGame();
     else if(pageId === 'oma-opa-morg') initSimonGame();
     else if(pageId === 'oma-opa-shnol') initPatternGame();
     else if(pageId === 'hustadt-dub') initMathGame();
-    else if(pageId === 'krivaya') startMinigame();
+    else if(pageId === 'krivaya') initZipLineGame();
+    else if(pageId === 'tanke') initSlideGame();
   }, 100);
 }

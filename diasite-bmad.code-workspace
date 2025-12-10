@@ -1,0 +1,36 @@
+{
+  "folders": [
+    {
+      "name": "diasite",
+      "path": "."
+    },
+    {
+      "name": "BMAD",
+      "path": "/Users/steve/.bmad"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/.git": true,
+      "**/__pycache__": true,
+      "**/.pytest_cache": true,
+      "**/.venv": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/.git": true,
+      "**/dist": true,
+      "**/build": true
+    },
+    "liveServer.settings.multiRootWorkspaceName": "diasite"
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-python.python",
+      "ms-python.vscode-pylance",
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode"
+    ]
+  }
+}

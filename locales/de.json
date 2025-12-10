@@ -1,0 +1,62 @@
+{
+  "welcome": {
+    "title": "Willkommen",
+    "question": "Wer bist du?",
+    "placeholder": "Dein Name...",
+    "start": "Los geht's!",
+    "selectLanguage": "Sprache wählen"
+  },
+  
+  "dialogue": {
+    "klein_dia_intro": "Hey! Ich bin Klein-Dia. Komm, ich zeig dir alles!",
+    "botanischer_garten_start": "Komm, lass uns von Stein zu Stein springen! Wir haben nur 15 Minuten, {name}!",
+    "botanischer_garten_win": "Geschafft! Mama holt uns gleich ab. Oma will noch zu Penny!",
+    "botanischer_garten_loss": "Oh nein, ins Wasser gefallen! Jetzt haben wir nasse Klamotten...",
+    "fountain_win": "Super! Du hast den Wasserfall erreicht! 🦎",
+    "fountain_lose": "Platsch! Pass auf, das Wasser ist kalt! 💦",
+    "fountain_steve": "Mama kommt uns in 30 Minuten abholen, und Oma wollte noch was am Uni-Center machen. Wir müssen los.",
+    "after_7_locations": "Puh... das war viel heute. Lass uns nach Hause gehen.",
+    "home_unlocked": "So, jetzt zeig ich dir was richtig Cooles!"
+  },
+  
+  "collectibles": {
+    "key": "🔑 Schlüssel",
+    "salamander": "🦎 Salamander",
+    "blanket": "🛏️ Decke",
+    "pasxa": "🍰 Pasxa",
+    "wet-clothes": "👔💧 Nasse Klamotten",
+    "yellow-shorts": "🩳🇧🇷 Gelbe Shorts",
+    "snail": "🐌 Schnecke",
+    "sheep": "🐑 Schaf",
+    "nudeCalendar": "📅 Nackt-Kalender"
+  },
+  
+  "ui": {
+    "inventory": "Inventar",
+    "back": "← Zurück",
+    "play": "▶ Spielen",
+    "collectedAll": "✓ Alles gesammelt!",
+    "stillNeed": "Du brauchst noch:",
+    "pressL": "Drücke L zum Zoomen"
+  },
+  
+  "locations": {
+    "home": "Zuhause",
+    "botanischer_garten": "Botanischer Garten",
+    "snails": "Schnecken-Wand",
+    "bunker": "Bunker",
+    "krivaya": "Krivaya Gorka",
+    "tanke": "Tankstelle",
+    "fountain": "Brunnen",
+    "oma_opa_morg": "Oma & Opa (Morg)",
+    "oma_opa_shnol": "Oma & Opa (Shnol)"
+  },
+  
+  "messages": {
+    "collected": "{item} aufgesammelt!",
+    "gameWon": "Gewonnen! Du hast {item} erhalten!",
+    "gameLost": "Spiel vorbei! Versuch's nochmal!",
+    "photoTaken": "📸 Polaroid gespeichert!",
+    "achievementUnlocked": "🏆 Achievement freigeschaltet: {name}"
+  }
+}

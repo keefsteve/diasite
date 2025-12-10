@@ -1,0 +1,13 @@
+{
+  "files.watcherExclude": {
+    "**/assets/**": true,
+    "**/*.png": true,
+    "**/*.jpeg": true,
+    "**/*.jpg": true
+  },
+  "search.exclude": {
+    "**/assets/sprites/**/*.png": true,
+    "**/assets/sprites/**/*.jpeg": true,
+    "**/assets/sprites/**/*.jpg": true
+  }
+}

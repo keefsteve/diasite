@@ -1,0 +1,60 @@
+{
+  "welcome": {
+    "title": "Добро пожаловать",
+    "question": "Кто ты?",
+    "placeholder": "Твоё имя...",
+    "start": "Начать!",
+    "selectLanguage": "Выбрать язык"
+  },
+  
+  "dialogue": {
+    "klein_dia_intro": "Привет! Я Маленькая Диа. Пойдем, я всё покажу!",
+    "botanischer_garten_start": "Давай прыгать с камня на камень! У нас только 15 минут, {name}!",
+    "botanischer_garten_win": "Получилось! Мама скоро за нами придёт. Бабушка хочет ещё в Penny!",
+    "botanischer_garten_loss": "Ой нет, упали в воду! Теперь одежда мокрая...",
+    "fountain_win": "Супер! Ты добрался до водопада! 🦎",
+    "fountain_lose": "Бульк! Осторожно, вода холодная! 💦",
+    "after_7_locations": "Уф... сегодня много было. Пойдём домой.",
+    "home_unlocked": "Теперь я покажу тебе что-то очень классное!"
+  },
+  
+  "collectibles": {
+    "key": "🔑 Ключ",
+    "salamander": "🦎 Саламандра",
+    "blanket": "🛏️ Одеяло",
+    "pasxa": "🍰 Пасха",
+    "wet-clothes": "👔💧 Мокрая одежда",
+    "yellow-shorts": "🩳🇧🇷 Жёлтые шорты",
+    "snail": "🐌 Улитка",
+    "sheep": "🐑 Овца"
+  },
+  
+  "ui": {
+    "inventory": "Инвентарь",
+    "back": "← Назад",
+    "play": "▶ Играть",
+    "collectedAll": "✓ Всё собрано!",
+    "stillNeed": "Тебе ещё нужно:",
+    "pressL": "Нажми L чтобы увеличить"
+  },
+  
+  "locations": {
+    "home": "Дом",
+    "botanischer_garten": "Ботанический сад",
+    "snails": "Стена с улитками",
+    "bunker": "Бункер",
+    "krivaya": "Кривая Горка",
+    "tanke": "Заправка",
+    "fountain": "Фонтан",
+    "oma_opa_morg": "Бабушка и Дедушка (Морг)",
+    "oma_opa_shnol": "Бабушка и Дедушка (Шноль)"
+  },
+  
+  "messages": {
+    "collected": "{item} подобрано!",
+    "gameWon": "Победа! Ты получил {item}!",
+    "gameLost": "Игра окончена! Попробуй ещё раз!",
+    "photoTaken": "📸 Полароид сохранён!",
+    "achievementUnlocked": "🏆 Достижение разблокировано: {name}"
+  }
+}

@@ -1,64 +1,104 @@
-// Interactive profile MVP - Page-based navigation
-const ALL_COLLECTIBLES = ['key', 'salamander', 'blanket', 'pasxa', 'wet-clothes', 'yellow-shorts', 'snail', 'sheep'];
-const COLLECTIBLE_NAMES = {
-  'key': '🔑 Key',
-  'salamander': '🦎 Salamander',
-  'blanket': '🛏️ Blanket',
-  'pasxa': '🍰 Russian Pastry (Pasxa)',
-  'wet-clothes': '👔💧 Wet Clothes',
-  'yellow-shorts': '🩳🇧🇷 Yellow Shorts',
-  'snail': '🐌 Snail',
-  'sheep': '🐑 Sheep'
-};
+// ============================================
+// LEGACY APP.JS - Being phased out
+// Now uses new modular systems from js/
+// ============================================
 
-const state = {
+// Compatibility layer - use new systems if available
+const legacyState = {
   inventory: [],
   selectedItem: null,
   currentPage: 'landing-page',
 };
 
+// Use new state if available, fallback to legacy
+const state = window.DiasiteState || legacyState;
+
+// Use new game manager if available
+const gameManager = window.gameManager || {
+  games: {},
+  markPlayed: () => {},
+  markWon: () => {},
+  markLost: () => {},
+  hasWon: () => false
+};
+
+// Use new startGame if available
+const startGame = window.startGame || function(gameId) {
+  const page = document.getElementById(gameId);
+  if (!page) return;
+  
+  const overlay = page.querySelector('.play-overlay');
+  if (overlay) {
+    overlay.classList.add('hidden');
+  }
+  
+  if (typeof initGamesForPage === 'function') {
+    initGamesForPage(gameId);
+  }
+};
+
 const itemsEl = document.getElementById('items');
 const uncollectedList = document.getElementById('uncollected-list');
 
-// Page navigation
+// Page navigation - use new system if available
 function navigateToPage(pageId){
-  document.querySelectorAll('.page').forEach(p=> p.classList.remove('active'));
-  const targetPage = document.getElementById(pageId);
-  if(targetPage){ 
-    targetPage.classList.add('active');
-    state.currentPage = pageId;
-    // Initialize game for this page
-    if(typeof initGamesForPage === 'function'){
-      initGamesForPage(pageId);
+  if (window.DiasiteNavigation) {
+    window.DiasiteNavigation.navigateTo(pageId);
+  } else {
+    // Fallback to old method
+    document.querySelectorAll('.page').forEach(p=> p.classList.remove('active'));
+    const targetPage = document.getElementById(pageId);
+    if(targetPage){ 
+      targetPage.classList.add('active');
+      state.currentPage = pageId;
+      if(typeof initGamesForPage === 'function'){
+        initGamesForPage(pageId);
+      }
     }
   }
 }
 
-// Arrow buttons and map hotspots
-document.querySelectorAll('.arrow-btn, .back-btn, .map-hotspot').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    const target = btn.dataset.target;
-    navigateToPage(target);
-  });
-});
+// Navigation handled by new Navigation system
+// No need to re-register event listeners
 
-// Pickup objects
+// Pickup objects - now uses new Inventory system
 document.querySelectorAll('.object').forEach(o=>{
   o.addEventListener('click', ()=>{
     const id = o.dataset.id;
-    if(state.inventory.includes(id)){
-      flashMessage(`${id} already picked up.`);
-      return;
+    
+    // Use new inventory system if available
+    if (window.DiasiteInventory) {
+      if (window.DiasiteInventory.hasItem(id)) {
+        flashMessage(`Already collected!`);
+        return;
+      }
+      window.DiasiteInventory.addItem(id);
+      o.style.opacity = '0.4';
+      o.style.pointerEvents = 'none';
+    } else {
+      // Fallback
+      if(state.inventory.includes(id)){
+        flashMessage(`${id} already picked up.`);
+        return;
+      }
+      state.inventory.push(id);
+      renderInventory();
+      o.style.opacity = '0.4';
+      o.style.pointerEvents = 'none';
+      flashMessage(`Picked up: ${id}`);
     }
-    state.inventory.push(id);
-    renderInventory();
-    o.style.opacity = '0.4';
-    o.style.pointerEvents = 'none';
-    flashMessage(`Picked up: ${id}`);
   });
 });
 
 function renderInventory(){
+  // Use new Inventory system if available
+  if (window.DiasiteInventory) {
+    window.DiasiteInventory.render();
+    return;
+  }
+  
+  // Fallback to old method
+  if (!itemsEl) return;
   itemsEl.innerHTML = '';
   state.inventory.forEach(id=>{
     const el = document.createElement('div');
@@ -72,64 +112,27 @@ function renderInventory(){
 }
 
 function updateUncollectedList(){
-  if(!uncollectedList) return;
-  const uncollected = ALL_COLLECTIBLES.filter(id => !state.inventory.includes(id));
-  if(uncollected.length === 0){
-    uncollectedList.innerHTML = '<span style="color:var(--pink);font-weight:600">✓ All collected!</span>';
-  } else {
-    uncollectedList.innerHTML = uncollected.map(id => `• ${COLLECTIBLE_NAMES[id]}`).join('<br>');
+  // Use new Inventory system if available
+  if (window.DiasiteInventory) {
+    window.DiasiteInventory.updateUncollectedList();
+    return;
   }
+  
+  // Fallback (not needed with new system)
 }
 
 function selectItem(id, el){
-  // toggle selection
-  if(state.selectedItem===id){ 
-    state.selectedItem=null; 
-    el.classList.remove('selected');
-    return; 
+  // Use new Inventory system if available
+  if (window.DiasiteInventory) {
+    window.DiasiteInventory.selectItem(id, el);
+    return;
   }
-  state.selectedItem = id;
-  Array.from(itemsEl.children).forEach(c=>c.classList.remove('selected'));
-  el.classList.add('selected');
-  flashMessage(`Selected ${id}.`);
 }
 
-// Flash messages (temporary)
-function flashMessage(msg, timeout=1800){
-  const el = document.createElement('div'); el.textContent = msg;
-  el.style.position='fixed'; el.style.top='18px'; el.style.left='50%'; el.style.transform='translateX(-50%)';
-  el.style.background='#111'; el.style.color='white'; el.style.padding='10px 16px'; 
-  el.style.borderRadius='8px'; el.style.opacity='0.95'; el.style.zIndex=9999;
-  document.body.appendChild(el);
-  setTimeout(()=> el.remove(), timeout);
-}
-
-// Mini-game: click challenge
-let gameActive = false;
-function startMinigame(){
-  if(gameActive) return; // prevent duplicate games
-  gameActive = true;
-  const area = document.getElementById('game-area');
-  const timerEl = document.getElementById('game-timer');
-  const scoreEl = document.getElementById('game-score');
-  let time = 10, score = 0, interval, gameInterval;
-
-  // Clear any existing dots
-  area.innerHTML = '';
-  scoreEl.textContent = 'Score: 0';
-  timerEl.textContent = '10';
-
-  function spawn(){
-    const d = document.createElement('div'); d.className='dot';
-    const x = Math.random()*(area.clientWidth-50); 
-    const y = Math.random()*(area.clientHeight-50);
-    d.style.left = x+'px'; d.style.top = y+'px';
-    d.addEventListener('click', ()=>{ 
-      score++; 
-      scoreEl.textContent = `Score: ${score}`; 
-      d.remove(); 
-    });
-    area.appendChild(d);
+// Mini-game: click challenge (DEPRECATED - DISABLED)
+// Commented out to prevent ReferenceErrors
+/*
+  area.appendChild(d);
     setTimeout(()=>d.remove(),1500);
   }
 
@@ -151,7 +154,7 @@ function startMinigame(){
       clearInterval(interval); 
     }
   },1000);
-}
+*/
 
 // Magnifying glass functionality (hold L key on landing page)
 let magnifyingGlass = null;
@@ -213,8 +216,6 @@ document.addEventListener('keyup', (e)=>{
 
 document.addEventListener('mousemove', updateMagnifyingGlassPosition);
 
-// Initial message
-setTimeout(()=> { 
-  flashMessage('Welcome! Find all collectibles!'); 
-  updateUncollectedList();
-}, 500);
+// Initial setup - now handled by main.js
+// Old auto-initialization removed - wait for main.js
+console.log('📜 Legacy app.js loaded (passive mode)');

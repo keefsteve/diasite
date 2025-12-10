@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diasite</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+      background: linear-gradient(135deg, #c5d4e8 0%, #d8c5e5 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      gap: 40px;
+    }
+
+    .schneekugel-container {
+      flex-shrink: 0;
+      max-width: 400px;
+    }
+
+    .schneekugel-container img {
+      width: 100%;
+      height: auto;
+      filter: drop-shadow(0 10px 30px rgba(0,0,0,0.3));
+      border-radius: 20px;
+    }
+
+    .welcome-container {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+
+    h1 {
+      color: #9ba8c5;
+      margin-bottom: 10px;
+      font-size: 2.5em;
+    }
+
+    .subtitle {
+      color: #888;
+      margin-bottom: 30px;
+      font-size: 1.1em;
+    }
+
+    .input-group {
+      margin: 25px 0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      color: #333;
+      font-size: 1.1em;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 15px;
+      font-size: 1.2em;
+      border: 3px solid #b8c5d8;
+      border-radius: 10px;
+      font-family: inherit;
+      text-align: center;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #a8b5c8;
+      box-shadow: 0 0 0 3px rgba(168, 181, 200, 0.2);
+    }
+
+    .language-selector {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin: 25px 0;
+    }
+
+    .lang-btn {
+      padding: 12px 30px;
+      font-size: 1.1em;
+      border: 3px solid #ddd;
+      border-radius: 10px;
+      background: white;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .lang-btn:hover {
+      border-color: #b8c5d8;
+      transform: translateY(-2px);
+    }
+
+    .lang-btn.active {
+      background: #b8c5d8;
+      color: white;
+      border-color: #b8c5d8;
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      padding: 15px;
+      font-size: 1.3em;
+      background: linear-gradient(135deg, #b8c5d8 0%, #d0b8c8 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: bold;
+      margin-top: 30px;
+      transition: transform 0.2s;
+    }
+
+    button[type="submit"]:hover {
+      transform: scale(1.05);
+    }
+
+    button[type="submit"]:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .error {
+      color: #e74c3c;
+      margin-top: 10px;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <div class="schneekugel-container">
+    <img src="/assets/sprites/places/schneekugel.png" alt="Schneekugel" />
+  </div>
+  
+  <div class="welcome-container">
+    <h1>✨ Willkommen ✨</h1>
+    <p class="subtitle">Deine digitale Zeitkapsel</p>
+
+    <form id="welcomeForm">
+      <div class="input-group">
+        <label for="playerName">Wie heißt du?</label>
+        <input 
+          type="text" 
+          id="playerName" 
+          placeholder="Dein Name..."
+          required
+          autofocus
+        >
+      </div>
+
+      <div class="input-group">
+        <label>Sprache / Язык</label>
+        <div class="language-selector">
+          <button type="button" class="lang-btn active" data-lang="de">🇩🇪 Deutsch</button>
+          <button type="button" class="lang-btn" data-lang="ru">🇷🇺 Русский</button>
+        </div>
+      </div>
+
+      <button type="submit">Los geht's! 🚀</button>
+      <div class="error" id="error"></div>
+    </form>
+  </div>
+
+  <script>
+    const translations = {
+      de: {
+        title: '✨ Willkommen ✨',
+        subtitle: 'Deine digitale Zeitkapsel',
+        nameLabel: 'Wie heißt du?',
+        namePlaceholder: 'Dein Name...',
+        langLabel: 'Sprache / Язык',
+        submit: 'Los geht\'s! 🚀',
+        errorEmpty: 'Bitte gib deinen Namen ein!'
+      },
+      ru: {
+        title: '✨ Добро пожаловать ✨',
+        subtitle: 'Твоя цифровая капсула времени',
+        nameLabel: 'Как тебя зовут?',
+        namePlaceholder: 'Твоё имя...',
+        langLabel: 'Sprache / Язык',
+        submit: 'Поехали! 🚀',
+        errorEmpty: 'Пожалуйста, введи своё имя!'
+      }
+    };
+
+    let currentLang = 'de';
+
+    // Language switching
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentLang = btn.dataset.lang;
+        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        updateText();
+      });
+    });
+
+    function updateText() {
+      const t = translations[currentLang];
+      document.querySelector('h1').textContent = t.title;
+      document.querySelector('.subtitle').textContent = t.subtitle;
+      document.querySelector('label[for="playerName"]').textContent = t.nameLabel;
+      document.querySelector('#playerName').placeholder = t.namePlaceholder;
+      document.querySelector('.input-group label:nth-of-type(1)').nextElementSibling.querySelector('label').textContent = t.langLabel;
+      document.querySelector('button[type="submit"]').textContent = t.submit;
+    }
+
+    // Form submission
+    document.getElementById('welcomeForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const name = document.getElementById('playerName').value.trim();
+      const errorEl = document.getElementById('error');
+      
+      if (!name) {
+        errorEl.textContent = translations[currentLang].errorEmpty;
+        return;
+      }
+
+      // Save to localStorage
+      const initialState = {
+        player: {
+          name: name,
+          language: currentLang,
+          currentLocation: 'fountain',
+          inventory: [],
+          visitedLocations: ['fountain'],
+          achievements: []
+        },
+        gameProgress: {
+          gamesPlayed: [],
+          gamesWon: [],
+          collectiblesFound: [],
+          totalPhotos: 0,
+          photosToken: Date.now()
+        },
+        session: {
+          firstVisit: new Date().toISOString(),
+          lastVisit: new Date().toISOString(),
+          totalPlayTime: 0,
+          visitCount: 1
+        },
+        guestbook: []
+      };
+
+      localStorage.setItem('diasite_state', JSON.stringify(initialState));
+      
+      // Redirect to fountain page
+      window.location.href = 'index.html#fountain';
+    });
+  </script>
+</body>
+</html>
