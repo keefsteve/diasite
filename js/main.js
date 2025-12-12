@@ -11,6 +11,8 @@ import { Dialogue } from './systems/dialogue.js';
 import { Navigation } from './systems/navigation.js';
 import { Inventory } from './systems/inventory.js';
 import { Games } from './systems/game-manager.js';
+import CharacterDialogue from './systems/character-dialogue.js';
+import GameFlow from './systems/game-flow.js';
 
 class App {
   constructor() {

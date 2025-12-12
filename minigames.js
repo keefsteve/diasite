@@ -853,9 +853,9 @@ function showJenVictory() {
     return;
   }
 
-  // Add bouncing animation
+  // Add bouncing animation (nur Y-Achse)
   console.log('✅ Found Jen sprite, adding bounce');
-  jenSprite.style.animation = 'steveBounce 2s ease-in-out infinite';
+  jenSprite.style.animation = 'characterBounce 2s ease-in-out infinite';
 
   // Create speech bubble with triangle - positioned right bottom, above inventory
   const bubble = document.createElement('div');

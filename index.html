@@ -640,7 +640,7 @@
         const steveSprite = document.querySelector('#fountain .steve-sprite-static');
         if (steveSprite) {
           console.log('✅ Found Steve sprite, adding bounce');
-          steveSprite.style.animation = 'steveBounce 2s ease-in-out infinite';
+          steveSprite.style.animation = 'characterBounce 2s ease-in-out infinite';
         } else {
           console.error('❌ Steve sprite not found!');
         }
@@ -718,16 +718,16 @@
             landingPage.classList.add('active');
           }
 
-          // Activate hot/cold tracker
-          console.log('🔥❄️ Activating hot/cold tracker');
-          window.dispatchEvent(new CustomEvent('gameWon', {
-            detail: { gameId: 'fountain' }
-          }));
-
           // Add item to inventory
           if (window.DiasiteInventory) {
             window.DiasiteInventory.addItem('nudeCalendar');
           }
+
+          // ACTIVATE HOT/COLD TRACKER
+          console.log('🔥❄️ Activating hot/cold tracker');
+          window.dispatchEvent(new CustomEvent('gameWon', {
+            detail: { gameId: 'fountain' }
+          }));
         }, 6000);
       }, 1500);
     }
@@ -920,6 +920,11 @@
   </script>
 
   <!-- Scripts -->
+  <script type="module">
+    // Load systems first
+    import('./js/systems/character-dialogue.js');
+    import('./js/systems/game-flow.js');
+  </script>
   <script type="module" src="/js/main.js"></script>
   <script src="/js/games/fountain-jump.js"></script>
   <script src="/js/games/fountain-integration.js"></script>
