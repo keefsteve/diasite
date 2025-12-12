@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Test Animation</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Test Collectible Animation</h1>
+  <button onclick="testAnimation()" style="padding: 20px; font-size: 20px;">Test Animation</button>
+
+  <script>
+    function testAnimation() {
+      console.log('Testing animation...');
+      
+      const container = document.createElement('div');
+      container.className = 'collectible-animation';
+      container.innerHTML = `
+        <div class="collectible-box">
+          <div class="collectible-emoji">📅</div>
+          <div class="collectible-text">ITEM GET!</div>
+          <div class="collectible-name">📅 Nackt-Kalender</div>
+        </div>
+      `;
+
+      document.body.appendChild(container);
+      console.log('Animation added!');
+
+      setTimeout(() => {
+        container.remove();
+        console.log('Animation removed');
+      }, 2500);
+    }
+  </script>
+</body>
+</html>

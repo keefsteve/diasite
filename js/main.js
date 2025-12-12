@@ -202,13 +202,10 @@ class App {
     
     // Game won event (from inline game scripts)
     window.addEventListener('gameWon', (event) => {
-      const { gameId, collectible } = event.detail;
-      console.log(`🎮 Game won event received: ${gameId}, collectible: ${collectible}`);
-      
-      if (collectible && Inventory) {
-        Inventory.addItem(collectible);
-      }
-      
+      const { gameId } = event.detail;
+      console.log(`🎮 Game won event received: ${gameId}`);
+
+      // Games.markWon will handle adding the collectible to inventory
       if (Games) {
         Games.markWon(gameId);
       }

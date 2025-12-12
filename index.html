@@ -149,6 +149,76 @@
 
       updateClock();
       setInterval(updateClock, 1000);
+
+      // ASCII Seagulls flying across the landing page with wing flapping
+      (function() {
+        // Different wing positions for flapping animation - better bird shapes
+        const seagullFrames = {
+          left: ['◁∨◁', '◁-◁', '◁∧◁'],
+          right: ['▷∨▷', '▷-▷', '▷∧▷'],
+          front: ['∽∨∽', '∽-∽', '∽∧∽', '∽-∽']
+        };
+
+        function spawnSeagull() {
+          // Only spawn if on landing page
+          if (!document.getElementById('landing-page').classList.contains('active')) {
+            return;
+          }
+
+          const seagull = document.createElement('div');
+          seagull.className = 'seagull';
+
+          // Random starting position (top 40% of screen)
+          const topPosition = Math.random() * 40;
+          seagull.style.top = topPosition + '%';
+
+          // Random direction (left to right or right to left)
+          const direction = Math.random() > 0.5 ? 'left' : 'right';
+          const duration = 8 + Math.random() * 7; // 8-15 seconds
+
+          // Choose frame set based on direction
+          const frames = Math.random() > 0.3 ?
+            (direction === 'left' ? seagullFrames.left : seagullFrames.right) :
+            seagullFrames.front;
+
+          let currentFrame = 0;
+          seagull.textContent = frames[0];
+
+          if (direction === 'left') {
+            seagull.style.left = '-50px';
+            seagull.style.animation = `flyAcross ${duration}s linear`;
+          } else {
+            seagull.style.right = '-50px';
+            seagull.style.animation = `flyAcrossReverse ${duration}s linear`;
+          }
+
+          document.body.appendChild(seagull);
+
+          // Animate wing flapping (change frame every 200ms)
+          const flapInterval = setInterval(() => {
+            currentFrame = (currentFrame + 1) % frames.length;
+            seagull.textContent = frames[currentFrame];
+          }, 200);
+
+          // Remove after animation
+          setTimeout(() => {
+            clearInterval(flapInterval);
+            seagull.remove();
+          }, duration * 1000);
+        }
+
+        // Spawn seagulls at random intervals (every 5-15 seconds)
+        function scheduleNextSeagull() {
+          const delay = 5000 + Math.random() * 10000; // 5-15 seconds
+          setTimeout(() => {
+            spawnSeagull();
+            scheduleNextSeagull();
+          }, delay);
+        }
+
+        // Start spawning after a short delay
+        setTimeout(scheduleNextSeagull, 3000);
+      })();
     </script>
   </div>
 
@@ -352,7 +422,7 @@
 
       <div class="location-message-row">
         <div class="riddle-note location-message-box">
-          Spring zwischen den Steinen zum Wasserfall! ⬅️ ➡️ = Bewegen | Leertaste = Springen
+          Spring zwischen den Steinen zum Wasserfall! ⬅️ ➡️ = Bewegen | Leertaste = Springen (3x stackbar!)
         </div>
         <div class="location-sprites">
           <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
@@ -363,7 +433,7 @@
   </div>
 
   <script>
-    // Fountain Jump Game - Inline Version with Camera
+    // Fountain Jump Game - HARD MODE with Multi-Jump Mechanic
     let fountainGame = null;
 
     function startFountainGame() {
@@ -373,47 +443,81 @@
       const canvas = document.getElementById('fountainCanvas');
       const ctx = canvas.getContext('2d');
 
-      const worldWidth = 2400;
+      const worldWidth = 3200;
       let cameraX = 0;
 
-      let player = { x: 100, y: 300, width: 25, height: 35, dy: 0, dx: 0, onGround: false };
-      let platforms = [
-        { x: 0, y: 380, width: 120, height: 70 },
-        { x: 180, y: 320, width: 100, height: 30 },
-        { x: 340, y: 280, width: 90, height: 25 },
-        { x: 500, y: 240, width: 100, height: 30 },
-        { x: 660, y: 200, width: 140, height: 50 },
-        { x: 900, y: 250, width: 120, height: 40 },
-        { x: 1100, y: 300, width: 100, height: 30 },
-        { x: 1280, y: 250, width: 90, height: 35 },
-        { x: 1450, y: 200, width: 110, height: 40 },
-        { x: 1650, y: 280, width: 100, height: 30 },
-        { x: 1820, y: 240, width: 120, height: 35 },
-        { x: 2000, y: 200, width: 100, height: 40 },
-        { x: 2180, y: 180, width: 140, height: 50 }
-      ];
-      let goal = { x: 2250, y: 150, width: 40, height: 80 };
-      let keys = {};
-      let running = true;
-      const gravity = 0.45;
+      let player = {
+        x: 100, y: 300, width: 25, height: 35,
+        dy: 0, dx: 0, onGround: false,
+        jumpsLeft: 0, maxJumps: 3 // Multi-jump mechanic
+      };
 
-      document.addEventListener('keydown', e => keys[e.code] = true);
-      document.addEventListener('keyup', e => keys[e.code] = false);
+      // Harder platforms - wider gaps, smaller platforms, moving ones
+      let platforms = [
+        { x: 0, y: 380, width: 120, height: 70, moving: false },
+        { x: 220, y: 340, width: 70, height: 25, moving: false },
+        { x: 400, y: 300, width: 60, height: 20, moving: false },
+        { x: 600, y: 260, width: 80, height: 25, moving: true, startY: 260, range: 40, speed: 1 },
+        { x: 820, y: 220, width: 70, height: 25, moving: false },
+        { x: 1050, y: 280, width: 65, height: 20, moving: false },
+        { x: 1280, y: 240, width: 70, height: 25, moving: true, startY: 240, range: 50, speed: 1.2 },
+        { x: 1520, y: 200, width: 80, height: 30, moving: false },
+        { x: 1750, y: 260, width: 60, height: 20, moving: false },
+        { x: 1980, y: 220, width: 70, height: 25, moving: true, startY: 220, range: 45, speed: 1.1 },
+        { x: 2220, y: 180, width: 75, height: 25, moving: false },
+        { x: 2480, y: 240, width: 65, height: 20, moving: false },
+        { x: 2720, y: 200, width: 70, height: 25, moving: false },
+        { x: 2960, y: 160, width: 80, height: 30, moving: false }
+      ];
+
+      let goal = { x: 3050, y: 130, width: 40, height: 60 };
+      let keys = {};
+      let spacePressed = false;
+      let running = true;
+      const gravity = 0.5;
+      const jumpPower = 6.5; // Weaker individual jumps
+      let time = 0;
+
+      document.addEventListener('keydown', e => {
+        keys[e.code] = true;
+        // Multi-jump mechanic
+        if ((e.code === 'Space' || e.code === 'ArrowUp') && !spacePressed) {
+          if (player.jumpsLeft > 0) {
+            player.dy = -jumpPower;
+            player.jumpsLeft--;
+            spacePressed = true;
+          }
+        }
+      });
+
+      document.addEventListener('keyup', e => {
+        keys[e.code] = false;
+        if (e.code === 'Space' || e.code === 'ArrowUp') {
+          spacePressed = false;
+        }
+      });
 
       function update() {
+        time++;
+
+        // Movement
         if (keys['ArrowLeft'] || keys['KeyA']) player.dx = -4;
         else if (keys['ArrowRight'] || keys['KeyD']) player.dx = 4;
         else player.dx = 0;
 
-        if ((keys['Space'] || keys['ArrowUp']) && player.onGround) {
-          player.dy = -11;
-          player.onGround = false;
-        }
-
+        // Gravity
         player.dy += gravity;
         player.x += player.dx;
         player.y += player.dy;
 
+        // Update moving platforms
+        platforms.forEach(p => {
+          if (p.moving) {
+            p.y = p.startY + Math.sin(time * 0.02 * p.speed) * p.range;
+          }
+        });
+
+        // Platform collision
         player.onGround = false;
         platforms.forEach(p => {
           if (player.x < p.x + p.width && player.x + player.width > p.x &&
@@ -422,29 +526,39 @@
               player.y = p.y - player.height;
               player.dy = 0;
               player.onGround = true;
+              player.jumpsLeft = player.maxJumps; // Reset jumps on landing
             }
           }
         });
 
+        // Camera follow
         cameraX = player.x - canvas.width / 3;
         if (cameraX < 0) cameraX = 0;
         if (cameraX > worldWidth - canvas.width) cameraX = worldWidth - canvas.width;
 
+        // Boundaries
         if (player.x < 0) player.x = 0;
         if (player.x + player.width > worldWidth) player.x = worldWidth - player.width;
 
+        // Win condition
         if (player.x < goal.x + goal.width && player.x + player.width > goal.x &&
             player.y < goal.y + goal.height && player.y + player.height > goal.y) {
           running = false;
-          window.dispatchEvent(new CustomEvent('gameWon', {
-            detail: { gameId: 'fountain', collectible: 'nudeCalendar' }
-          }));
+
+          console.log('🎯 Fountain won! Starting sequence...');
+
+          // Show collectible animation directly
+          setTimeout(() => {
+            showNudeCalendarSequence();
+          }, 300);
         }
 
+        // Fall reset
         if (player.y > canvas.height) {
           player.x = 50;
           player.y = 300;
           player.dy = 0;
+          player.jumpsLeft = player.maxJumps;
         }
       }
 
@@ -453,25 +567,42 @@
         ctx.save();
         ctx.translate(-cameraX, 0);
 
+        // Background
         ctx.fillStyle = '#5ba3d0';
         ctx.fillRect(cameraX, 0, canvas.width, canvas.height);
 
+        // Platforms
         platforms.forEach(p => {
           if (p.x + p.width > cameraX && p.x < cameraX + canvas.width) {
-            ctx.fillStyle = '#7c8a95';
+            ctx.fillStyle = p.moving ? '#8e9ba8' : '#7c8a95';
             ctx.fillRect(p.x, p.y, p.width, p.height);
+
+            // Moving platform indicator
+            if (p.moving) {
+              ctx.fillStyle = '#6a7580';
+              ctx.fillRect(p.x + p.width/2 - 3, p.y + 5, 6, 3);
+            }
           }
         });
 
+        // Goal
         if (goal.x + goal.width > cameraX && goal.x < cameraX + canvas.width) {
           ctx.fillStyle = '#93c5fd';
           ctx.fillRect(goal.x, goal.y, goal.width, goal.height);
         }
 
+        // Player
         ctx.fillStyle = '#f87171';
         ctx.fillRect(player.x, player.y, player.width, player.height);
 
         ctx.restore();
+
+        // UI - Jump counter
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(10, 10, 150, 35);
+        ctx.fillStyle = '#fff';
+        ctx.font = '16px monospace';
+        ctx.fillText('Jumps: ' + player.jumpsLeft + '/' + player.maxJumps, 20, 32);
       }
 
       function loop() {
@@ -482,6 +613,123 @@
       }
 
       loop();
+    }
+
+    // Complete sequence for nudeCalendar
+    function showNudeCalendarSequence() {
+      console.log('🎬 Starting nudeCalendar sequence');
+
+      // 1. Show collectible animation
+      const animContainer = document.createElement('div');
+      animContainer.className = 'collectible-animation';
+      animContainer.innerHTML = `
+        <div class="collectible-box">
+          <img src="/assets/sprites/objects/nudeCalendar.png" alt="Nude Calendar" class="collectible-image" style="width: 150px; height: 150px; object-fit: contain; margin-bottom: 15px;" />
+          <div class="collectible-text">ITEM GET!</div>
+          <div class="collectible-name">Nude Calendar</div>
+        </div>
+      `;
+      document.body.appendChild(animContainer);
+
+      // 2. Remove animation after 1.5s and show Steve dialogue
+      setTimeout(() => {
+        animContainer.remove();
+        console.log('💬 Showing Steve dialogue');
+
+        // Find Steve sprite
+        const steveSprite = document.querySelector('#fountain .steve-sprite-static');
+        if (steveSprite) {
+          console.log('✅ Found Steve sprite, adding bounce');
+          steveSprite.style.animation = 'steveBounce 2s ease-in-out infinite';
+        } else {
+          console.error('❌ Steve sprite not found!');
+        }
+
+        // Create dialogue bubble with triangle - positioned right bottom, above inventory
+        const bubble = document.createElement('div');
+        bubble.innerHTML = `
+          <div style="
+            position: relative;
+            background: white;
+            padding: 18px 24px;
+            border-radius: 20px;
+            border: 3px solid #667eea;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            font-family: 'Nineteen Ninety Seven', monospace;
+            font-size: 1rem;
+            max-width: 380px;
+            text-align: left;
+          ">
+            Komm, hör auf bei den Steinen zu springen, Mama holt uns in 15 min bei Oma und Opa ab und Oma wollte am Uni-Center noch was erledigen!
+            <div style="
+              position: absolute;
+              left: -18px;
+              top: 50%;
+              transform: translateY(-50%);
+              width: 0;
+              height: 0;
+              border-top: 15px solid transparent;
+              border-bottom: 15px solid transparent;
+              border-right: 18px solid #667eea;
+            "></div>
+            <div style="
+              position: absolute;
+              left: -14px;
+              top: 50%;
+              transform: translateY(-50%);
+              width: 0;
+              height: 0;
+              border-top: 12px solid transparent;
+              border-bottom: 12px solid transparent;
+              border-right: 15px solid white;
+            "></div>
+          </div>
+        `;
+        bubble.style.cssText = `
+          position: fixed;
+          bottom: 60px;
+          right: 480px;
+          z-index: 9999;
+          opacity: 0;
+          transition: opacity 0.5s ease-out;
+        `;
+        document.body.appendChild(bubble);
+        console.log('✅ Bubble added to body');
+
+        // Trigger fade-in and start bounce
+        setTimeout(() => {
+          bubble.style.opacity = '1';
+          bubble.style.animation = 'bubbleBounce 2s ease-in-out infinite';
+        }, 10);
+
+        // 3. After 6 seconds, navigate to landing page
+        setTimeout(() => {
+          bubble.remove();
+          if (steveSprite) {
+            steveSprite.style.animation = '';
+          }
+
+          console.log('🗺️ Navigating to landing page');
+
+          // Navigate to landing page
+          document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+          const landingPage = document.getElementById('landing-page');
+          if (landingPage) {
+            landingPage.classList.add('active');
+          }
+
+          // Activate hot/cold tracker
+          console.log('🔥❄️ Activating hot/cold tracker');
+          window.dispatchEvent(new CustomEvent('gameWon', {
+            detail: { gameId: 'fountain' }
+          }));
+
+          // Add item to inventory
+          if (window.DiasiteInventory) {
+            window.DiasiteInventory.addItem('nudeCalendar');
+          }
+        }, 6000);
+      }, 1500);
     }
   </script>
 
@@ -555,7 +803,7 @@
   </div>
 
   <!-- Snails/Uni-Center Page -->
-  <div id="snails" class="page" style="align-items: flex-start; justify-content: flex-start; position: relative;">
+  <div id="snails" class="page" style="align-items: flex-start; justify-content: flex-start;">
     <div class="page-header">
       <h2>Uni-Center</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>

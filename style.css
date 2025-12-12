@@ -363,6 +363,7 @@ body.app-ready .page {
   border: 3px double var(--warm-brown);
   border-radius: 0;
   padding: 18px 22px;
+  padding-left: 22px;
   max-width: 340px;
   min-height: 80px;
   box-shadow:
@@ -371,8 +372,9 @@ body.app-ready .page {
   font-family: 'Nineteen Ninety Seven';
   font-size: 1rem;
   line-height: 1.7;
-  white-space: pre-wrap;
+  white-space: normal;
   text-align: left;
+  text-indent: 0;
   /* Aged paper effect */
   background-image:
     repeating-linear-gradient(
@@ -691,12 +693,16 @@ body.app-ready .page {
   overflow-y: auto;
   max-height: 160px;
   padding: 20px 25px;
+  padding-left: 25px;
   background: rgba(245, 240, 232, 0.95);
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  text-align: left;
+  text-indent: 0;
+  white-space: normal;
 }
-
-.location-sprites {
+/* CHANGE POSITION SPRITE JEN STEVE*/
+.location-sprites { 
   display: flex;
   gap: 10px;
   flex-shrink: 0;
@@ -875,5 +881,327 @@ body.app-ready .page {
   }
   50% {
     transform: translateY(-8px);
+  }
+}
+
+/* Steve excited bounce animation - smooth and gentle */
+@keyframes steveBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+/* Synchronized bounce for speech bubbles */
+@keyframes bubbleBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+/* Speech bubble fade in animation */
+@keyframes speechBubbleFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Character speech bubble styling */
+.character-speech-bubble {
+  position: relative;
+}
+
+.character-speech-bubble::before {
+  content: '';
+  position: absolute;
+  bottom: -15px;
+  right: 40px;
+  width: 0;
+  height: 0;
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-top: 15px solid #667eea;
+}
+
+.character-speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  right: 43px;
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 12px solid white;
+}
+
+@keyframes itemGetBounce {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.1) rotate(5deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.collectible-emoji {
+  font-size: 6rem;
+  margin-bottom: 20px;
+  animation: emojiFloat 0.8s ease-in-out 0.3s;
+  display: inline-block;
+}
+
+@keyframes emojiFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-15px) rotate(-5deg); }
+  75% { transform: translateY(-15px) rotate(5deg); }
+}
+
+.collectible-text {
+  font-family: 'Nineteen Ninety Seven';
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: var(--terracotta);
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  margin-bottom: 15px;
+  text-shadow: 
+    3px 3px 0 var(--warm-brown),
+    -1px -1px 0 var(--warm-brown),
+    1px -1px 0 var(--warm-brown),
+    -1px 1px 0 var(--warm-brown);
+  animation: textPulse 0.5s ease-out 0.4s;
+}
+
+@keyframes textPulse {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.collectible-name {
+  font-family: 'Nineteen Ninety Seven';
+  font-size: 1.3rem;
+  color: var(--ink-black);
+  font-weight: 600;
+  animation: fadeInUp 0.4s ease-out 0.6s backwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Pixel-style corner decorations */
+.collectible-box::before,
+.collectible-box::after {
+  content: '★';
+  position: absolute;
+  font-size: 2rem;
+  color: var(--terracotta);
+  animation: starTwinkle 1s ease-in-out infinite alternate;
+}
+
+.collectible-box::before {
+  top: 10px;
+  left: 15px;
+}
+
+.collectible-box::after {
+  bottom: 10px;
+  right: 15px;
+  animation-delay: 0.5s;
+}
+
+@keyframes starTwinkle {
+  0% { opacity: 0.5; transform: scale(0.8) rotate(0deg); }
+  100% { opacity: 1; transform: scale(1.2) rotate(180deg); }
+}
+
+/* ============================================
+   90s VIDEO GAME COLLECTIBLE ANIMATION - FIXED
+   ============================================ */
+
+.collectible-animation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  animation: fadeInBg 0.3s ease-out;
+}
+
+@keyframes fadeInBg {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.collectible-box {
+  background: #f0ebe5;
+  border: 6px solid #b8a898;
+  padding: 40px 60px;
+  text-align: center;
+  box-shadow: 
+    0 0 0 3px #f0ebe5,
+    0 0 0 9px #b8a898,
+    0 10px 40px rgba(0,0,0,0.5);
+  animation: itemGetBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  position: relative;
+}
+
+.collectible-image {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  margin-bottom: 20px;
+  animation: emojiFloat 0.8s ease-in-out 0.3s;
+  display: inline-block;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
+}
+
+/* ============================================
+   JEN VICTORY ANIMATION & SPEECH BUBBLE
+   ============================================ */
+
+@keyframes jenVictoryBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-40px);
+  }
+}
+
+.jen-victory-bubble {
+  background: white;
+  border: 4px solid var(--terracotta);
+  border-radius: 20px;
+  padding: 15px 25px;
+  font-family: 'Nineteen Ninety Seven';
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--ink-black);
+  box-shadow: 
+    0 6px 20px rgba(0,0,0,0.3),
+    inset 0 2px 10px rgba(255,255,255,0.5);
+  animation: bubbleAppear 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  z-index: 1000;
+  white-space: nowrap;
+}
+
+.jen-victory-bubble::before {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 30px;
+  width: 0;
+  height: 0;
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-top: 20px solid var(--terracotta);
+}
+
+.jen-victory-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -14px;
+  left: 34px;
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 16px solid white;
+}
+
+@keyframes bubbleAppear {
+  0% {
+    transform: scale(0) rotate(-10deg);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.1) rotate(2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.jen-victory-bubble.fade-out {
+  animation: bubbleFadeOut 0.5s ease-out forwards;
+}
+
+@keyframes bubbleFadeOut {
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+/* ============================================
+   ASCII SEAGULLS FLYING ANIMATION
+   ============================================ */
+
+.seagull {
+  position: fixed;
+  font-family: 'Courier New', monospace;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #000000;
+  text-shadow: none;
+  pointer-events: none;
+  z-index: 50;
+  white-space: nowrap;
+  opacity: 0.7;
+}
+
+@keyframes flyAcross {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  50% {
+    transform: translateX(50vw) translateY(-30px);
+  }
+  100% {
+    transform: translateX(100vw) translateY(0);
+  }
+}
+
+@keyframes flyAcrossReverse {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  50% {
+    transform: translateX(-50vw) translateY(-30px);
+  }
+  100% {
+    transform: translateX(-100vw) translateY(0);
   }
 }
