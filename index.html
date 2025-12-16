@@ -657,8 +657,33 @@
           <img src="/assets/sprites/places/oma-opa-shnol.jpeg" alt="Oma Opa Shnol" class="location-image" onerror="this.style.display='none'" />
         </div>
 
-        <div class="game-container">
+        <div class="game-container" style="position:relative;">
           <p class="game-instructions">Dodge the belt! Dodged: <span id="belt-dodged">0</span> / 7 | Hits: <span id="belt-hits">0</span> / 3</p>
+
+          <!-- Inventory Item Usage - Positioned absolutely to not affect layout -->
+          <div id="calendar-use-button" style="
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            display: none;
+            z-index: 10;
+          ">
+            <button onclick="useCalendarToWin()" style="
+              background: var(--terracotta);
+              color: #fff;
+              border: 3px solid #000;
+              padding: 10px 18px;
+              font-size: 0.9rem;
+              cursor: pointer;
+              font-family: 'Nineteen Ninety Seven', monospace;
+              box-shadow: 4px 4px 0px #000;
+              transition: all 0.1s;
+            " onmouseover="this.style.boxShadow='2px 2px 0px #000'; this.style.transform='translate(2px, 2px)'"
+               onmouseout="this.style.boxShadow='4px 4px 0px #000'; this.style.transform='translate(0, 0)'">
+              Opa mit dem Nacktmagazin bestechen
+            </button>
+          </div>
+
           <div id="belt-game-area" style="text-align:center;padding:20px;">
             <div id="belt-status" style="font-size:1.5rem;font-weight:700;margin:20px 0;min-height:50px;color:var(--terracotta)">
               Pick which cheek to show!
@@ -668,16 +693,16 @@
               <img src="assets/sprites/objects/cheeks.png" alt="Cheeks" style="width:350px;height:280px;object-fit:contain;pointer-events:none;" onerror="this.style.display='none';console.error('Cheeks image not found')" />
 
               <!-- Clickable cheeks row (centered, bottom) -->
-              <div style="display:flex;align-items:center;justify-content:center;gap:15px;margin-top:-250px;">
+              <div style="display:flex;align-items:center;justify-content:center;gap:0px;margin-top:-245px;margin-left:-10px;">
                 <!-- Clickable left cheek overlay -->
                 <img id="pick-left" src="assets/sprites/objects/leftCheek.png" alt="Left Cheek"
-                     style="width:120px;height:150px;object-fit:contain;cursor:pointer;transition:transform 0.3s ease;z-index:2;"
+                     style="width:135px;height:165px;object-fit:contain;cursor:pointer;transition:transform 0.3s ease;z-index:2;"
                      class="cheek-selectable"
                      onerror="this.style.display='none';console.error('Left cheek image not found')" />
 
                 <!-- Clickable right cheek overlay -->
                 <img id="pick-right" src="assets/sprites/objects/rightCheek.png" alt="Right Cheek"
-                     style="width:120px;height:150px;object-fit:contain;cursor:pointer;transition:transform 0.3s ease;z-index:2;"
+                     style="width:135px;height:165px;object-fit:contain;cursor:pointer;transition:transform 0.3s ease;z-index:2;"
                      class="cheek-selectable"
                      onerror="this.style.display='none';console.error('Right cheek image not found')" />
               </div>
@@ -699,6 +724,87 @@
     </div>
   </div>
   <script>
+    // Global hits counter accessible from checkInventoryForCalendar
+    let currentHits = 0;
+
+    // Check if player has nudeCalendar and has been hit at least 2 times
+    function checkInventoryForCalendar() {
+      const calendarButton = document.getElementById('calendar-use-button');
+      if (!calendarButton) return;
+
+      if (window.DiasiteState && window.DiasiteState.player && window.DiasiteState.player.inventory) {
+        const hasCalendar = window.DiasiteState.player.inventory.includes('nudeCalendar');
+        const hasEnoughHits = currentHits >= 2;
+        calendarButton.style.display = (hasCalendar && hasEnoughHits) ? 'block' : 'none';
+      }
+    }
+
+    // Use calendar to win immediately
+    window.useCalendarToWin = function() {
+      const calendarButton = document.getElementById('calendar-use-button');
+      if (calendarButton) {
+        calendarButton.style.display = 'none';
+      }
+
+      window.flashMessage && window.flashMessage('Oma and Opa love the calendar! 📅');
+
+      // Remove calendar from inventory
+      if (window.DiasiteInventory) {
+        // Remove the item
+        const state = window.DiasiteState;
+        if (state && state.player && state.player.inventory) {
+          const index = state.player.inventory.indexOf('nudeCalendar');
+          if (index > -1) {
+            state.player.inventory.splice(index, 1);
+            window.DiasiteInventory.render();
+          }
+        }
+      }
+
+      // Mark game won
+      if (typeof gameManager !== 'undefined') {
+        gameManager.markWon('oma-opa-shnol');
+      }
+
+      // Show dialogue and navigate
+      setTimeout(() => {
+        if(window.CharacterDialogue) {
+          window.CharacterDialogue.showDialogue('steve', 'Danke für den Kalender! Das war der beste Besuch!', {
+            duration: 3000,
+            onComplete: () => {
+              document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+              const landingPage = document.getElementById('landing-page');
+              if (landingPage) {
+                landingPage.classList.add('active');
+
+                setTimeout(() => {
+                  window.dispatchEvent(new CustomEvent('gameWon', {
+                    detail: { gameId: 'oma-opa-shnol' }
+                  }));
+                }, 100);
+              }
+            }
+          });
+        }
+      }, 500);
+    };
+
+    // Check inventory when page becomes active
+    const calendarObserver = new MutationObserver(() => {
+      const omaPage = document.getElementById('oma-opa-shnol');
+      if (omaPage && omaPage.classList.contains('active')) {
+        checkInventoryForCalendar();
+      }
+    });
+
+    const omaPage = document.getElementById('oma-opa-shnol');
+    if (omaPage) {
+      calendarObserver.observe(omaPage, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    // Initial check
+    setTimeout(checkInventoryForCalendar, 500);
+
     (function() {
       const leftBtn = document.getElementById('pick-left');
       const rightBtn = document.getElementById('pick-right');
@@ -756,9 +862,13 @@
                 hitCheek.style.animation = 'hitWiggle 0.5s ease-in-out';
 
                 hits++;
+                currentHits = hits; // Update global counter
                 hitsEl.textContent = hits;
                 statusEl.textContent = `💥 OUCH! The belt hit your ${playerChoice} cheek!`;
                 statusEl.style.color = '#ff4444';
+
+                // Check if calendar button should appear
+                checkInventoryForCalendar();
 
                 if (hits >= 3) {
                   gameActive = false;
@@ -786,7 +896,29 @@
                       gameManager.markWon('oma-opa-shnol');
                     }
 
-                    // TODO: Add collectible and navigation
+                    // Show character dialogue and navigate
+                    setTimeout(() => {
+                      if(window.CharacterDialogue) {
+                        window.CharacterDialogue.showDialogue('steve', 'Danke für den Besuch, Oma und Opa!', {
+                          duration: 3000,
+                          onComplete: () => {
+                            // Navigate to landing page
+                            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                            const landingPage = document.getElementById('landing-page');
+                            if (landingPage) {
+                              landingPage.classList.add('active');
+
+                              // Dispatch gameWon
+                              setTimeout(() => {
+                                window.dispatchEvent(new CustomEvent('gameWon', {
+                                  detail: { gameId: 'oma-opa-shnol' }
+                                }));
+                              }, 100);
+                            }
+                          }
+                        });
+                      }
+                    }, 1000);
                   }, 1500);
                   return;
                 }
@@ -813,6 +945,49 @@
 
       leftBtn.addEventListener('click', () => makePick('left'));
       rightBtn.addEventListener('click', () => makePick('right'));
+
+      // CHEAT: Press K to win (only when on this page)
+      const cheatHandler = (e) => {
+        const omaPage = document.getElementById('oma-opa-shnol');
+        if (e.code === 'KeyK' && gameActive && omaPage && omaPage.classList.contains('active')) {
+          gameActive = false;
+          dodged = 7;
+          dodgedEl.textContent = dodged;
+          statusEl.textContent = '🎉 YOU WIN! Belt-dodging master!';
+          statusEl.style.color = 'green';
+          flashMessage('Cheat activated! You won! 🎉');
+
+          // Mark game won
+          if (typeof gameManager !== 'undefined') {
+            gameManager.markWon('oma-opa-shnol');
+          }
+
+          // Show character dialogue and navigate
+          setTimeout(() => {
+            if(window.CharacterDialogue) {
+              window.CharacterDialogue.showDialogue('steve', 'Danke für den Besuch, Oma und Opa!', {
+                duration: 3000,
+                onComplete: () => {
+                  // Navigate to landing page
+                  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                  const landingPage = document.getElementById('landing-page');
+                  if (landingPage) {
+                    landingPage.classList.add('active');
+
+                    // Dispatch gameWon
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent('gameWon', {
+                        detail: { gameId: 'oma-opa-shnol' }
+                      }));
+                    }, 100);
+                  }
+                }
+              });
+            }
+          }, 1000);
+        }
+      };
+      document.addEventListener('keydown', cheatHandler);
 
       // Add belt swing and cheek animation CSS
       const style = document.createElement('style');
@@ -843,6 +1018,85 @@
         }
       `;
       document.head.appendChild(style);
+    })();
+  </script>
+
+  <!-- Krivaya Gorka Page -->
+  <div id="krivaya" class="page" style="align-items: flex-start; justify-content: flex-start;">
+    <div class="page-header">
+      <h2>Krivaya Gorka</h2>
+      <button class="back-btn" data-target="landing-page">← Zurück</button>
+    </div>
+    <div class="location-content">
+      <div class="location-top-row">
+        <div class="location-image-container">
+          <img src="/assets/sprites/places/krivaya-gorka.jpeg" alt="Krivaya Gorka" class="location-image" onerror="this.style.display='none'" />
+        </div>
+
+        <div class="game-container">
+          <div style="text-align:center;padding:40px;">
+            <h3 style="font-size:2rem;color:var(--terracotta);margin-bottom:20px;">Coming Soon!</h3>
+            <p style="font-size:1.2rem;color:#666;">This game is still under development.</p>
+            <p style="font-size:1rem;color:#888;margin-top:20px;">Press K to skip for now</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="location-message-row">
+        <div class="riddle-note location-message-box">
+          Die steile Rutsche hinunter zur Krivaya Gorka war immer ein Abenteuer. Nasse Klamotten waren garantiert!
+        </div>
+        <div class="location-sprites">
+          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
+          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function() {
+      const keys = {};
+      let gameWon = false;
+
+      document.addEventListener('keydown', (e) => { keys[e.code] = true; });
+      document.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+      // CHEAT: Press K to skip this level
+      const checkCheat = setInterval(() => {
+        const krivayaPage = document.getElementById('krivaya');
+        if (keys['KeyK'] && !gameWon && krivayaPage && krivayaPage.classList.contains('active')) {
+          gameWon = true;
+          clearInterval(checkCheat);
+
+          window.flashMessage && window.flashMessage('Skipped Krivaya Gorka! 🎉');
+
+          if (typeof gameManager !== 'undefined') {
+            gameManager.markWon('krivaya');
+          }
+
+          // Navigate after short delay
+          setTimeout(() => {
+            if(window.CharacterDialogue) {
+              window.CharacterDialogue.showDialogue('jen', 'Weiter zum nächsten Ort!', {
+                duration: 2000,
+                onComplete: () => {
+                  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                  const landingPage = document.getElementById('landing-page');
+                  if (landingPage) {
+                    landingPage.classList.add('active');
+
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent('gameWon', {
+                        detail: { gameId: 'krivaya' }
+                      }));
+                    }, 100);
+                  }
+                }
+              });
+            }
+          }, 500);
+        }
+      }, 100);
     })();
   </script>
 
@@ -927,24 +1181,28 @@
         document.body.appendChild(bubble);
         
         setTimeout(() => { bubble.style.opacity = '1'; }, 10);
-        
-        // Remove after 3 seconds, then call Jen
+
+        // Remove after 4 seconds, wait for fadeout, then call Jen
         setTimeout(() => {
           bubble.style.opacity = '0';
+          // Wait for fadeout transition (0.5s) to complete before removing and calling callback
           setTimeout(() => {
             bubble.remove();
             omaSprite.remove();
-            
+
             // Unblock Jen sprite for next phase
             const jenSprite = document.querySelector('#snails .jen-sprite');
             if(jenSprite) {
               jenSprite.dataset.blockedForOma = 'false';
             }
-            
-            // Now call Jen victory
-            onComplete && onComplete();
-          }, 500);
-        }, 3000);
+
+            // Wait an additional 500ms to ensure clean separation
+            setTimeout(() => {
+              // Now call Jen victory (after fadeout is complete)
+              onComplete && onComplete();
+            }, 500);
+          }, 600); // 600ms to ensure fadeout completes
+        }, 4000);
       }
       
       window.startSnailsGame = function() {
@@ -990,14 +1248,15 @@
               window.flashMessage && window.flashMessage('All snails caught! 🐌');
               window.gameManager && window.gameManager.markWon('snails');
               
-              // showOmaReward already waits 3s internally, then calls callback
+              // showOmaReward already waits 4s internally, then calls callback
               showOmaReward(() => {
                 console.log('🎭 Oma done, showing Jen dialogue');
 
                 // Show Jen using CharacterDialogue system
                 if(window.CharacterDialogue) {
                   window.CharacterDialogue.showDialogue('jen', 'Komm zur nächsten Location!', {
-                    duration: 3000,
+                    duration: 4000,
+                    bounce: true,
                     onComplete: () => {
                       console.log('🗺️ Navigating back to landing page');
                       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1015,6 +1274,8 @@
                       }
                     }
                   });
+                } else {
+                  console.error('❌ CharacterDialogue not found!');
                 }
               });
             }
@@ -1037,14 +1298,15 @@
             window.flashMessage && window.flashMessage('Cheat activated! 🐌');
             window.gameManager && window.gameManager.markWon('snails');
             
-            // showOmaReward waits 3s, then callback
+            // showOmaReward waits 4s, then callback
             showOmaReward(() => {
               console.log('🎭 Oma done (cheat), showing Jen dialogue');
 
               // Show Jen using CharacterDialogue system
               if(window.CharacterDialogue) {
                 window.CharacterDialogue.showDialogue('jen', 'Komm zur nächsten Location!', {
-                  duration: 3000,
+                  duration: 4000,
+                  bounce: true,
                   onComplete: () => {
                     console.log('🗺️ Navigating back (cheat)');
                     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1061,6 +1323,8 @@
                     }
                   }
                 });
+              } else {
+                console.error('❌ CharacterDialogue not found!');
               }
             });
             
