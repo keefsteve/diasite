@@ -178,7 +178,10 @@ function removeMagnifyingGlass(){
 }
 
 function updateMagnifyingGlassPosition(e){
-  if(magnifyingGlass && state.currentPage === 'landing-page'){
+  const landingPage = document.getElementById('landing-page');
+  const isLandingActive = landingPage && landingPage.classList.contains('active');
+  
+  if(magnifyingGlass && isLandingActive){
     const glassSize = 120;
     const borderWidth = 4;
     const totalSize = glassSize + borderWidth * 2;
@@ -201,7 +204,11 @@ function updateMagnifyingGlassPosition(e){
 }
 
 document.addEventListener('keydown', (e)=>{
-  if(e.key.toLowerCase() === 'l' && !lKeyPressed && state.currentPage === 'landing-page'){
+  // Check if landing page is active
+  const landingPage = document.getElementById('landing-page');
+  const isLandingActive = landingPage && landingPage.classList.contains('active');
+  
+  if(e.key.toLowerCase() === 'l' && !lKeyPressed && isLandingActive){
     lKeyPressed = true;
     createMagnifyingGlass();
   }

@@ -450,7 +450,7 @@ function showJenVictory() {
     bubble.style.animation = 'bubbleBounce 2s ease-in-out infinite';
   }, 10);
 
-  // Remove bubble after 4 seconds and stop animation
+  // Remove bubble after 2.5 seconds and stop animation
   setTimeout(() => {
     bubble.style.opacity = '0';
     setTimeout(() => {
@@ -458,37 +458,43 @@ function showJenVictory() {
       jenSprite.style.animation = '';
       console.log('🗑️ Jen bubble removed');
 
-      // Navigate back to landing page
+      // Navigate back to landing page immediately
       console.log('🗺️ Navigating to landing page');
-      if (window.DiasiteNavigation) {
-        window.DiasiteNavigation.navigateTo('landing-page');
+      
+      // Fallback navigation (always use this for reliability)
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const landingPage = document.getElementById('landing-page');
+      if (landingPage) {
+        landingPage.classList.add('active');
+        console.log('✅ Landing page activated');
       } else {
-        // Fallback navigation
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        const landingPage = document.getElementById('landing-page');
-        if (landingPage) {
-          landingPage.classList.add('active');
-        }
+        console.error('❌ Landing page not found!');
       }
-    }, 500);
-  }, 4000);
+    }, 300);
+  }, 2500);
 }
 
-// Fade out animation for speech bubbles
-const fadeOutStyle = document.createElement('style');
-fadeOutStyle.textContent = `
-  @keyframes speechBubbleFadeOut {
-    from {
-      opacity: 1;
-      transform: translateY(0);
+// ========== TYPING GAME ==========
+function initTypingGame(){
+  console.log('🖋️ Typing game initializing');
+  const wordEl = document.getElementById('typing-word');
+  
+  // Fade out animation for speech bubbles
+  const fadeOutStyle = document.createElement('style');
+  fadeOutStyle.textContent = `
+    @keyframes speechBubbleFadeOut {
+      from {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(20px);
+      }
     }
-    to {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-  }
-`;
-document.head.appendChild(fadeOutStyle);
+  `;
+  document.head.appendChild(fadeOutStyle);
+  
   const input = document.getElementById('typing-input');
   const scoreEl = document.getElementById('typing-score');
   const timerEl = document.getElementById('typing-timer');

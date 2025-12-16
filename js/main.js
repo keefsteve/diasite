@@ -11,6 +11,7 @@ import { Dialogue } from './systems/dialogue.js';
 import { Navigation } from './systems/navigation.js';
 import { Inventory } from './systems/inventory.js';
 import { Games } from './systems/game-manager.js';
+import { Messages } from './systems/messages.js';
 
 // Load helper modules (they set window.CharacterDialogue and window.GameFlow)
 import './systems/character-dialogue.js';

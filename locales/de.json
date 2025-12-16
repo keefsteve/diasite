@@ -28,7 +28,9 @@
     "yellow-shorts": "🩳🇧🇷 Gelbe Shorts",
     "snail": "🐌 Schnecke",
     "sheep": "🐑 Schaf",
-    "nudeCalendar": "📅 Nackt-Kalender"
+    "nudeCalendar": "📅 Freizügiger Kalender",
+    "nesquik": "🥣 Nesquik Cereals",
+    "fish": "🐟 Fisch"
   },
   
   "ui": {
@@ -62,8 +64,8 @@
 
   "missions": {
     "level_0": "Finde den nächsten Ort.",
-    "level_1": "Finde das Uni-Center, wo Oma noch was erledigen muss!",
-    "level_2": "Sammle weitere Erinnerungen aus deiner Kindheit.",
+    "level_1": "Finde das Uni-Center!\nVersuche es so, aber wenn Du nicht weiterkommst, lass dich vom Mauszeiger leiten.",
+    "level_2": "Gehe nun zu Oma und Opa Shnol/Babenko nach Hause, beeilt euch, Mama holt euch bald ab!",
     "level_3": "Entdecke die versteckten Orte auf der Karte.",
     "level_4": "Nur noch ein paar Orte übrig!",
     "level_5": "Fast geschafft! Finde die letzten Erinnerungen.",

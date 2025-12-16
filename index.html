@@ -19,7 +19,7 @@
 
     <!-- Mission box on the right side -->
     <div id="mission-box" class="riddle-note landing-riddle-note" style="position:absolute;bottom:150px;right:40px;left:auto;max-width:380px;text-align:left;">
-      Find the next location.
+      Finde den nächsten Ort.
     </div>
 
     <!-- Permanent Steve and Jen sprites in lower left, overlapping -->
@@ -48,19 +48,25 @@
     </div>
 
     <!-- Map Hotspots -->
-    <button class="map-hotspot locked" data-target="fountain" style="left:58%;top:4%"></button>
-    <button class="map-hotspot" data-target="oma-opa-shnol" style="left:58%;top:81%"></button>
+    <button class="map-hotspot" data-target="fountain" style="left:58%;top:4%"></button>
+    <button class="map-hotspot locked" data-target="oma-opa-shnol" style="left:58%;top:81%"></button>
     <button class="map-hotspot" data-target="snails" style="left:65.5%;top:79.5%"></button>
+    <button class="map-hotspot locked" data-target="krivaya" style="left:45%;top:35%"></button>
+    <button class="map-hotspot locked" data-target="oma-shelya" style="left:30%;top:60%"></button>
+    <button class="map-hotspot locked" data-target="bunker" style="left:70%;top:40%"></button>
+    <button class="map-hotspot locked" data-target="school" style="left:55%;top:50%"></button>
+    <button class="map-hotspot locked" data-target="tanke" style="left:80%;top:65%"></button>
+    <button class="map-hotspot locked" data-target="home" style="left:50%;top:70%"></button>
 
     <!-- Hot/Cold Tracker -->
     <div id="hotcold-tracker"></div>
 
     <script>
-      // Hot/Cold Tracker for Snails Location
+      // Hot/Cold Tracker - Dynamic based on progression
       (function() {
         const tracker = document.getElementById('hotcold-tracker');
-        const snailsHotspot = document.querySelector('[data-target="snails"]');
         let isActive = false;
+        let targetHotspot = null;
 
         const temperatures = {
           cold: ['Eiskalt', 'Frostig', 'Eisig', 'Arktisch', 'Gefroren', 'Klirrend'],
@@ -87,9 +93,9 @@
         }
 
         function updateTracker(e) {
-          if (!isActive) return;
+          if (!isActive || !targetHotspot) return;
 
-          const rect = snailsHotspot.getBoundingClientRect();
+          const rect = targetHotspot.getBoundingClientRect();
           const centerX = rect.left + rect.width / 2;
           const centerY = rect.top + rect.height / 2;
 
@@ -107,25 +113,31 @@
           }
         }
 
+        // Activate tracker for next location based on progression
         window.addEventListener('gameWon', (e) => {
-          if (e.detail.gameId === 'fountain') {
-            isActive = true;
-            tracker.classList.add('active');
+          const progression = {
+            'fountain': 'snails',
+            'snails': 'oma-opa-shnol',
+            'oma-opa-shnol': 'krivaya'
+          };
+          
+          const nextLocation = progression[e.detail.gameId];
+          if (nextLocation) {
+            targetHotspot = document.querySelector(`[data-target="${nextLocation}"]`);
+            if (targetHotspot) {
+              isActive = true;
+              tracker.classList.add('active');
+              
+              // Add click handler to deactivate tracker
+              targetHotspot.addEventListener('click', () => {
+                isActive = false;
+                tracker.classList.remove('active');
+              }, { once: true });
+            }
           }
         });
 
         document.getElementById('landing-page').addEventListener('mousemove', updateTracker);
-
-        snailsHotspot.addEventListener('click', () => {
-          isActive = false;
-          tracker.classList.remove('active');
-          // Navigate to snails page
-          if (window.Navigation) {
-            window.Navigation.navigateTo('snails');
-          } else {
-            window.location.hash = 'snails';
-          }
-        });
       })();
 
       // Update clock every second
@@ -150,68 +162,19 @@
       updateClock();
       setInterval(updateClock, 1000);
 
-      // Mission Box Updater
+      // Mission Box Updater (powered by Messages system)
+      // Note: The actual logic is in js/systems/messages.js
+      // This is just a compatibility shim for now
       (function() {
-        const missionBox = document.getElementById('mission-box');
-
-        function updateMissionBox() {
-          // Get completed games count from state
-          let completedCount = 0;
-          if (window.DiasiteState && window.DiasiteState.games) {
-            completedCount = Object.values(window.DiasiteState.games).filter(g => g.won).length;
-          }
-
-          // Determine which mission to show based on completed count
-          let missionKey = 'missions.level_0';
-          if (completedCount >= 8) {
-            missionKey = 'missions.completed';
-          } else if (completedCount >= 5) {
-            missionKey = 'missions.level_5';
-          } else if (completedCount >= 4) {
-            missionKey = 'missions.level_4';
-          } else if (completedCount >= 3) {
-            missionKey = 'missions.level_3';
-          } else if (completedCount >= 2) {
-            missionKey = 'missions.level_2';
-          } else if (completedCount >= 1) {
-            missionKey = 'missions.level_1';
-          }
-
-          // Update mission text using i18n if available
-          if (window.i18n) {
-            missionBox.textContent = window.i18n.t(missionKey);
+        // Wait for Messages system to load, then set up event listeners
+        function initMissionBox() {
+          if (window.Messages) {
+            window.Messages.setupEventListeners();
           } else {
-            // Fallback to basic messages if i18n not available
-            const fallbackMessages = {
-              0: 'Finde den nächsten Ort.',
-              1: 'Finde das Uni-Center, wo Oma noch was erledigen muss!',
-              2: 'Sammle weitere Erinnerungen aus deiner Kindheit.',
-              3: 'Entdecke die versteckten Orte auf der Karte.',
-              4: 'Nur noch ein paar Orte übrig!',
-              5: 'Fast geschafft! Finde die letzten Erinnerungen.'
-            };
-            missionBox.textContent = fallbackMessages[Math.min(completedCount, 5)] || fallbackMessages[0];
+            setTimeout(initMissionBox, 100);
           }
         }
-
-        // Update on game won events
-        window.addEventListener('gameWon', updateMissionBox);
-
-        // Update when landing page becomes active
-        const observer = new MutationObserver(() => {
-          const landingPage = document.getElementById('landing-page');
-          if (landingPage && landingPage.classList.contains('active')) {
-            updateMissionBox();
-          }
-        });
-
-        const landingPage = document.getElementById('landing-page');
-        if (landingPage) {
-          observer.observe(landingPage, { attributes: true, attributeFilter: ['class'] });
-        }
-
-        // Initial update
-        updateMissionBox();
+        initMissionBox();
       })();
 
       // ASCII Seagulls flying across the landing page with wing flapping
@@ -459,10 +422,16 @@
                   bubble.remove();
                   if (steveSprite) steveSprite.style.animation = '';
 
-                  if (window.Navigation) {
-                    window.Navigation.navigateTo('landing-page');
+                  // Navigate and dispatch gameWon
+                  console.log('🎮 Fountain game won! Navigating back...');
+                  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                  const landingPage = document.getElementById('landing-page');
+                  if (landingPage) {
+                    landingPage.classList.add('active');
+                    console.log('✅ Landing page activated');
                   }
 
+                  console.log('📡 Dispatching gameWon event for fountain');
                   window.dispatchEvent(new CustomEvent('gameWon', {
                     detail: { gameId: 'fountain' }
                   }));
@@ -699,7 +668,7 @@
               <img src="assets/sprites/objects/cheeks.png" alt="Cheeks" style="width:350px;height:280px;object-fit:contain;pointer-events:none;" onerror="this.style.display='none';console.error('Cheeks image not found')" />
 
               <!-- Clickable cheeks row (centered, bottom) -->
-              <div style="display:flex;align-items:center;justify-content:center;gap:15px;margin-top:-200px;">
+              <div style="display:flex;align-items:center;justify-content:center;gap:15px;margin-top:-250px;">
                 <!-- Clickable left cheek overlay -->
                 <img id="pick-left" src="assets/sprites/objects/leftCheek.png" alt="Left Cheek"
                      style="width:120px;height:150px;object-fit:contain;cursor:pointer;transition:transform 0.3s ease;z-index:2;"
@@ -919,6 +888,65 @@
       document.addEventListener('keydown', (e) => { keys[e.code] = true; });
       document.addEventListener('keyup', (e) => { keys[e.code] = false; });
       
+      function showOmaReward(onComplete) {
+        console.log('👵 showOmaReward called');
+        const snailsPage = document.querySelector('#snails');
+        if(!snailsPage) {
+          console.error('❌ Snails page not found!');
+          return;
+        }
+        console.log('✅ Snails page found, creating Oma sprite');
+        
+        // WICHTIG: Stoppe alle Jen/Steve Animationen während Oma Phase
+        const jenSprite = document.querySelector('#snails .jen-sprite');
+        const steveSprite = document.querySelector('#snails .steve-sprite-static');
+        if(jenSprite) {
+          jenSprite.style.animation = '';
+          jenSprite.dataset.blockedForOma = 'true';
+        }
+        if(steveSprite) {
+          steveSprite.style.animation = '';
+        }
+        
+        // Create Oma sprite absolutely positioned, won't affect other sprites
+        const omaSprite = document.createElement('img');
+        omaSprite.src = '/assets/sprites/objects/nesquikOma.png';
+        omaSprite.style.cssText = 'position:absolute;right:50px;bottom:100px;width:350px;height:350px;object-fit:contain;animation:characterBounce 2s ease-in-out infinite;z-index:100;';
+        snailsPage.appendChild(omaSprite);
+        
+        // Create Oma dialogue bubble
+        const bubble = document.createElement('div');
+        bubble.innerHTML = `
+          <div style="position:relative;background:white;padding:18px 24px;border-radius:20px;border:3px solid #f59e0b;box-shadow:0 6px 20px rgba(0,0,0,0.3);font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;max-width:380px;text-align:left;">
+            Gut gemacht Kinder, hier, eine Packung Nesquik!
+            <div style="position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;border-top:18px solid #f59e0b;"></div>
+            <div style="position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:15px solid white;"></div>
+          </div>
+        `;
+        bubble.style.cssText = 'position:fixed;bottom:60px;right:530px;z-index:9999;opacity:0;transition:opacity 0.5s;';
+        document.body.appendChild(bubble);
+        
+        setTimeout(() => { bubble.style.opacity = '1'; }, 10);
+        
+        // Remove after 3 seconds, then call Jen
+        setTimeout(() => {
+          bubble.style.opacity = '0';
+          setTimeout(() => {
+            bubble.remove();
+            omaSprite.remove();
+            
+            // Unblock Jen sprite for next phase
+            const jenSprite = document.querySelector('#snails .jen-sprite');
+            if(jenSprite) {
+              jenSprite.dataset.blockedForOma = 'false';
+            }
+            
+            // Now call Jen victory
+            onComplete && onComplete();
+          }, 500);
+        }, 3000);
+      }
+      
       window.startSnailsGame = function() {
         const overlay = document.querySelector('#snails .play-overlay');
         if (overlay) overlay.classList.add('hidden');
@@ -958,9 +986,37 @@
             if(caught === totalSnails){
               gameRunning = false;
               clearInterval(gameInterval);
-              window.showJenVictory && window.showJenVictory();
+              
               window.flashMessage && window.flashMessage('All snails caught! 🐌');
               window.gameManager && window.gameManager.markWon('snails');
+              
+              // showOmaReward already waits 3s internally, then calls callback
+              showOmaReward(() => {
+                console.log('🎭 Oma done, showing Jen dialogue');
+
+                // Show Jen using CharacterDialogue system
+                if(window.CharacterDialogue) {
+                  window.CharacterDialogue.showDialogue('jen', 'Komm zur nächsten Location!', {
+                    duration: 3000,
+                    onComplete: () => {
+                      console.log('🗺️ Navigating back to landing page');
+                      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                      const landingPage = document.getElementById('landing-page');
+                      if (landingPage) {
+                        landingPage.classList.add('active');
+
+                        // Dispatch gameWon
+                        setTimeout(() => {
+                          console.log('🎮 Dispatching gameWon for snails');
+                          window.dispatchEvent(new CustomEvent('gameWon', {
+                            detail: { gameId: 'snails' }
+                          }));
+                        }, 100);
+                      }
+                    }
+                  });
+                }
+              });
             }
           });
           
@@ -977,9 +1033,37 @@
           if(keys['KeyK']){
             gameRunning = false;
             clearInterval(gameInterval);
-            window.showJenVictory && window.showJenVictory();
+            
             window.flashMessage && window.flashMessage('Cheat activated! 🐌');
             window.gameManager && window.gameManager.markWon('snails');
+            
+            // showOmaReward waits 3s, then callback
+            showOmaReward(() => {
+              console.log('🎭 Oma done (cheat), showing Jen dialogue');
+
+              // Show Jen using CharacterDialogue system
+              if(window.CharacterDialogue) {
+                window.CharacterDialogue.showDialogue('jen', 'Komm zur nächsten Location!', {
+                  duration: 3000,
+                  onComplete: () => {
+                    console.log('🗺️ Navigating back (cheat)');
+                    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                    const landingPage = document.getElementById('landing-page');
+                    if (landingPage) {
+                      landingPage.classList.add('active');
+
+                      setTimeout(() => {
+                        console.log('🎮 Dispatching gameWon (cheat)');
+                        window.dispatchEvent(new CustomEvent('gameWon', {
+                          detail: { gameId: 'snails' }
+                        }));
+                      }, 100);
+                    }
+                  }
+                });
+              }
+            });
+            
             return;
           }
           
@@ -1002,6 +1086,40 @@
       };
     })();
   </script>
+
+  <!-- Oma Shelya Page (Level 7) -->
+  <div id="oma-shelya" class="page" style="align-items: flex-start; justify-content: flex-start;">
+    <div class="page-header">
+      <h2>Oma Shelya</h2>
+      <button class="back-btn" data-target="landing-page">← Zurück</button>
+    </div>
+    <div class="location-content">
+      <div class="location-top-row">
+        <div class="location-image-container">
+          <img src="/assets/sprites/places/oma-shelya.jpeg" alt="Oma Shelya" class="location-image" onerror="this.style.display='none'" />
+        </div>
+
+        <div class="game-container">
+          <div class="play-overlay">
+            <button class="play-btn" onclick="alert('Fisch-Spiel kommt bald!')">▶ Play</button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:center;height:450px;font-size:3rem;color:#888;">
+            🐟 Fisch-Spiel<br/>Coming Soon
+          </div>
+        </div>
+      </div>
+
+      <div class="location-message-row">
+        <div class="riddle-note location-message-box">
+          Oma Shelya hatte immer frischen Fisch für uns. Ihre Geschichten vom Meer waren legendär!
+        </div>
+        <div class="location-sprites">
+          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
+          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Inventory Bar -->
   <aside id="inventory">

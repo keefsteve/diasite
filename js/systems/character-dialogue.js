@@ -28,6 +28,12 @@ class CharacterDialogue {
       console.warn(`Sprite für ${character} nicht gefunden`);
       return;
     }
+    
+    // Check if sprite is blocked (e.g. during Oma phase)
+    if (sprite.dataset.blockedForOma === 'true') {
+      console.log(`Sprite ${character} blocked for Oma phase - skipping`);
+      return;
+    }
 
     // Stop any existing animation first
     sprite.style.animation = '';
