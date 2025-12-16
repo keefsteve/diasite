@@ -85,9 +85,26 @@ class NavigationManager {
   // Setup all navigation buttons
   setupNavigationButtons() {
     // Arrow buttons & back buttons
-    document.querySelectorAll('.arrow-btn, .back-btn, .map-hotspot').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const target = btn.dataset.target;
+    const buttons = document.querySelectorAll('.arrow-btn, .back-btn, .map-hotspot');
+    console.log(`🔧 Setup ${buttons.length} navigation buttons`);
+    
+    buttons.forEach(btn => {
+      const target = btn.dataset.target;
+      const isLocked = btn.classList.contains('locked');
+      
+      if (target === 'snails') {
+        console.log(`🐌 Snails button found - locked: ${isLocked}`);
+      }
+      
+      btn.addEventListener('click', (e) => {
+        console.log(`🖱️ Click on button: ${target}, locked: ${btn.classList.contains('locked')}`);
+        
+        // Skip locked hotspots
+        if (btn.classList.contains('locked')) {
+          console.log('🔒 Location locked');
+          return;
+        }
+        
         if (target) {
           this.navigateTo(target);
         }

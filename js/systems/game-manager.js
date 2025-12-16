@@ -122,3 +122,4 @@ window.gameManager = {
 
 // Global function for legacy compatibility
 window.startGame = (gameId) => Games.startGame(gameId);
+window.flashMessage = (msg, duration) => Games.flashMessage(msg, duration);

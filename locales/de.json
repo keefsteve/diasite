@@ -14,7 +14,7 @@
     "botanischer_garten_loss": "Oh nein, ins Wasser gefallen! Jetzt haben wir nasse Klamotten...",
     "fountain_win": "Super! Du hast den Wasserfall erreicht! 🦎",
     "fountain_lose": "Platsch! Pass auf, das Wasser ist kalt! 💦",
-    "fountain_steve": "Mama kommt uns in 30 Minuten abholen, und Oma wollte noch was am Uni-Center machen. Wir müssen los.",
+    "fountain_steve": "Komm, hör auf bei den Steinen zu springen, Mama holt uns in 15 min bei Oma und Opa ab und Oma wollte am Uni-Center noch was erledigen!",
     "after_7_locations": "Puh... das war viel heute. Lass uns nach Hause gehen.",
     "home_unlocked": "So, jetzt zeig ich dir was richtig Cooles!"
   },
@@ -58,5 +58,15 @@
     "gameLost": "Spiel vorbei! Versuch's nochmal!",
     "photoTaken": "📸 Polaroid gespeichert!",
     "achievementUnlocked": "🏆 Achievement freigeschaltet: {name}"
+  },
+
+  "missions": {
+    "level_0": "Finde den nächsten Ort.",
+    "level_1": "Finde das Uni-Center, wo Oma noch was erledigen muss!",
+    "level_2": "Sammle weitere Erinnerungen aus deiner Kindheit.",
+    "level_3": "Entdecke die versteckten Orte auf der Karte.",
+    "level_4": "Nur noch ein paar Orte übrig!",
+    "level_5": "Fast geschafft! Finde die letzten Erinnerungen.",
+    "completed": "✓ Alle Orte erforscht! Du hast alle Erinnerungen gesammelt."
   }
 }

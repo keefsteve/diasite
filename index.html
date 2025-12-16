@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="js/systems/ui.css" />
 </head>
-<body>
+<body class="app-ready">
   <!-- Landing Page -->
   <div id="landing-page" class="page">
     <!-- Clock in upper right corner -->
@@ -18,8 +18,8 @@
     </div>
 
     <!-- Mission box on the right side -->
-    <div class="riddle-note landing-riddle-note" style="position:absolute;bottom:150px;right:40px;left:auto;max-width:380px;text-align:left;">
-      Your first mission: Find the home on the map. The journey begins where family gathers.
+    <div id="mission-box" class="riddle-note landing-riddle-note" style="position:absolute;bottom:150px;right:40px;left:auto;max-width:380px;text-align:left;">
+      Find the next location.
     </div>
 
     <!-- Permanent Steve and Jen sprites in lower left, overlapping -->
@@ -48,15 +48,9 @@
     </div>
 
     <!-- Map Hotspots -->
-    <button class="map-hotspot" data-target="home" style="left:21%;top:25%"></button>
-    <button class="map-hotspot" data-target="tanke" style="left:16%;top:16%"></button>
-    <button class="map-hotspot" data-target="bunker" style="left:27%;top:16%"></button>
-    <button class="map-hotspot" data-target="krivaya" style="left:43%;top:48%"></button>
-    <button class="map-hotspot" data-target="fountain" style="left:58%;top:4%"></button>
-    <button class="map-hotspot" data-target="oma-opa-morg" style="left:53%;top:13%"></button>
+    <button class="map-hotspot locked" data-target="fountain" style="left:58%;top:4%"></button>
     <button class="map-hotspot" data-target="oma-opa-shnol" style="left:58%;top:81%"></button>
     <button class="map-hotspot" data-target="snails" style="left:65.5%;top:79.5%"></button>
-    <button class="map-hotspot" data-target="school" style="left:21%;top:18%"></button>
 
     <!-- Hot/Cold Tracker -->
     <div id="hotcold-tracker"></div>
@@ -125,6 +119,12 @@
         snailsHotspot.addEventListener('click', () => {
           isActive = false;
           tracker.classList.remove('active');
+          // Navigate to snails page
+          if (window.Navigation) {
+            window.Navigation.navigateTo('snails');
+          } else {
+            window.location.hash = 'snails';
+          }
         });
       })();
 
@@ -149,6 +149,70 @@
 
       updateClock();
       setInterval(updateClock, 1000);
+
+      // Mission Box Updater
+      (function() {
+        const missionBox = document.getElementById('mission-box');
+
+        function updateMissionBox() {
+          // Get completed games count from state
+          let completedCount = 0;
+          if (window.DiasiteState && window.DiasiteState.games) {
+            completedCount = Object.values(window.DiasiteState.games).filter(g => g.won).length;
+          }
+
+          // Determine which mission to show based on completed count
+          let missionKey = 'missions.level_0';
+          if (completedCount >= 8) {
+            missionKey = 'missions.completed';
+          } else if (completedCount >= 5) {
+            missionKey = 'missions.level_5';
+          } else if (completedCount >= 4) {
+            missionKey = 'missions.level_4';
+          } else if (completedCount >= 3) {
+            missionKey = 'missions.level_3';
+          } else if (completedCount >= 2) {
+            missionKey = 'missions.level_2';
+          } else if (completedCount >= 1) {
+            missionKey = 'missions.level_1';
+          }
+
+          // Update mission text using i18n if available
+          if (window.i18n) {
+            missionBox.textContent = window.i18n.t(missionKey);
+          } else {
+            // Fallback to basic messages if i18n not available
+            const fallbackMessages = {
+              0: 'Finde den nächsten Ort.',
+              1: 'Finde das Uni-Center, wo Oma noch was erledigen muss!',
+              2: 'Sammle weitere Erinnerungen aus deiner Kindheit.',
+              3: 'Entdecke die versteckten Orte auf der Karte.',
+              4: 'Nur noch ein paar Orte übrig!',
+              5: 'Fast geschafft! Finde die letzten Erinnerungen.'
+            };
+            missionBox.textContent = fallbackMessages[Math.min(completedCount, 5)] || fallbackMessages[0];
+          }
+        }
+
+        // Update on game won events
+        window.addEventListener('gameWon', updateMissionBox);
+
+        // Update when landing page becomes active
+        const observer = new MutationObserver(() => {
+          const landingPage = document.getElementById('landing-page');
+          if (landingPage && landingPage.classList.contains('active')) {
+            updateMissionBox();
+          }
+        });
+
+        const landingPage = document.getElementById('landing-page');
+        if (landingPage) {
+          observer.observe(landingPage, { attributes: true, attributeFilter: ['class'] });
+        }
+
+        // Initial update
+        updateMissionBox();
+      })();
 
       // ASCII Seagulls flying across the landing page with wing flapping
       (function() {
@@ -222,184 +286,6 @@
     </script>
   </div>
 
-  <!-- Krivaya Page -->
-  <div id="krivaya" class="page" style="align-items: flex-start; justify-content: flex-start;">
-    <div class="page-header">
-      <h2>Zip Line Rescue</h2>
-      <button class="back-btn" data-target="landing-page">← Back</button>
-    </div>
-    <div class="location-content">
-      <div class="location-top-row">
-        <div class="location-image-container">
-          <img src="/assets/sprites/places/krivaya.jpeg" alt="Krivaya" class="location-image" onerror="this.style.display='none'" />
-        </div>
-
-        <div class="game-container">
-          <div class="play-overlay">
-            <button class="play-btn" onclick="startGame('krivaya')">▶ Play</button>
-          </div>
-          <p class="game-instructions">Move people across the zip lines! Rescued: <span id="zipline-score">0</span> | Time: <span id="zipline-timer">30</span>s</p>
-          <div id="zipline-area"></div>
-        </div>
-      </div>
-
-      <div class="location-message-row">
-        <div class="riddle-note location-message-box">
-          Изогнутая горка — великан из металла, что возвышался над нашим детством. С дедушкой и бабушкой мы приходили сюда, зная правило: только тот, кто съел всё до последней ложки, кто победил овощи на тарелке — тот заслужит, чтобы тросовая дорога ожила.
-        </div>
-        <div class="location-sprites">
-          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
-          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- School Page -->
-  <div id="school" class="page" style="align-items: flex-start; justify-content: flex-start;">
-    <div class="page-header">
-      <h2>School</h2>
-      <button class="back-btn" data-target="landing-page">← Zurück</button>
-    </div>
-    <div class="location-content">
-      <div class="location-top-row">
-        <div class="location-image-container">
-          <img src="/assets/sprites/places/school.jpeg" alt="School" class="location-image" onerror="this.style.display='none'" />
-        </div>
-
-        <div class="cv-content">
-          <section class="cv-section">
-            <h3>Profile</h3>
-            <p>A passionate individual with diverse interests in technology, arts, and exploration.</p>
-          </section>
-          <section class="cv-section">
-            <h3>Experience</h3>
-            <ul>
-              <li><strong>Creative Director</strong> - XYZ Studio (2020-Present)</li>
-              <li><strong>Digital Designer</strong> - ABC Agency (2018-2020)</li>
-              <li><strong>Junior Developer</strong> - StartupCo (2016-2018)</li>
-            </ul>
-          </section>
-          <section class="cv-section">
-            <h3>Skills</h3>
-            <p>Web Design • JavaScript • Creative Problem Solving • Team Leadership</p>
-          </section>
-        </div>
-      </div>
-
-      <div class="location-message-row">
-        <div class="riddle-note location-message-box">
-          Your riddle text here
-        </div>
-        <div class="location-sprites">
-          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
-          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Home Page -->
-  <div id="home" class="page" style="align-items: flex-start; justify-content: flex-start;">
-    <div class="page-header">
-      <h2>Home</h2>
-      <button class="back-btn" data-target="landing-page">← Zurück</button>
-    </div>
-    <div class="location-content">
-      <div class="location-top-row">
-        <div class="location-image-container">
-          <img src="/assets/sprites/places/home.png" alt="Home" class="location-image" onerror="this.style.display='none'" />
-        </div>
-
-        <div class="game-container">
-          <div class="play-overlay">
-            <button class="play-btn" onclick="startGame('home')">▶ Play</button>
-          </div>
-          <p class="game-instructions">Click to smash the wall! Hits: <span id="wall-hits">0</span> / 60</p>
-          <div id="wall-container"></div>
-        </div>
-      </div>
-
-      <div class="location-message-row">
-        <div class="riddle-note location-message-box">
-          Your riddle text here
-        </div>
-        <div class="location-sprites">
-          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
-          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tanke Page -->
-  <div id="tanke" class="page" style="align-items: flex-start; justify-content: flex-start;">
-    <div class="page-header">
-      <h2>Curved Slide Race</h2>
-      <button class="back-btn" data-target="landing-page">← Back</button>
-    </div>
-    <div class="location-content">
-      <div class="location-top-row">
-        <div class="location-image-container">
-          <img src="/assets/sprites/places/tanke.jpeg" alt="Tanke" class="location-image" onerror="this.style.display='none'" />
-        </div>
-
-        <div class="game-container">
-          <div class="play-overlay">
-            <button class="play-btn" onclick="startGame('tanke')">▶ Play</button>
-          </div>
-          <p class="game-instructions">Race down the curved slide! Avoid obstacles! Score: <span id="slide-score">0</span> | Lives: <span id="slide-lives">3</span></p>
-          <div id="slide-area"></div>
-        </div>
-      </div>
-
-      <div class="location-message-row">
-        <div class="riddle-note location-message-box">
-          Заправка. Место, где правила встретились с желанием. Леденец — сладкая награда за первый бунт. Помнишь? Ты пересекла черту, которую не следовало пересекать.
-        </div>
-        <div class="location-sprites">
-          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
-          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Bunker Page -->
-  <div id="bunker" class="page" style="align-items: flex-start; justify-content: flex-start;">
-    <div class="page-header">
-      <h2>Type Fast!</h2>
-      <button class="back-btn" data-target="landing-page">← Back</button>
-    </div>
-    <div class="location-content">
-      <div class="location-top-row">
-        <div class="location-image-container">
-          <img src="/assets/sprites/places/bunker.jpeg" alt="Bunker" class="location-image" onerror="this.style.display='none'" />
-        </div>
-
-        <div class="game-container">
-          <div class="play-overlay">
-            <button class="play-btn" onclick="startGame('bunker')">▶ Play</button>
-          </div>
-          <p class="game-instructions">Type the words as they appear! Score: <span id="typing-score">0</span> | Time: <span id="typing-timer">30</span>s</p>
-          <div id="typing-word" style="font-size:2rem;font-weight:700;margin:20px 0;color:var(--pink)"></div>
-          <input type="text" id="typing-input" placeholder="Type here..." style="padding:12px;font-size:1.1rem;width:300px;border:2px solid var(--pink);border-radius:8px" />
-          <div id="typing-feedback" style="margin-top:10px;font-weight:600"></div>
-        </div>
-      </div>
-
-      <div class="location-message-row">
-        <div class="riddle-note location-message-box">
-          Your riddle text here
-        </div>
-        <div class="location-sprites">
-          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
-          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- Fountain Page -->
   <div id="fountain" class="page" style="align-items: flex-start; justify-content: flex-start;">
     <div class="page-header">
@@ -421,9 +307,6 @@
       </div>
 
       <div class="location-message-row">
-        <div class="riddle-note location-message-box">
-          Spring zwischen den Steinen zum Wasserfall! ⬅️ ➡️ = Bewegen | Leertaste = Springen (3x stackbar!)
-        </div>
         <div class="location-sprites">
           <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
           <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
@@ -498,6 +381,98 @@
       });
 
       function update() {
+        // CHEAT: Press K to win instantly
+        if (keys['KeyK'] && running) {
+          running = false;
+          console.log('🎮 Cheat activated: Instant win!');
+
+          setTimeout(() => {
+            // Add collectible (Inventory.addItem will show animation)
+            if (window.DiasiteInventory) {
+              window.DiasiteInventory.addItem('nudeCalendar');
+            }
+
+            setTimeout(() => {
+
+              const steveSprite = document.querySelector('#fountain .steve-sprite-static');
+              if (steveSprite) {
+                steveSprite.style.animation = 'characterBounce 2s ease-in-out infinite';
+              }
+
+              const bubble = document.createElement('div');
+              bubble.innerHTML = `
+                <div style="
+                  position: relative;
+                  background: white;
+                  padding: 18px 24px;
+                  border-radius: 20px;
+                  border: 3px solid #667eea;
+                  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+                  font-family: 'Nineteen Ninety Seven', monospace;
+                  font-size: 1rem;
+                  max-width: 380px;
+                  text-align: left;
+                ">
+                  Komm, hör auf bei den Steinen zu springen, Mama holt uns in 15 min bei Oma und Opa ab und Oma wollte am Uni-Center noch was erledigen!
+                  <div style="
+                    position: absolute;
+                    left: -18px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 0;
+                    height: 0;
+                    border-top: 15px solid transparent;
+                    border-bottom: 15px solid transparent;
+                    border-right: 18px solid #667eea;
+                  "></div>
+                  <div style="
+                    position: absolute;
+                    left: -14px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 0;
+                    height: 0;
+                    border-top: 12px solid transparent;
+                    border-bottom: 12px solid transparent;
+                    border-right: 15px solid white;
+                  "></div>
+                </div>
+              `;
+              bubble.style.cssText = `
+                position: fixed;
+                bottom: 60px;
+                right: 530px;
+                z-index: 9999;
+                opacity: 0;
+                transition: opacity 0.5s ease-out;
+              `;
+              document.body.appendChild(bubble);
+
+              setTimeout(() => {
+                bubble.style.opacity = '1';
+                bubble.style.animation = 'bubbleBounce 2s ease-in-out infinite';
+              }, 10);
+
+              setTimeout(() => {
+                bubble.style.opacity = '0';
+                setTimeout(() => {
+                  bubble.remove();
+                  if (steveSprite) steveSprite.style.animation = '';
+
+                  if (window.Navigation) {
+                    window.Navigation.navigateTo('landing-page');
+                  }
+
+                  window.dispatchEvent(new CustomEvent('gameWon', {
+                    detail: { gameId: 'fountain' }
+                  }));
+                }, 500);
+              }, 4000);
+            }, 1500);
+          }, 100);
+          return;
+        }
+
         time++;
 
         // Movement
@@ -547,9 +522,94 @@
 
           console.log('🎯 Fountain won! Starting sequence...');
 
-          // Show collectible animation directly
+          // Show collectible animation
           setTimeout(() => {
-            showNudeCalendarSequence();
+            // Add collectible to inventory (will show animation)
+            if (window.DiasiteInventory) {
+              window.DiasiteInventory.addItem('nudeCalendar');
+            }
+
+            setTimeout(() => {
+
+              // Find Steve sprite
+              const steveSprite = document.querySelector('#fountain .steve-sprite-static');
+              if (steveSprite) {
+                steveSprite.style.animation = 'characterBounce 2s ease-in-out infinite';
+              }
+
+              // Create speech bubble - same style as snails game
+              const bubble = document.createElement('div');
+              bubble.innerHTML = `
+                <div style="
+                  position: relative;
+                  background: white;
+                  padding: 18px 24px;
+                  border-radius: 20px;
+                  border: 3px solid #667eea;
+                  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+                  font-family: 'Nineteen Ninety Seven', monospace;
+                  font-size: 1rem;
+                  max-width: 380px;
+                  text-align: left;
+                ">
+                  Komm, hör auf bei den Steinen zu springen, Mama holt uns in 15 min bei Oma und Opa ab und Oma wollte am Uni-Center noch was erledigen!
+                  <div style="
+                    position: absolute;
+                    left: -18px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 0;
+                    height: 0;
+                    border-top: 15px solid transparent;
+                    border-bottom: 15px solid transparent;
+                    border-right: 18px solid #667eea;
+                  "></div>
+                  <div style="
+                    position: absolute;
+                    left: -14px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 0;
+                    height: 0;
+                    border-top: 12px solid transparent;
+                    border-bottom: 12px solid transparent;
+                    border-right: 15px solid white;
+                  "></div>
+                </div>
+              `;
+              bubble.style.cssText = `
+                position: fixed;
+                bottom: 60px;
+                right: 530px;
+                z-index: 9999;
+                opacity: 0;
+                transition: opacity 0.5s ease-out;
+              `;
+              document.body.appendChild(bubble);
+
+              setTimeout(() => {
+                bubble.style.opacity = '1';
+                bubble.style.animation = 'bubbleBounce 2s ease-in-out infinite';
+              }, 10);
+
+              setTimeout(() => {
+                bubble.style.opacity = '0';
+                setTimeout(() => {
+                  bubble.remove();
+                  if (steveSprite) steveSprite.style.animation = '';
+
+                  // Navigate to landing page and activate tracker
+                  if (window.Navigation) {
+                    window.Navigation.navigateTo('landing-page');
+                  }
+
+                  // Activate hot/cold tracker for snails
+                  window.dispatchEvent(new CustomEvent('gameWon', {
+                    detail: { gameId: 'fountain' }
+                  }));
+                }, 500);
+              }, 4000);
+            }, 1500);
           }, 300);
         }
 
@@ -614,164 +674,13 @@
 
       loop();
     }
-
-    // Complete sequence for nudeCalendar
-    function showNudeCalendarSequence() {
-      console.log('🎬 Starting nudeCalendar sequence');
-
-      // 1. Show collectible animation
-      const animContainer = document.createElement('div');
-      animContainer.className = 'collectible-animation';
-      animContainer.innerHTML = `
-        <div class="collectible-box">
-          <img src="/assets/sprites/objects/nudeCalendar.png" alt="Nude Calendar" class="collectible-image" style="width: 150px; height: 150px; object-fit: contain; margin-bottom: 15px;" />
-          <div class="collectible-text">ITEM GET!</div>
-          <div class="collectible-name">Nude Calendar</div>
-        </div>
-      `;
-      document.body.appendChild(animContainer);
-
-      // 2. Remove animation after 1.5s and show Steve dialogue
-      setTimeout(() => {
-        animContainer.remove();
-        console.log('💬 Showing Steve dialogue');
-
-        // Find Steve sprite
-        const steveSprite = document.querySelector('#fountain .steve-sprite-static');
-        if (steveSprite) {
-          console.log('✅ Found Steve sprite, adding bounce');
-          steveSprite.style.animation = 'characterBounce 2s ease-in-out infinite';
-        } else {
-          console.error('❌ Steve sprite not found!');
-        }
-
-        // Create dialogue bubble with triangle - positioned right bottom, above inventory
-        const bubble = document.createElement('div');
-        bubble.innerHTML = `
-          <div style="
-            position: relative;
-            background: white;
-            padding: 18px 24px;
-            border-radius: 20px;
-            border: 3px solid #667eea;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-            font-family: 'Nineteen Ninety Seven', monospace;
-            font-size: 1rem;
-            max-width: 380px;
-            text-align: left;
-          ">
-            Komm, hör auf bei den Steinen zu springen, Mama holt uns in 15 min bei Oma und Opa ab und Oma wollte am Uni-Center noch was erledigen!
-            <div style="
-              position: absolute;
-              left: -18px;
-              top: 50%;
-              transform: translateY(-50%);
-              width: 0;
-              height: 0;
-              border-top: 15px solid transparent;
-              border-bottom: 15px solid transparent;
-              border-right: 18px solid #667eea;
-            "></div>
-            <div style="
-              position: absolute;
-              left: -14px;
-              top: 50%;
-              transform: translateY(-50%);
-              width: 0;
-              height: 0;
-              border-top: 12px solid transparent;
-              border-bottom: 12px solid transparent;
-              border-right: 15px solid white;
-            "></div>
-          </div>
-        `;
-        bubble.style.cssText = `
-          position: fixed;
-          bottom: 60px;
-          right: 480px;
-          z-index: 9999;
-          opacity: 0;
-          transition: opacity 0.5s ease-out;
-        `;
-        document.body.appendChild(bubble);
-        console.log('✅ Bubble added to body');
-
-        // Trigger fade-in and start bounce
-        setTimeout(() => {
-          bubble.style.opacity = '1';
-          bubble.style.animation = 'bubbleBounce 2s ease-in-out infinite';
-        }, 10);
-
-        // 3. After 6 seconds, navigate to landing page
-        setTimeout(() => {
-          bubble.remove();
-          if (steveSprite) {
-            steveSprite.style.animation = '';
-          }
-
-          console.log('🗺️ Navigating to landing page');
-
-          // Navigate to landing page
-          document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-          const landingPage = document.getElementById('landing-page');
-          if (landingPage) {
-            landingPage.classList.add('active');
-          }
-
-          // Add item to inventory
-          if (window.DiasiteInventory) {
-            window.DiasiteInventory.addItem('nudeCalendar');
-          }
-
-          // ACTIVATE HOT/COLD TRACKER
-          console.log('🔥❄️ Activating hot/cold tracker');
-          window.dispatchEvent(new CustomEvent('gameWon', {
-            detail: { gameId: 'fountain' }
-          }));
-        }, 6000);
-      }, 1500);
-    }
   </script>
-
-  <!-- Oma Opa Morg Page -->
-  <div id="oma-opa-morg" class="page" style="align-items: flex-start; justify-content: flex-start;">
-    <div class="page-header">
-      <h2>Simon Says</h2>
-      <button class="back-btn" data-target="landing-page">← Back</button>
-    </div>
-    <div class="location-content">
-      <div class="location-top-row">
-        <div class="location-image-container">
-          <img src="/assets/sprites/places/oma-opa-morg.jpeg" alt="Oma Opa Morg" class="location-image" onerror="this.style.display='none'" />
-        </div>
-
-        <div class="game-container">
-          <div class="play-overlay">
-            <button class="play-btn" onclick="startGame('oma-opa-morg')">▶ Play</button>
-          </div>
-          <p class="game-instructions">Watch and repeat the sequence! Level: <span id="simon-level">1</span></p>
-          <div id="simon-grid" style="display:grid;grid-template-columns:repeat(2,120px);gap:10px;margin:20px auto;width:fit-content"></div>
-          <div id="simon-message" style="margin-top:10px;font-weight:600"></div>
-        </div>
-      </div>
-
-      <div class="location-message-row">
-        <div class="riddle-note location-message-box">
-          Your riddle text here
-        </div>
-        <div class="location-sprites">
-          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
-          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- Oma Opa Shnol Page -->
   <div id="oma-opa-shnol" class="page" style="align-items: flex-start; justify-content: flex-start;">
     <div class="page-header">
-      <h2>Pattern Unlock</h2>
-      <button class="back-btn" data-target="landing-page">← Back</button>
+      <h2>Oma & Opa Shnol</h2>
+      <button class="back-btn" data-target="landing-page">← Zurück</button>
     </div>
     <div class="location-content">
       <div class="location-top-row">
@@ -780,19 +689,38 @@
         </div>
 
         <div class="game-container">
-          <div class="play-overlay">
-            <button class="play-btn" onclick="startGame('oma-opa-shnol')">▶ Play</button>
+          <p class="game-instructions">Dodge the belt! Dodged: <span id="belt-dodged">0</span> / 7 | Hits: <span id="belt-hits">0</span> / 3</p>
+          <div id="belt-game-area" style="text-align:center;padding:20px;">
+            <div id="belt-status" style="font-size:1.5rem;font-weight:700;margin:20px 0;min-height:50px;color:var(--terracotta)">
+              Pick which cheek to show!
+            </div>
+            <div style="width:600px;height:450px;margin:30px auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
+              <!-- Background cheeks image (centered, top) -->
+              <img src="assets/sprites/objects/cheeks.png" alt="Cheeks" style="width:350px;height:280px;object-fit:contain;pointer-events:none;" onerror="this.style.display='none';console.error('Cheeks image not found')" />
+
+              <!-- Clickable cheeks row (centered, bottom) -->
+              <div style="display:flex;align-items:center;justify-content:center;gap:15px;margin-top:-200px;">
+                <!-- Clickable left cheek overlay -->
+                <img id="pick-left" src="assets/sprites/objects/leftCheek.png" alt="Left Cheek"
+                     style="width:120px;height:150px;object-fit:contain;cursor:pointer;transition:transform 0.3s ease;z-index:2;"
+                     class="cheek-selectable"
+                     onerror="this.style.display='none';console.error('Left cheek image not found')" />
+
+                <!-- Clickable right cheek overlay -->
+                <img id="pick-right" src="assets/sprites/objects/rightCheek.png" alt="Right Cheek"
+                     style="width:120px;height:150px;object-fit:contain;cursor:pointer;transition:transform 0.3s ease;z-index:2;"
+                     class="cheek-selectable"
+                     onerror="this.style.display='none';console.error('Right cheek image not found')" />
+              </div>
+            </div>
+            <div id="belt-animation" style="font-size:6rem;min-height:100px;display:flex;align-items:center;justify-content:center;"></div>
           </div>
-          <p class="game-instructions">Memorize and draw the pattern! Attempts: <span id="pattern-attempts">3</span></p>
-          <div id="pattern-display" style="margin:20px auto;width:fit-content"></div>
-          <div id="pattern-grid" style="display:grid;grid-template-columns:repeat(3,80px);gap:10px;margin:20px auto;width:fit-content"></div>
-          <button id="pattern-check" style="padding:10px 20px;background:var(--pink);color:white;border:none;border-radius:8px;cursor:pointer">Check Pattern</button>
         </div>
       </div>
 
       <div class="location-message-row">
         <div class="riddle-note location-message-box">
-          Your riddle text here
+          Избежать ремня — вот было искусство. Каждый раз, когда бабушка считала до трёх, мы знали: надо быстро выбрать, какую половину подставить судьбе.
         </div>
         <div class="location-sprites">
           <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
@@ -801,6 +729,153 @@
       </div>
     </div>
   </div>
+  <script>
+    (function() {
+      const leftBtn = document.getElementById('pick-left');
+      const rightBtn = document.getElementById('pick-right');
+      const statusEl = document.getElementById('belt-status');
+      const animEl = document.getElementById('belt-animation');
+      const dodgedEl = document.getElementById('belt-dodged');
+      const hitsEl = document.getElementById('belt-hits');
+
+      if (!leftBtn || !rightBtn) return;
+
+      let dodged = 0;
+      let hits = 0;
+      let gameActive = true;
+
+      function makePick(playerChoice) {
+        if (!gameActive) return;
+
+        // Show selection effect (only scale up, no wiggle)
+        const selectedCheek = playerChoice === 'left' ? leftBtn : rightBtn;
+        selectedCheek.style.transform = 'scale(1.15)';
+
+        // Disable clicking
+        leftBtn.style.pointerEvents = 'none';
+        rightBtn.style.pointerEvents = 'none';
+        leftBtn.style.opacity = '0.7';
+        rightBtn.style.opacity = '0.7';
+
+        // Random belt direction
+        const beltSwing = Math.random() < 0.5 ? 'left' : 'right';
+
+        // Show countdown
+        let countdown = 3;
+        statusEl.textContent = `Oma is counting: ${countdown}...`;
+        statusEl.style.color = 'var(--muted-red)';
+
+        const countInterval = setInterval(() => {
+          countdown--;
+          if (countdown > 0) {
+            statusEl.textContent = `Oma is counting: ${countdown}...`;
+          } else {
+            clearInterval(countInterval);
+
+            // Show belt swing
+            animEl.textContent = beltSwing === 'left' ? '💥⬅️' : '➡️💥';
+            animEl.style.animation = 'beltSwing 0.3s ease-out';
+
+            setTimeout(() => {
+              animEl.style.animation = '';
+
+              // Check result
+              if (playerChoice === beltSwing) {
+                // HIT! Add impact effect
+                const hitCheek = playerChoice === 'left' ? leftBtn : rightBtn;
+                hitCheek.style.transform = 'scale(1.3) rotate(5deg)';
+                hitCheek.style.animation = 'hitWiggle 0.5s ease-in-out';
+
+                hits++;
+                hitsEl.textContent = hits;
+                statusEl.textContent = `💥 OUCH! The belt hit your ${playerChoice} cheek!`;
+                statusEl.style.color = '#ff4444';
+
+                if (hits >= 3) {
+                  gameActive = false;
+                  setTimeout(() => {
+                    statusEl.textContent = '😢 Game Over! Try again!';
+                    flashMessage('Too many hits! Better luck next time!');
+                  }, 1500);
+                  return;
+                }
+              } else {
+                // DODGED!
+                dodged++;
+                dodgedEl.textContent = dodged;
+                statusEl.textContent = `✨ Nice dodge! The belt swung ${beltSwing}, you showed ${playerChoice}!`;
+                statusEl.style.color = 'green';
+
+                if (dodged >= 7) {
+                  gameActive = false;
+                  setTimeout(() => {
+                    statusEl.textContent = '🎉 YOU WIN! Belt-dodging master!';
+                    flashMessage('You successfully dodged the belt 7 times! 🎉');
+
+                    // Mark game won
+                    if (typeof gameManager !== 'undefined') {
+                      gameManager.markWon('oma-opa-shnol');
+                    }
+
+                    // TODO: Add collectible and navigation
+                  }, 1500);
+                  return;
+                }
+              }
+
+              // Re-enable buttons
+              setTimeout(() => {
+                animEl.textContent = '';
+                statusEl.textContent = 'Pick which cheek to show!';
+                statusEl.style.color = 'var(--terracotta)';
+                leftBtn.style.pointerEvents = 'auto';
+                rightBtn.style.pointerEvents = 'auto';
+                leftBtn.style.opacity = '1';
+                rightBtn.style.opacity = '1';
+                leftBtn.style.transform = 'scale(1)';
+                rightBtn.style.transform = 'scale(1)';
+                leftBtn.style.animation = '';
+                rightBtn.style.animation = '';
+              }, 1500);
+            }, 300);
+          }
+        }, 800);
+      }
+
+      leftBtn.addEventListener('click', () => makePick('left'));
+      rightBtn.addEventListener('click', () => makePick('right'));
+
+      // Add belt swing and cheek animation CSS
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes beltSwing {
+          0% { transform: scale(1) rotate(0deg); }
+          50% { transform: scale(1.5) rotate(15deg); }
+          100% { transform: scale(1) rotate(0deg); }
+        }
+        @keyframes hitWiggle {
+          0%, 100% { transform: scale(1.3) rotate(0deg); }
+          10% { transform: scale(1.4) rotate(-8deg); }
+          20% { transform: scale(1.3) rotate(8deg); }
+          30% { transform: scale(1.4) rotate(-8deg); }
+          40% { transform: scale(1.3) rotate(8deg); }
+          50% { transform: scale(1.4) rotate(-5deg); }
+          60% { transform: scale(1.3) rotate(5deg); }
+          70% { transform: scale(1.3) rotate(-3deg); }
+          80% { transform: scale(1.3) rotate(3deg); }
+          90% { transform: scale(1.3) rotate(-1deg); }
+        }
+        .cheek-selectable:hover {
+          transform: scale(1.05);
+          filter: brightness(1.1);
+        }
+        .cheek-selectable:active {
+          transform: scale(0.98);
+        }
+      `;
+      document.head.appendChild(style);
+    })();
+  </script>
 
   <!-- Snails/Uni-Center Page -->
   <div id="snails" class="page" style="align-items: flex-start; justify-content: flex-start;">
@@ -836,49 +911,97 @@
   </div>
 
   <script>
-    function startSnailsGame() {
-      const overlay = document.querySelector('#snails .play-overlay');
-      if (overlay) overlay.classList.add('hidden');
-
-      if (typeof startGame === 'function') {
-        startGame('snails');
-      }
-    }
+    (function() {
+      const keys = {};
+      let gameRunning = false;
+      let gameInterval = null;
+      
+      document.addEventListener('keydown', (e) => { keys[e.code] = true; });
+      document.addEventListener('keyup', (e) => { keys[e.code] = false; });
+      
+      window.startSnailsGame = function() {
+        const overlay = document.querySelector('#snails .play-overlay');
+        if (overlay) overlay.classList.add('hidden');
+        
+        const wall = document.getElementById('snail-wall');
+        const caughtEl = document.getElementById('snails-caught');
+        const totalEl = document.getElementById('snails-total');
+        const timerEl = document.getElementById('snail-timer');
+        
+        if(!wall) return;
+        
+        const totalSnails = 42;
+        const timeLimit = 30;
+        let caught = 0;
+        let startTime = Date.now();
+        gameRunning = true;
+        
+        wall.innerHTML = '';
+        wall.style.cssText = 'position:relative;width:100%;height:65vh;max-width:650px;margin:0;background-image:url("assets/sprites/places/wall.jpeg");background-size:cover;background-position:center;border-radius:12px;border:4px solid #8b5a3c;box-shadow:inset 0 0 20px rgba(0,0,0,0.3);overflow:hidden;';
+        
+        totalEl.textContent = totalSnails;
+        
+        // Create snails
+        for(let i=0; i<totalSnails; i++){
+          const snail = document.createElement('button');
+          snail.textContent = '🐌';
+          const rand = Math.random();
+          let size = rand < 0.6 ? 0.3 + Math.random() * 0.7 : rand < 0.9 ? 1.5 + Math.random() : 2.5 + Math.random() * 1.5;
+          snail.style.cssText = `position:absolute;left:${5+Math.random()*85}%;top:${5+Math.random()*85}%;font-size:${size}rem;background:transparent;border:none;cursor:pointer;transition:transform 0.1s;z-index:${Math.floor(Math.random()*10)};`;
+          
+          snail.addEventListener('click', ()=>{
+            if(!gameRunning) return;
+            caught++;
+            caughtEl.textContent = caught;
+            snail.remove();
+            
+            if(caught === totalSnails){
+              gameRunning = false;
+              clearInterval(gameInterval);
+              window.showJenVictory && window.showJenVictory();
+              window.flashMessage && window.flashMessage('All snails caught! 🐌');
+              window.gameManager && window.gameManager.markWon('snails');
+            }
+          });
+          
+          snail.addEventListener('mouseenter', ()=> snail.style.transform='scale(1.2)');
+          snail.addEventListener('mouseleave', ()=> snail.style.transform='scale(1)');
+          wall.appendChild(snail);
+        }
+        
+        // Timer with K cheat
+        gameInterval = setInterval(()=>{
+          if(!gameRunning) return;
+          
+          // CHEAT: K to win
+          if(keys['KeyK']){
+            gameRunning = false;
+            clearInterval(gameInterval);
+            window.showJenVictory && window.showJenVictory();
+            window.flashMessage && window.flashMessage('Cheat activated! 🐌');
+            window.gameManager && window.gameManager.markWon('snails');
+            return;
+          }
+          
+          const elapsed = Math.floor((Date.now()-startTime)/1000);
+          const remaining = timeLimit - elapsed;
+          
+          if(remaining <= 0){
+            gameRunning = false;
+            clearInterval(gameInterval);
+            timerEl.textContent = '0';
+            timerEl.style.color = '#ff4444';
+            window.flashMessage && window.flashMessage(`Time's up! You caught ${caught}/${totalSnails} snails.`);
+            window.gameManager && window.gameManager.markLost('snails');
+            wall.querySelectorAll('button').forEach(s => { s.style.opacity='0.3'; s.style.pointerEvents='none'; });
+          } else {
+            timerEl.textContent = remaining;
+            if(remaining <= 10) timerEl.style.color = '#ff6600';
+          }
+        }, 100);
+      };
+    })();
   </script>
-
-  <!-- Hustadt Dub Page -->
-  <div id="hustadt-dub" class="page" style="align-items: flex-start; justify-content: flex-start;">
-    <div class="page-header">
-      <h2>Math Lightning</h2>
-      <button class="back-btn" data-target="landing-page">← Back</button>
-    </div>
-    <div class="location-content">
-      <div class="location-top-row">
-        <div class="location-image-container">
-          <img src="/assets/sprites/places/hustadt-dub.jpeg" alt="Hustadt Dub" class="location-image" onerror="this.style.display='none'" />
-        </div>
-
-        <div class="game-container">
-          <div class="play-overlay">
-            <button class="play-btn" onclick="startGame('hustadt-dub')">▶ Play</button>
-          </div>
-          <p class="game-instructions">Solve as many as you can! Score: <span id="math-score">0</span> | Time: <span id="math-timer">60</span>s</p>
-          <div id="math-problem" style="font-size:2.5rem;font-weight:700;margin:30px 0;color:var(--pink)"></div>
-          <div id="math-options" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"></div>
-        </div>
-      </div>
-
-      <div class="location-message-row">
-        <div class="riddle-note location-message-box">
-          Your riddle text here
-        </div>
-        <div class="location-sprites">
-          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
-          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- Inventory Bar -->
   <aside id="inventory">
@@ -920,16 +1043,11 @@
   </script>
 
   <!-- Scripts -->
-  <script type="module">
-    // Load systems first
-    import('./js/systems/character-dialogue.js');
-    import('./js/systems/game-flow.js');
-  </script>
   <script type="module" src="/js/main.js"></script>
   <script src="/js/games/fountain-jump.js"></script>
   <script src="/js/games/fountain-integration.js"></script>
-  <script defer src="app.js"></script>
-  <script defer src="minigames.js"></script>
+  <script defer src="/app.js"></script>
+  <script defer src="/minigames.js"></script>
 
   <!-- Steve Speaking Animation Helper -->
   <script>

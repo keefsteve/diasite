@@ -308,15 +308,7 @@
   height: 420px;
   object-fit: contain;
   filter: drop-shadow(0 4px 20px rgba(0,0,0,0.3));
-  animation: steveBounce 1s ease-in-out infinite;
-}
-
-/* Enhanced bounce for Steve when speaking */
-@keyframes steveBounce {
-  0%, 100% { transform: translateY(0) translateX(0); }
-  25% { transform: translateY(-12px) translateX(3px); }
-  50% { transform: translateY(-20px) translateX(0); }
-  75% { transform: translateY(-12px) translateX(-3px); }
+  animation: characterBounce 1s ease-in-out infinite;
 }
 
 @keyframes bounce {
@@ -326,7 +318,7 @@
 
 /* Static sprite positioning with speaking animation */
 .sprite-speaking {
-  animation: steveBounce 1s ease-in-out infinite !important;
+  animation: characterBounce 1s ease-in-out infinite !important;
   z-index: 10;
   position: relative;
 }
@@ -357,6 +349,45 @@
 }
 
 .steve-bubble::after {
+  content: '';
+  position: absolute;
+  left: -14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 12px solid transparent;
+  border-bottom: 12px solid transparent;
+  border-right: 16px solid white;
+}
+
+/* Jen Bubble - Pink version */
+.jen-bubble {
+  background: white;
+  padding: 20px 30px;
+  border-radius: 25px;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #333;
+  border: 4px solid #ff69b4;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  position: relative;
+}
+
+.jen-bubble::before {
+  content: '';
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 15px solid transparent;
+  border-bottom: 15px solid transparent;
+  border-right: 20px solid #ff69b4;
+}
+
+.jen-bubble::after {
   content: '';
   position: absolute;
   left: -14px;

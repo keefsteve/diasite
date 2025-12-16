@@ -73,6 +73,14 @@ class FountainJumpGame {
       this.player.dy = -this.player.jumpPower;
       this.player.onGround = false;
     }
+
+      // CHEAT: Press K to win 
+    if (this.keys['KeyK']) {
+               this.won = true;
+               this.onWin && this.onWin();
+               return;
+             }
+         
     
     // Schwerkraft
     this.player.dy += this.gravity;

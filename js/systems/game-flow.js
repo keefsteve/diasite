@@ -3,8 +3,8 @@
 // Einheitlicher Win-Handler für alle Games
 // ============================================
 
-import Inventory from './inventory.js';
-import Navigation from './navigation.js';
+import { Inventory } from './inventory.js';
+import { Navigation } from './navigation.js';
 
 class GameFlow {
   handleGameWin(locationId, config) {
@@ -81,5 +81,3 @@ class GameFlow {
 
 const gameFlow = new GameFlow();
 window.GameFlow = gameFlow;
-
-export default gameFlow;

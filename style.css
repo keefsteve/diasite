@@ -172,6 +172,14 @@ body.app-ready .page {
   animation: none;
 }
 
+.map-hotspot.locked {
+  opacity: 0.3;
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+  filter: grayscale(0.8);
+  animation: none !important;
+}
+
 /* Objects - floating magical items */
 .object {
   position: absolute;
@@ -751,7 +759,7 @@ body.app-ready .page {
 .location-sprites .steve-sprite-static {
   width: 420px !important;
   height: 420px !important;
-  object-fit: 420pxcontain;
+  object-fit: contain;
   object-position: bottom;
   margin-left: -80px;
   filter: drop-shadow(4px 4px 8px rgba(0,0,0,0.4));
@@ -902,16 +910,6 @@ body.app-ready .page {
   }
   50% {
     transform: translateY(-8px);
-  }
-}
-
-/* Steve excited bounce animation - smooth and gentle */
-@keyframes steveBounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-12px);
   }
 }
 

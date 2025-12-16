@@ -11,8 +11,10 @@ import { Dialogue } from './systems/dialogue.js';
 import { Navigation } from './systems/navigation.js';
 import { Inventory } from './systems/inventory.js';
 import { Games } from './systems/game-manager.js';
-import CharacterDialogue from './systems/character-dialogue.js';
-import GameFlow from './systems/game-flow.js';
+
+// Load helper modules (they set window.CharacterDialogue and window.GameFlow)
+import './systems/character-dialogue.js';
+import './systems/game-flow.js';
 
 class App {
   constructor() {
@@ -269,5 +271,5 @@ window.DiasiteState = state;
 window.DiasiteGames = Games;
 window.DiasiteInventory = Inventory;
 window.DiasiteNavigation = Navigation;
-
-export default app;
+window.Navigation = Navigation; // Alias for easy access
+window.i18n = i18n; // For mission box and other dynamic text

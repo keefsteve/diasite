@@ -118,74 +118,7 @@ class InventoryManager {
       container.remove();
       console.log('🗑️ Animation removed');
 
-      // Special sequence for nudeCalendar
-      if (itemId === 'nudeCalendar') {
-        this.showSteveDialogueAndNavigate();
-      }
     }, 1500);
-  }
-
-  // Show Steve bouncing with dialogue, then navigate to landing page
-  showSteveDialogueAndNavigate() {
-    console.log('💬 Showing Steve dialogue...');
-
-    // Find Steve sprite on fountain page
-    const steveSprite = document.querySelector('#fountain .steve-sprite-static');
-    if (!steveSprite) {
-      console.warn('⚠️ Steve sprite not found');
-      return;
-    }
-
-    // Add bouncing animation
-    steveSprite.style.animation = 'steveBounce 0.5s ease-in-out infinite';
-
-    // Create dialogue bubble
-    const bubble = document.createElement('div');
-    bubble.className = 'steve-dialogue-bubble';
-    bubble.innerHTML = 'Komm, hör auf bei den Steinen zu springen, Mama holt uns in 15 min bei Oma und Opa ab und Oma wollte am Uni-Center noch was erledigen!';
-    bubble.style.cssText = `
-      position: fixed;
-      bottom: 200px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: white;
-      padding: 20px 30px;
-      border-radius: 15px;
-      border: 3px solid #667eea;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-      font-family: 'Nineteen Ninety Seven';
-      font-size: 1.1rem;
-      max-width: 500px;
-      text-align: center;
-      z-index: 10000;
-      animation: bubbleAppear 0.4s ease-out;
-    `;
-
-    document.body.appendChild(bubble);
-
-    // After 6 seconds, remove bubble and navigate to landing page
-    setTimeout(() => {
-      bubble.remove();
-      steveSprite.style.animation = '';
-
-      // Navigate to landing page
-      if (window.DiasiteNavigation) {
-        window.DiasiteNavigation.navigateTo('landing-page');
-      }
-
-      // Activate hot/cold tracker
-      this.activateHotColdTracker();
-    }, 6000);
-  }
-
-  // Activate hot/cold tracker for snails location
-  activateHotColdTracker() {
-    console.log('🔥❄️ Activating hot/cold tracker...');
-
-    // Dispatch event to activate tracker
-    window.dispatchEvent(new CustomEvent('gameWon', {
-      detail: { gameId: 'fountain' }
-    }));
   }
   
   // Render inventory UI

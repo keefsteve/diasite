@@ -15,6 +15,13 @@ class CharacterDialogue {
       bounce = true
     } = options;
 
+    // Remove existing bubble for this character to prevent duplicates
+    if (this.activeBubbles.has(character)) {
+      const oldBubble = this.activeBubbles.get(character);
+      oldBubble.remove();
+      this.activeBubbles.delete(character);
+    }
+
     // Sprite finden
     const sprite = this.findSprite(character);
     if (!sprite) {
@@ -22,11 +29,16 @@ class CharacterDialogue {
       return;
     }
 
+    // Stop any existing animation first
+    sprite.style.animation = '';
+
     // Bounce Animation starten (nur Y-Achse!)
     if (bounce) {
       const originalTransform = sprite.style.transform || '';
       sprite.dataset.originalTransform = originalTransform;
-      sprite.style.animation = 'characterBounce 2s ease-in-out infinite';
+      setTimeout(() => {
+        sprite.style.animation = 'characterBounce 2s ease-in-out infinite';
+      }, 10);
     }
 
     // Bubble erstellen
@@ -36,13 +48,16 @@ class CharacterDialogue {
 
     // Nach Duration: aufräumen
     setTimeout(() => {
-      bubble.remove();
-      sprite.style.animation = '';
-      if (sprite.dataset.originalTransform) {
-        sprite.style.transform = sprite.dataset.originalTransform;
-      }
-      this.activeBubbles.delete(character);
-      if (onComplete) onComplete();
+      bubble.style.opacity = '0';
+      setTimeout(() => {
+        bubble.remove();
+        sprite.style.animation = '';
+        if (sprite.dataset.originalTransform) {
+          sprite.style.transform = sprite.dataset.originalTransform;
+        }
+        this.activeBubbles.delete(character);
+        if (onComplete) onComplete();
+      }, 500);
     }, duration);
   }
 
@@ -59,29 +74,63 @@ class CharacterDialogue {
   }
 
   createBubble(character, text) {
-    const bubble = document.createElement('div');
-    bubble.className = `${character}-bubble show`;
-    
     const color = character === 'jen' ? '#ff69b4' : '#667eea';
-    
-    bubble.style.cssText = `
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: ${color};
-      color: white;
-      padding: 30px 40px;
-      border-radius: 20px;
-      font-size: 1.3rem;
-      max-width: 500px;
-      text-align: center;
-      z-index: 10000;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-      animation: bubbleAppear 0.3s ease-out;
+
+    const bubble = document.createElement('div');
+    bubble.innerHTML = `
+      <div style="
+        position: relative;
+        background: white;
+        padding: 18px 24px;
+        border-radius: 20px;
+        border: 3px solid ${color};
+        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        font-family: 'Nineteen Ninety Seven', monospace;
+        font-size: 1rem;
+        max-width: 380px;
+        text-align: left;
+      ">
+        ${text}
+        <div style="
+          position: absolute;
+          left: -18px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 0;
+          height: 0;
+          border-top: 15px solid transparent;
+          border-bottom: 15px solid transparent;
+          border-right: 18px solid ${color};
+        "></div>
+        <div style="
+          position: absolute;
+          left: -14px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 0;
+          height: 0;
+          border-top: 12px solid transparent;
+          border-bottom: 12px solid transparent;
+          border-right: 15px solid white;
+        "></div>
+      </div>
     `;
 
-    bubble.textContent = text;
+    bubble.style.cssText = `
+      position: fixed;
+      bottom: 60px;
+      right: 530px;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.5s ease-out;
+    `;
+
+    // Trigger fade-in and bounce
+    setTimeout(() => {
+      bubble.style.opacity = '1';
+      bubble.style.animation = 'bubbleBounce 2s ease-in-out infinite';
+    }, 10);
+
     return bubble;
   }
 
@@ -97,5 +146,3 @@ class CharacterDialogue {
 
 // Global verfügbar machen
 window.CharacterDialogue = new CharacterDialogue();
-
-export default window.CharacterDialogue;
