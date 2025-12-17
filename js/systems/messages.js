@@ -24,7 +24,7 @@ class MessageSystem {
    * @param {string} msg - Die Nachricht
    * @param {number} duration - Dauer in ms (default: 1800)
    */
-  showFlash(msg, duration = 1800) {
+  showFlash(msg, duration = 1500) {
     const el = document.createElement('div');
     el.className = 'flash-message';
     el.textContent = msg;
@@ -33,7 +33,7 @@ class MessageSystem {
     const existingMessages = document.querySelectorAll('.flash-message');
     if (existingMessages.length > 0) {
       // Calculate vertical offset based on number of existing messages
-      const offset = existingMessages.length * 70; // 70px spacing per message
+      const offset = existingMessages.length * 90; // 90px spacing per message (increased)
       el.style.top = `${20 + offset}px`;
     }
 

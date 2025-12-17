@@ -21,7 +21,7 @@
     <button id="red-clock-btn" style="position:absolute;top:30px;right:260px;width:40px;height:40px;background:#ff0000;border:3px solid #000;border-radius:50%;cursor:pointer;z-index:201;box-shadow:0 4px 8px rgba(0,0,0,0.4);"></button>
 
     <!-- Seasonal Controls - under clock -->
-    <div id="seasonal-controls" style="position:absolute;top:140px;right:20px;display:flex;gap:10px;z-index:200;">
+    <div id="seasonal-controls" style="position:absolute;top:120px;right:20px;display:flex;gap:10px;z-index:200;">
       <button class="season-btn" data-season="spring" title="Frühling">Frühling</button>
       <button class="season-btn" data-season="summer" title="Sommer">Sommer</button>
       <button class="season-btn" data-season="autumn" title="Herbst">Herbst</button>
@@ -99,7 +99,7 @@
       <div id="uncollected-list"></div>
     </div>
 
-    <!-- Map Hotspots -->
+    <!-- Map GPS COORDINATES Hotspots -->
     <button class="map-hotspot locked" data-target="fountain" style="left:58%;top:4%"></button>
     <button class="map-hotspot locked" data-target="oma-opa-shnol" style="left:58%;top:81%"></button>
     <button class="map-hotspot" data-target="snails" style="left:65.5%;top:79.5%"></button>
@@ -475,8 +475,8 @@
         y: 150 + Math.random() * 200,  // Full vertical range in pool
         size: 40,
         emoji: '📷',
-        dx: (Math.random() - 0.5) * 5,  // Increased speed for faster tempo
-        dy: (Math.random() - 0.5) * 2.5   // Increased speed for faster tempo
+        dx: (Math.random() - 0.5) * 6,  // Equal speed on both axes
+        dy: (Math.random() - 0.5) * 6   // Equal speed on both axes for free movement
       };
 
       // Activate game when fountain page is active
@@ -561,8 +561,8 @@
 
         // Randomly change camera direction asynchronously (REDUCED to 1.5% chance per frame)
         if (Math.random() < 0.015) {
-          cameraObj.dx = (Math.random() - 0.5) * 5;
-          cameraObj.dy = (Math.random() - 0.5) * 2.5;
+          cameraObj.dx = (Math.random() - 0.5) * 6;
+          cameraObj.dy = (Math.random() - 0.5) * 6;
         }
         
         // Draw camera
@@ -1324,12 +1324,6 @@
                   gameActive = false;
                   setTimeout(() => {
                     statusEl.textContent = '😢 Game Over! Try again!';
-
-                    // Only show message if still on oma-opa-shnol page
-                    const shnolPage = document.getElementById('oma-opa-shnol');
-                    if (shnolPage && shnolPage.classList.contains('active')) {
-                      flashMessage('Too many hits! Better luck next time!');
-                    }
                   }, 1500);
                   return;
                 }
@@ -1344,12 +1338,6 @@
                   gameActive = false;
                   setTimeout(() => {
                     statusEl.textContent = '🎉 YOU WIN! Belt-dodging master!';
-
-                    // Only show message if still on oma-opa-shnol page
-                    const shnolPage = document.getElementById('oma-opa-shnol');
-                    if (shnolPage && shnolPage.classList.contains('active')) {
-                      flashMessage('You successfully dodged the belt 7 times! 🎉');
-                    }
 
                     // Mark game won
                     if (typeof gameManager !== 'undefined') {
@@ -1777,7 +1765,7 @@
 
           setTimeout(() => { characterBubble.style.opacity = '1'; }, 10);
 
-          // STEP 3: Hide character bubble after 5s (more time to read)
+          // STEP 3: Hide character bubble after 3s
           setTimeout(() => {
             characterBubble.style.opacity = '0';
             setTimeout(() => {
@@ -1849,7 +1837,7 @@
                     jenBubble.remove();
                     cleanup();
                   }, 500);
-                }, 4500);
+                }, 3500);
               }
 
               function cleanup() {
@@ -1874,8 +1862,8 @@
                 }, 1000);
               }
             }, 500);
-          }, 5500);  // Increased from 4000 to 5500 for better dialogue timing
-        }, 1500);     // Increased walk-in time
+          }, 3000);  // 3 seconds for character dialogue
+        }, 1500);     // 1.5 seconds walk-in time
       }
 
       // Expose globally for other pages to use
@@ -2123,11 +2111,7 @@
             timerEl.textContent = '0';
             timerEl.style.color = '#ff4444';
 
-            // Only show message if still on snails page
-            const snailsPage = document.getElementById('snails');
-            if (snailsPage && snailsPage.classList.contains('active')) {
-              window.flashMessage && window.flashMessage(`Time's up! You caught ${caught}/${totalSnails} snails.`);
-            }
+
 
             window.gameManager && window.gameManager.markLost('snails');
             wall.querySelectorAll('button').forEach(s => { s.style.opacity='0.3'; s.style.pointerEvents='none'; });

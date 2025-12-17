@@ -51,25 +51,20 @@ class GameManager {
   markWon(gameId) {
     const game = this.games[gameId];
     if (!game) return;
-    
+
     const collectible = game.collectible;
-    
+
     // Update state
     state.markGameWon(gameId, collectible);
-    
-    // Add to inventory
+
+    // Add to inventory (Inventory will show "collected" message)
     if (collectible) {
       Inventory.addItem(collectible);
-      
-      // Show success dialogue
-      const itemName = i18n.t(`collectibles.${collectible}`);
-      const message = i18n.t('messages.gameWon', { item: itemName });
-      this.flashMessage(message);
     }
-    
+
     // Save
     Storage.saveState();
-    
+
     console.log(`✅ Game won: ${gameId}`);
   }
   
