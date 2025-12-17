@@ -461,24 +461,24 @@
     (function() {
       const canvas = document.getElementById('fishing-canvas');
       if (!canvas) return;
-      
+
       const ctx = canvas.getContext('2d');
       let gameActive = false;
       let cameraFound = false;
       let hookX = canvas.width / 2;
       let hookY = 50;
       const hookSpeed = 3;
-      
-      // Camera position - moves around randomly (faster now)
+
+      // Camera position - moves around randomly (faster tempo)
       const cameraObj = {
         x: 100 + Math.random() * 400,
-        y: 300 + Math.random() * 80,
+        y: 150 + Math.random() * 200,  // Full vertical range in pool
         size: 40,
         emoji: '📷',
-        dx: (Math.random() - 0.5) * 4,  // Doubled speed
-        dy: (Math.random() - 0.5) * 2   // Doubled speed
+        dx: (Math.random() - 0.5) * 5,  // Increased speed for faster tempo
+        dy: (Math.random() - 0.5) * 2.5   // Increased speed for faster tempo
       };
-      
+
       // Activate game when fountain page is active
       const fountainPage = document.getElementById('fountain');
       const observer = new MutationObserver(() => {
@@ -490,20 +490,20 @@
           gameActive = false;
         }
       });
-      
+
       observer.observe(fountainPage, { attributes: true, attributeFilter: ['class'] });
-      
+
       // WASD controls with confusing direction swapping
       const keyMap = {
-        w: { dx: 0, dy: -7.5 },
-        a: { dx: -7.5, dy: 0 },
-        s: { dx: 0, dy: 7.5 },
-        d: { dx: 7.5, dy: 0 }
+        w: { dx: 0, dy: -9 },
+        a: { dx: -9, dy: 0 },
+        s: { dx: 0, dy: 9 },
+        d: { dx: 9, dy: 0 }
       };
-      
+
       let currentKeyMap = {...keyMap};
-      
-      // Swap directions more frequently (every 1.5-3 seconds)
+
+      // Swap directions MORE frequently (every 0.8-1.6 seconds)
       setInterval(() => {
         if (!gameActive) return;
         const keys = ['w', 'a', 's', 'd'];
@@ -515,7 +515,7 @@
           [shuffled[2]]: values[2],
           [shuffled[3]]: values[3]
         };
-      }, 1500 + Math.random() * 1500);
+      }, 800 + Math.random() * 800);
       
       document.addEventListener('keydown', (e) => {
         if (!gameActive) return;
@@ -551,18 +551,18 @@
           ctx.fillRect(0, i * 80 + (Date.now() / 100 % 80), canvas.width, 40);
         }
         
-        // Move camera around (makes it harder)
+        // Move camera around freely in the pool
         cameraObj.x += cameraObj.dx;
         cameraObj.y += cameraObj.dy;
 
-        // Bounce camera off walls
+        // Bounce camera off walls (full pool movement)
         if (cameraObj.x < 50 || cameraObj.x > canvas.width - 50) cameraObj.dx *= -1;
-        if (cameraObj.y < 250 || cameraObj.y > canvas.height - 50) cameraObj.dy *= -1;
+        if (cameraObj.y < 50 || cameraObj.y > canvas.height - 50) cameraObj.dy *= -1;
 
-        // Randomly change camera direction asynchronously (5% chance per frame)
-        if (Math.random() < 0.05) {
-          cameraObj.dx = (Math.random() - 0.5) * 4;
-          cameraObj.dy = (Math.random() - 0.5) * 2;
+        // Randomly change camera direction asynchronously (REDUCED to 1.5% chance per frame)
+        if (Math.random() < 0.015) {
+          cameraObj.dx = (Math.random() - 0.5) * 5;
+          cameraObj.dy = (Math.random() - 0.5) * 2.5;
         }
         
         // Draw camera
@@ -598,6 +598,12 @@
       }
       
       function onCameraFound() {
+        // Only proceed if still on fountain page
+        const fountainPage = document.getElementById('fountain');
+        if (!fountainPage || !fountainPage.classList.contains('active')) {
+          return;
+        }
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = '#4A90E2';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -607,8 +613,6 @@
         ctx.font = '20px Arial';
         ctx.fillStyle = '#fff';
         ctx.fillText('Kamera gefunden!', canvas.width / 2, canvas.height / 2 + 60);
-        
-        window.flashMessage && window.flashMessage('📷 Kamera gefunden!', 2000);
 
         // Mark fountain game as won
         if (typeof gameManager !== 'undefined') {
@@ -628,7 +632,11 @@
                 hotspot.style.setProperty('pointer-events', 'auto', 'important');
                 hotspot.style.setProperty('cursor', 'pointer', 'important');
                 hotspot.style.setProperty('opacity', '1', 'important');
+                hotspot.style.setProperty('filter', 'none', 'important');
+                hotspot.style.setProperty('animation', 'pulse 2s ease-in-out infinite', 'important');
                 console.log('✅ Manually unlocked oma-opa-morg hotspot');
+              } else {
+                console.error('❌ oma-opa-morg hotspot not found!');
               }
             }, 200);
           }, 100);
@@ -1407,7 +1415,12 @@
           dodgedEl.textContent = dodged;
           statusEl.textContent = '🎉 YOU WIN! Belt-dodging master!';
           statusEl.style.color = 'green';
-          flashMessage('Cheat activated! You won! 🎉');
+
+          // Only show message if on correct page
+          const shnolPage = document.getElementById('oma-opa-shnol');
+          if (shnolPage && shnolPage.classList.contains('active')) {
+            flashMessage('Cheat activated! You won! 🎉');
+          }
 
           // Mark game won
           if (typeof gameManager !== 'undefined') {
@@ -1520,8 +1533,6 @@
           gameWon = true;
           clearInterval(checkCheat);
 
-          window.flashMessage && window.flashMessage('Skipped Krivaya Gorka! 🎉');
-
           if (typeof gameManager !== 'undefined') {
             gameManager.markWon('krivaya');
           }
@@ -1598,8 +1609,6 @@
         if (keys['KeyK'] && !gameWon && omaMorgPage && omaMorgPage.classList.contains('active')) {
           gameWon = true;
           clearInterval(checkCheat);
-
-          window.flashMessage && window.flashMessage('Skipped Oma & Opa Morg! 🎉');
 
           if (typeof gameManager !== 'undefined') {
             gameManager.markWon('oma-opa-morg');
@@ -1768,7 +1777,7 @@
 
           setTimeout(() => { characterBubble.style.opacity = '1'; }, 10);
 
-          // STEP 3: Hide character bubble after 4s
+          // STEP 3: Hide character bubble after 5s (more time to read)
           setTimeout(() => {
             characterBubble.style.opacity = '0';
             setTimeout(() => {
@@ -1865,8 +1874,8 @@
                 }, 1000);
               }
             }, 500);
-          }, 4000);
-        }, 1200);
+          }, 5500);  // Increased from 4000 to 5500 for better dialogue timing
+        }, 1500);     // Increased walk-in time
       }
 
       // Expose globally for other pages to use
@@ -1939,13 +1948,13 @@
 
           setTimeout(() => { omaBubble.style.opacity = '1'; }, 10);
 
-          // STEP 3: After 4s, hide bubble but keep Oma
+          // STEP 3: After 5.5s, hide bubble but keep Oma (more time to read)
           setTimeout(() => {
             omaBubble.style.opacity = '0';
             setTimeout(() => {
               omaBubble.remove();
 
-              // STEP 4: Both Jen and Steve bounce, show "Danke liebe Frau!!" for 2.5s
+              // STEP 4: Both Jen and Steve bounce, show "Danke liebe Frau!!" for 3s
               // Check if still on snails page
               if(!snailsPage.classList.contains('active')) return;
 
@@ -1966,7 +1975,7 @@
 
               setTimeout(() => { thanksBubble.style.opacity = '1'; }, 10);
 
-              // STEP 5: After 2.5s, remove thanks bubble and show Jen's final message
+              // STEP 5: After 3s, remove thanks bubble and show Jen's final message
               setTimeout(() => {
                 thanksBubble.style.opacity = '0';
                 setTimeout(() => {
@@ -1992,7 +2001,7 @@
 
                   setTimeout(() => { jenFinalBubble.style.opacity = '1'; }, 10);
 
-                  // STEP 6: After 4.5s, clean up everything and navigate
+                  // STEP 6: After 5s, clean up everything and navigate (more time for Jen's message)
                   setTimeout(() => {
                     jenFinalBubble.style.opacity = '0';
                     setTimeout(() => {
@@ -2020,12 +2029,12 @@
                         }
                       }, 1000);
                     }, 500);
-                  }, 4500);
+                  }, 5000);
                 }, 500);
-              }, 2500);
+              }, 3000);
             }, 500);
-          }, 4000);
-        }, 1200); // Wait for walk-in animation to complete
+          }, 5500);
+        }, 1500); // Wait for walk-in animation to complete (increased from 1200)
       }
       
       window.startSnailsGame = function() {

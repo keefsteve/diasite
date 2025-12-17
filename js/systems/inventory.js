@@ -68,6 +68,13 @@ class InventoryManager {
   showCollectibleAnimation(itemId) {
     console.log('🎬 Showing collectible animation for:', itemId);
 
+    // Don't show animation on landing page
+    const landingPage = document.getElementById('landing-page');
+    if (landingPage && landingPage.classList.contains('active')) {
+      console.log('⚠️ Skipping animation - on landing page');
+      return;
+    }
+
     // Get item name with fallback
     let itemName = '📦 Item';
     let displayContent = '';
@@ -192,12 +199,19 @@ class InventoryManager {
   
   // Flash message helper
   flashMessage(msg, duration = 1800) {
+    // Don't show flash messages on landing page
+    const landingPage = document.getElementById('landing-page');
+    if (landingPage && landingPage.classList.contains('active')) {
+      console.log('⚠️ Skipping flash message - on landing page');
+      return;
+    }
+
     const el = document.createElement('div');
     el.className = 'flash-message';
     el.textContent = msg;
-    
+
     document.body.appendChild(el);
-    
+
     setTimeout(() => el.remove(), duration);
   }
   

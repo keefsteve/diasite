@@ -132,16 +132,18 @@ class MessageSystem {
    */
   unlockHotspot(locationId) {
     console.log('🔍 Unlocking hotspot:', locationId);
-    
+
     // Find hotspot with matching data-target
     const hotspot = document.querySelector(`.map-hotspot[data-target="${locationId}"]`);
-    
+
     if (hotspot) {
       const wasLocked = hotspot.classList.contains('locked');
       hotspot.classList.remove('locked');
       hotspot.style.setProperty('pointer-events', 'auto', 'important');
       hotspot.style.setProperty('cursor', 'pointer', 'important');
       hotspot.style.setProperty('opacity', '1', 'important');
+      hotspot.style.setProperty('filter', 'none', 'important');
+      hotspot.style.setProperty('animation', 'pulse 2s ease-in-out infinite', 'important');
       console.log(`✅ ${wasLocked ? 'Unlocked' : 'Already unlocked'}:`, locationId);
     } else {
       console.warn('❌ Hotspot not found:', locationId);
