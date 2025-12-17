@@ -4,9 +4,9 @@
 // ============================================
 
 export const PROGRESSION = {
-  // Level 1: Botanischer Garten (fountain page)
-  'fountain': {
-    level: 1,
+  // Level 0: Botanischer Garten (spawn location, one-time visit)
+  'botanical-garden': {
+    level: 0,
     displayName: 'Botanischer Garten',
     game: 'fountain-jump',
     collectible: 'nudeCalendar',
@@ -15,7 +15,22 @@ export const PROGRESSION = {
     character: 'steve',
     dialogue: 'Ну хватит прыгать по камням, мама нас заберёт через 15 минут у бабушки и дедушки, а бабушка хотела ещё что-то в Юни-Центре сделать!',
     isSpawnLocation: true,
-    buttonVisible: false
+    buttonVisible: false,
+    oneTimeOnly: true
+  },
+
+  // Level 1: Fountain (placeholder for now)
+  'fountain': {
+    level: 1,
+    displayName: 'Fountain',
+    game: null,
+    collectible: null,
+    missionAfter: 'Placeholder for future content',
+    unlocks: [],
+    character: null,
+    dialogue: null,
+    buttonVisible: true,
+    todo: 'To be implemented later'
   },
 
   // Level 2: Uni Center

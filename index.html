@@ -116,7 +116,7 @@
         // Activate tracker for next location based on progression
         window.addEventListener('gameWon', (e) => {
           const progression = {
-            'fountain': 'snails',
+            'botanical-garden': 'snails',
             'snails': 'oma-opa-shnol',
             'oma-opa-shnol': 'krivaya'
           };
@@ -246,14 +246,41 @@
         // Start spawning after a short delay
         setTimeout(scheduleNextSeagull, 3000);
       })();
+
+      // Auto-navigate to Botanical Garden on first start (spawn location)
+      (function() {
+        window.addEventListener('DOMContentLoaded', () => {
+          // Wait for state to load
+          setTimeout(() => {
+            if (window.DiasiteState && window.DiasiteState.gameProgress) {
+              const hasVisitedBotanicalGarden = window.DiasiteState.gameProgress.gamesWon['botanical-garden'];
+
+              // If never visited botanical garden, spawn there
+              if (!hasVisitedBotanicalGarden) {
+                console.log('🌱 First time - spawning at Botanical Garden');
+
+                // Wait a bit for everything to load
+                setTimeout(() => {
+                  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                  const botanicalGarden = document.getElementById('botanical-garden');
+                  if (botanicalGarden) {
+                    botanicalGarden.classList.add('active');
+                    console.log('✅ Botanical Garden activated');
+                  }
+                }, 500);
+              }
+            }
+          }, 100);
+        });
+      })();
     </script>
   </div>
 
-  <!-- Fountain Page -->
-  <div id="fountain" class="page" style="align-items: flex-start; justify-content: flex-start;">
+  <!-- Botanical Garden Page (Spawn Location) -->
+  <div id="botanical-garden" class="page" style="align-items: flex-start; justify-content: flex-start;">
     <div class="page-header">
       <h2>Botanischer Garten</h2>
-      <button class="back-btn" data-target="landing-page">← Zurück</button>
+      <button class="back-btn" data-target="landing-page" style="display:none;">← Zurück</button>
     </div>
     <div class="location-content">
       <div class="location-top-row">
@@ -263,9 +290,9 @@
 
         <div class="game-container">
           <div class="play-overlay">
-            <button class="play-btn" onclick="startFountainGame()">▶ Play</button>
+            <button class="play-btn" onclick="startBotanicalGardenGame()">▶ Play</button>
           </div>
-          <canvas id="fountainCanvas" width="800" height="450" style="background: #4A90E2;"></canvas>
+          <canvas id="botanicalGardenCanvas" width="800" height="450" style="background: #4A90E2;"></canvas>
         </div>
       </div>
 
@@ -278,15 +305,47 @@
     </div>
   </div>
 
-  <script>
-    // Fountain Jump Game - HARD MODE with Multi-Jump Mechanic
-    let fountainGame = null;
+  <!-- Fountain Page (Placeholder) -->
+  <div id="fountain" class="page" style="align-items: flex-start; justify-content: flex-start;">
+    <div class="page-header">
+      <h2>Fountain</h2>
+      <button class="back-btn" data-target="landing-page">← Zurück</button>
+    </div>
+    <div class="location-content">
+      <div class="location-top-row">
+        <div class="location-image-container">
+          <img src="/assets/sprites/places/fountain.jpeg" alt="Fountain" class="location-image" onerror="this.style.display='none'" />
+        </div>
 
-    function startFountainGame() {
-      const overlay = document.querySelector('#fountain .play-overlay');
+        <div class="game-container">
+          <div style="text-align:center;padding:40px;">
+            <h3 style="font-size:2rem;color:var(--terracotta);margin-bottom:20px;">Coming Soon!</h3>
+            <p style="font-size:1.2rem;color:#666;">This location is being developed.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="location-message-row">
+        <div class="riddle-note location-message-box">
+          Placeholder for future fountain content.
+        </div>
+        <div class="location-sprites">
+          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
+          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Botanical Garden Jump Game - HARD MODE with Multi-Jump Mechanic
+    let botanicalGardenGame = null;
+
+    function startBotanicalGardenGame() {
+      const overlay = document.querySelector('#botanical-garden .play-overlay');
       if (overlay) overlay.classList.add('hidden');
 
-      const canvas = document.getElementById('fountainCanvas');
+      const canvas = document.getElementById('botanicalGardenCanvas');
       const ctx = canvas.getContext('2d');
 
       const worldWidth = 3200;
@@ -357,7 +416,7 @@
 
             setTimeout(() => {
 
-              const steveSprite = document.querySelector('#fountain .steve-sprite-static');
+              const steveSprite = document.querySelector('#botanical-garden .steve-sprite-static');
               if (steveSprite) {
                 steveSprite.style.animation = 'characterBounce 2s ease-in-out infinite';
               }
@@ -422,8 +481,13 @@
                   bubble.remove();
                   if (steveSprite) steveSprite.style.animation = '';
 
+                  // Mark game as won BEFORE navigation
+                  if (window.gameManager) {
+                    window.gameManager.markWon('botanical-garden');
+                  }
+
                   // Navigate and dispatch gameWon
-                  console.log('🎮 Fountain game won! Navigating back...');
+                  console.log('🎮 Botanical Garden won! Navigating back...');
                   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
                   const landingPage = document.getElementById('landing-page');
                   if (landingPage) {
@@ -431,9 +495,9 @@
                     console.log('✅ Landing page activated');
                   }
 
-                  console.log('📡 Dispatching gameWon event for fountain');
+                  console.log('📡 Dispatching gameWon event for botanical-garden');
                   window.dispatchEvent(new CustomEvent('gameWon', {
-                    detail: { gameId: 'fountain' }
+                    detail: { gameId: 'botanical-garden' }
                   }));
                 }, 500);
               }, 4000);
@@ -501,7 +565,7 @@
             setTimeout(() => {
 
               // Find Steve sprite
-              const steveSprite = document.querySelector('#fountain .steve-sprite-static');
+              const steveSprite = document.querySelector('#botanical-garden .steve-sprite-static');
               if (steveSprite) {
                 steveSprite.style.animation = 'characterBounce 2s ease-in-out infinite';
               }
@@ -567,6 +631,11 @@
                   bubble.remove();
                   if (steveSprite) steveSprite.style.animation = '';
 
+                  // Mark game as won BEFORE navigation
+                  if (window.gameManager) {
+                    window.gameManager.markWon('botanical-garden');
+                  }
+
                   // Navigate to landing page and activate tracker
                   if (window.Navigation) {
                     window.Navigation.navigateTo('landing-page');
@@ -574,7 +643,7 @@
 
                   // Activate hot/cold tracker for snails
                   window.dispatchEvent(new CustomEvent('gameWon', {
-                    detail: { gameId: 'fountain' }
+                    detail: { gameId: 'botanical-garden' }
                   }));
                 }, 500);
               }, 4000);
@@ -1142,67 +1211,124 @@
       document.addEventListener('keydown', (e) => { keys[e.code] = true; });
       document.addEventListener('keyup', (e) => { keys[e.code] = false; });
       
-      function showOmaReward(onComplete) {
-        console.log('👵 showOmaReward called');
+      function showOmaReward() {
+        console.log('👵 showOmaReward called - Complete timeline');
         const snailsPage = document.querySelector('#snails');
         if(!snailsPage) {
           console.error('❌ Snails page not found!');
           return;
         }
-        console.log('✅ Snails page found, creating Oma sprite');
-        
-        // WICHTIG: Stoppe alle Jen/Steve Animationen während Oma Phase
+
+        // Stop all animations initially
         const jenSprite = document.querySelector('#snails .jen-sprite');
         const steveSprite = document.querySelector('#snails .steve-sprite-static');
-        if(jenSprite) {
-          jenSprite.style.animation = '';
-          jenSprite.dataset.blockedForOma = 'true';
-        }
-        if(steveSprite) {
-          steveSprite.style.animation = '';
-        }
-        
-        // Create Oma sprite absolutely positioned, won't affect other sprites
+        if(jenSprite) jenSprite.style.animation = '';
+        if(steveSprite) steveSprite.style.animation = '';
+
+        // STEP 1: Create Oma sprite - walks in from right (starts off-screen)
         const omaSprite = document.createElement('img');
         omaSprite.src = '/assets/sprites/objects/nesquikOma.png';
-        omaSprite.style.cssText = 'position:absolute;right:50px;bottom:100px;width:350px;height:350px;object-fit:contain;animation:characterBounce 2s ease-in-out infinite;z-index:100;';
+        omaSprite.style.cssText = 'position:absolute;right:-350px;bottom:100px;width:350px;height:350px;object-fit:contain;z-index:100;transition:right 1s ease-out;';
         snailsPage.appendChild(omaSprite);
-        
-        // Create Oma dialogue bubble
-        const bubble = document.createElement('div');
-        bubble.innerHTML = `
-          <div style="position:relative;background:white;padding:18px 24px;border-radius:20px;border:3px solid #f59e0b;box-shadow:0 6px 20px rgba(0,0,0,0.3);font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;max-width:380px;text-align:left;">
-            Gut gemacht Kinder, hier, eine Packung Nesquik!
-            <div style="position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;border-top:18px solid #f59e0b;"></div>
-            <div style="position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:15px solid white;"></div>
-          </div>
-        `;
-        bubble.style.cssText = 'position:fixed;bottom:60px;right:530px;z-index:9999;opacity:0;transition:opacity 0.5s;';
-        document.body.appendChild(bubble);
-        
-        setTimeout(() => { bubble.style.opacity = '1'; }, 10);
 
-        // Remove after 4 seconds, wait for fadeout, then call Jen
+        // Animate Oma walking in (300px from right edge)
         setTimeout(() => {
-          bubble.style.opacity = '0';
-          // Wait for fadeout transition (0.5s) to complete before removing and calling callback
+          omaSprite.style.right = '300px';
+          omaSprite.style.animation = 'characterBounce 2s ease-in-out infinite';
+        }, 100);
+
+        // STEP 2: Show Oma bubble (100px more to the right, after walk-in completes)
+        setTimeout(() => {
+          const omaBubble = document.createElement('div');
+          omaBubble.className = 'oma-bubble';
+          omaBubble.innerHTML = `
+            <div style="position:relative;background:white;padding:18px 24px;border-radius:20px;border:3px solid #f59e0b;box-shadow:0 6px 20px rgba(0,0,0,0.3);font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;max-width:380px;text-align:left;">
+              Gut gemacht Kinder, hier, eine Packung Nesquik!
+              <div style="position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;border-top:18px solid #f59e0b;"></div>
+              <div style="position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:15px solid white;"></div>
+            </div>
+          `;
+          omaBubble.style.cssText = 'position:fixed;bottom:60px;right:430px;z-index:9999;opacity:0;transition:opacity 0.5s;';
+          document.body.appendChild(omaBubble);
+
+          setTimeout(() => { omaBubble.style.opacity = '1'; }, 10);
+
+          // STEP 3: After 4s, hide bubble but keep Oma
           setTimeout(() => {
-            bubble.remove();
-            omaSprite.remove();
-
-            // Unblock Jen sprite for next phase
-            const jenSprite = document.querySelector('#snails .jen-sprite');
-            if(jenSprite) {
-              jenSprite.dataset.blockedForOma = 'false';
-            }
-
-            // Wait an additional 500ms to ensure clean separation
+            omaBubble.style.opacity = '0';
             setTimeout(() => {
-              // Now call Jen victory (after fadeout is complete)
-              onComplete && onComplete();
+              omaBubble.remove();
+
+              // STEP 4: Both Jen and Steve bounce, show "Danke liebe Frau!!" for 2.5s
+              if(jenSprite) jenSprite.style.animation = 'characterBounce 2s ease-in-out infinite';
+              if(steveSprite) steveSprite.style.animation = 'characterBounce 2s ease-in-out infinite';
+
+              const thanksBubble = document.createElement('div');
+              thanksBubble.innerHTML = `
+                <div style="position:relative;background:white;padding:18px 24px;border-radius:20px;border:3px solid #667eea;box-shadow:0 6px 20px rgba(0,0,0,0.3);font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;max-width:380px;text-align:left;">
+                  Danke liebe Frau!!
+                  <div style="position:absolute;left:-18px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:15px solid transparent;border-bottom:15px solid transparent;border-right:18px solid #667eea;"></div>
+                  <div style="position:absolute;left:-14px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:12px solid transparent;border-bottom:12px solid transparent;border-right:15px solid white;"></div>
+                </div>
+              `;
+              thanksBubble.style.cssText = 'position:fixed;bottom:60px;right:530px;z-index:9999;opacity:0;transition:opacity 0.5s;';
+              document.body.appendChild(thanksBubble);
+
+              setTimeout(() => { thanksBubble.style.opacity = '1'; }, 10);
+
+              // STEP 5: After 2.5s, remove thanks bubble and show Jen's final message
+              setTimeout(() => {
+                thanksBubble.style.opacity = '0';
+                setTimeout(() => {
+                  thanksBubble.remove();
+
+                  // Stop Steve bouncing, keep Jen bouncing
+                  if(steveSprite) steveSprite.style.animation = '';
+
+                  const jenFinalBubble = document.createElement('div');
+                  jenFinalBubble.innerHTML = `
+                    <div style="position:relative;background:white;padding:18px 24px;border-radius:20px;border:3px solid #667eea;box-shadow:0 6px 20px rgba(0,0,0,0.3);font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;max-width:380px;text-align:left;">
+                      Che za staruxa... Komm zur nächsten Location!
+                      <div style="position:absolute;left:-18px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:15px solid transparent;border-bottom:15px solid transparent;border-right:18px solid #667eea;"></div>
+                      <div style="position:absolute;left:-14px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:12px solid transparent;border-bottom:12px solid transparent;border-right:15px solid white;"></div>
+                    </div>
+                  `;
+                  jenFinalBubble.style.cssText = 'position:fixed;bottom:60px;right:530px;z-index:9999;opacity:0;transition:opacity 0.5s;';
+                  document.body.appendChild(jenFinalBubble);
+
+                  setTimeout(() => { jenFinalBubble.style.opacity = '1'; }, 10);
+
+                  // STEP 6: After 3s, clean up everything and navigate
+                  setTimeout(() => {
+                    jenFinalBubble.style.opacity = '0';
+                    setTimeout(() => {
+                      jenFinalBubble.remove();
+                      omaSprite.remove();
+                      if(jenSprite) jenSprite.style.animation = '';
+                      if(steveSprite) steveSprite.style.animation = '';
+
+                      // Navigate back to landing page
+                      console.log('🗺️ Navigating back to landing page');
+                      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                      const landingPage = document.getElementById('landing-page');
+                      if (landingPage) {
+                        landingPage.classList.add('active');
+
+                        // Dispatch gameWon event to unlock next location
+                        setTimeout(() => {
+                          console.log('🎮 Dispatching gameWon for snails -> unlocking krivaya');
+                          window.dispatchEvent(new CustomEvent('gameWon', {
+                            detail: { gameId: 'snails' }
+                          }));
+                        }, 100);
+                      }
+                    }, 500);
+                  }, 3000);
+                }, 500);
+              }, 2500);
             }, 500);
-          }, 600); // 600ms to ensure fadeout completes
-        }, 4000);
+          }, 4000);
+        }, 1200); // Wait for walk-in animation to complete
       }
       
       window.startSnailsGame = function() {
@@ -1248,36 +1374,8 @@
               window.flashMessage && window.flashMessage('All snails caught! 🐌');
               window.gameManager && window.gameManager.markWon('snails');
               
-              // showOmaReward already waits 4s internally, then calls callback
-              showOmaReward(() => {
-                console.log('🎭 Oma done, showing Jen dialogue');
-
-                // Show Jen using CharacterDialogue system
-                if(window.CharacterDialogue) {
-                  window.CharacterDialogue.showDialogue('jen', 'Komm zur nächsten Location!', {
-                    duration: 4000,
-                    bounce: true,
-                    onComplete: () => {
-                      console.log('🗺️ Navigating back to landing page');
-                      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-                      const landingPage = document.getElementById('landing-page');
-                      if (landingPage) {
-                        landingPage.classList.add('active');
-
-                        // Dispatch gameWon
-                        setTimeout(() => {
-                          console.log('🎮 Dispatching gameWon for snails');
-                          window.dispatchEvent(new CustomEvent('gameWon', {
-                            detail: { gameId: 'snails' }
-                          }));
-                        }, 100);
-                      }
-                    }
-                  });
-                } else {
-                  console.error('❌ CharacterDialogue not found!');
-                }
-              });
+              // Full timeline in showOmaReward: Oma -> both bounce -> Jen solo -> navigate
+              showOmaReward();
             }
           });
           
@@ -1298,35 +1396,8 @@
             window.flashMessage && window.flashMessage('Cheat activated! 🐌');
             window.gameManager && window.gameManager.markWon('snails');
             
-            // showOmaReward waits 4s, then callback
-            showOmaReward(() => {
-              console.log('🎭 Oma done (cheat), showing Jen dialogue');
-
-              // Show Jen using CharacterDialogue system
-              if(window.CharacterDialogue) {
-                window.CharacterDialogue.showDialogue('jen', 'Komm zur nächsten Location!', {
-                  duration: 4000,
-                  bounce: true,
-                  onComplete: () => {
-                    console.log('🗺️ Navigating back (cheat)');
-                    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-                    const landingPage = document.getElementById('landing-page');
-                    if (landingPage) {
-                      landingPage.classList.add('active');
-
-                      setTimeout(() => {
-                        console.log('🎮 Dispatching gameWon (cheat)');
-                        window.dispatchEvent(new CustomEvent('gameWon', {
-                          detail: { gameId: 'snails' }
-                        }));
-                      }, 100);
-                    }
-                  }
-                });
-              } else {
-                console.error('❌ CharacterDialogue not found!');
-              }
-            });
+            // Full timeline in showOmaReward: Oma -> both bounce -> Jen solo -> navigate
+            showOmaReward();
             
             return;
           }

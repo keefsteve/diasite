@@ -147,7 +147,7 @@
 </head>
 <body>
   <div class="schneekugel-container">
-    <img src="/assets/sprites/places/schneekugel.png" alt="Schneekugel" />
+    <img src="/assets/sprites/places/schneekugel.png" alt="Schneekugel" onerror="console.error('❌ Image failed to load:', this.src); this.style.border='2px solid red';" />
   </div>
   
   <div class="welcome-container">
@@ -180,6 +180,9 @@
   </div>
 
   <script>
+    console.log('🎮 Welcome page loaded!');
+    console.log('📂 Current URL:', window.location.href);
+
     const translations = {
       de: {
         title: '✨ Willkommen ✨',
@@ -240,14 +243,14 @@
         player: {
           name: name,
           language: currentLang,
-          currentLocation: 'fountain',
+          currentLocation: 'botanical-garden',
           inventory: [],
-          visitedLocations: ['fountain'],
+          visitedLocations: [],
           achievements: []
         },
         gameProgress: {
-          gamesPlayed: [],
-          gamesWon: [],
+          gamesPlayed: {},
+          gamesWon: {},
           collectiblesFound: [],
           totalPhotos: 0,
           photosToken: Date.now()
@@ -262,9 +265,9 @@
       };
 
       localStorage.setItem('diasite_state', JSON.stringify(initialState));
-      
-      // Redirect to fountain page
-      window.location.href = 'index.html#fountain';
+
+      // Redirect to main game (will auto-spawn at botanical garden)
+      window.location.href = 'index.html';
     });
   </script>
 </body>
