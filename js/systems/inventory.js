@@ -14,8 +14,8 @@ class InventoryManager {
     this.selectedItem = null;
     
     this.allCollectibles = [
-      'key', 'salamander', 'blanket', 'pasxa', 
-      'wet-clothes', 'yellow-shorts', 'snail', 'sheep', 'nudeCalendar'
+      'key', 'salamander', 'blanket', 'pasxa',
+      'wet-clothes', 'yellow-shorts', 'snail', 'sheep', 'nudeCalendar', 'magnifying-glass'
     ];
   }
   
@@ -54,6 +54,25 @@ class InventoryManager {
       // Flash message
       const itemName = i18n.t(`collectibles.${itemId}`);
       this.flashMessage(i18n.t('messages.collected', { item: itemName }));
+
+      // Save state
+      Storage.saveState();
+
+      return true;
+    }
+
+    return false;
+  }
+
+  // Remove item from inventory
+  removeItem(itemId) {
+    const index = state.player.inventory.indexOf(itemId);
+    if (index > -1) {
+      state.player.inventory.splice(index, 1);
+      console.log('✅ Item removed from inventory:', itemId);
+
+      this.render();
+      this.updateUncollectedList();
 
       // Save state
       Storage.saveState();

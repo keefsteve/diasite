@@ -21,6 +21,7 @@ class GameManager {
       'fountain': { collectible: 'nudeCalendar' },
       'oma-opa-morg': { collectible: 'yellow-shorts' },
       'oma-opa-shnol': { collectible: 'sheep' },
+      'oma-shelya': { collectible: null }, // Dialogue encounter, no collectible
       'hustadt-dub': { collectible: null }
     };
   }

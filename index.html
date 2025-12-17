@@ -107,10 +107,10 @@
     <!-- ADJUST THESE COORDINATES: left:X%;top:Y% where X is horizontal (0-100) and Y is vertical (0-100) -->
     <button class="map-hotspot locked" data-target="oma-opa-morg" style="left:52%;top:11%"></button>
     <button class="map-hotspot locked" data-target="oma-shelya" style="left:37%;top:27%"></button>
-    <button class="map-hotspot locked" data-target="bunker" style="left:70%;top:40%"></button>
-    <button class="map-hotspot locked" data-target="school" style="left:55%;top:50%"></button>
-    <button class="map-hotspot locked" data-target="tanke" style="left:80%;top:65%"></button>
-    <button class="map-hotspot locked" data-target="home" style="left:50%;top:70%"></button>
+    <button class="map-hotspot" data-target="bunker" style="left:32%;top:20%"></button>
+    <button class="map-hotspot locked" data-target="school" style="left:27%;top:20%"></button>
+    <button class="map-hotspot locked" data-target="tanke" style="left:28%;top:22%"></button>
+    <button class="map-hotspot locked" data-target="home" style="left:27%;top:15%"></button>
 
     <!-- Hot/Cold Tracker -->
     <div id="hotcold-tracker"></div>
@@ -172,16 +172,23 @@
           const progression = {
             'botanical-garden': 'snails',
             'snails': 'oma-opa-shnol',
-            'oma-opa-shnol': 'krivaya'
+            'oma-opa-shnol': 'krivaya',
+            'krivaya': 'fountain',
+            'fountain': 'oma-opa-morg',
+            'oma-opa-morg': 'oma-shelya',
+            'oma-shelya': 'bunker',
+            'bunker': 'school',
+            'school': 'tanke',
+            'tanke': 'home'
           };
-          
+
           const nextLocation = progression[e.detail.gameId];
           if (nextLocation) {
             targetHotspot = document.querySelector(`[data-target="${nextLocation}"]`);
             if (targetHotspot) {
               isActive = true;
               tracker.classList.add('active');
-              
+
               // Add click handler to deactivate tracker
               targetHotspot.addEventListener('click', () => {
                 isActive = false;
@@ -436,12 +443,12 @@
           <img src="/assets/sprites/places/fountain.jpeg" alt="Fountain" class="location-image" onerror="this.style.display='none'" />
         </div>
 
-        <div class="game-container" id="fountain-fishing-game">
+        <div class="game-container" id="fountain-fishing-game" style="min-height:550px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;">
           <div id="fishing-instructions" style="text-align:center;padding:20px;">
             <h3 style="font-size:1.5rem;color:var(--forest);margin-bottom:15px;">🎣 Finde die Kamera!</h3>
             <p style="font-size:1rem;color:#666;margin-bottom:20px;">Eine Kamera liegt im Brunnen. Bewege den Haken mit der Maus!</p>
           </div>
-          <canvas id="fishing-canvas" width="600" height="400" style="background:#4A90E2;border:4px solid #8b5a3c;border-radius:8px;cursor:crosshair;"></canvas>
+          <canvas id="fishing-canvas" width="600" height="450" style="background:#4A90E2;border:4px solid #8b5a3c;border-radius:8px;cursor:crosshair;display:block;"></canvas>
         </div>
       </div>
 
@@ -1062,8 +1069,8 @@
           <img src="/assets/sprites/places/omaopashnol.png" alt="Oma Opa Shnol" class="location-image" onerror="this.style.display='none'" />
         </div>
 
-        <div class="game-container" style="position:relative;">
-          <p class="game-instructions">Dodge the belt! Dodged: <span id="belt-dodged">0</span> / 10 | Hits: <span id="belt-hits">0</span> / 9</p>
+        <div class="game-container" style="position:relative;min-height:600px;">
+          <p class="game-instructions">Dodge the belt! Dodged: <span id="belt-dodged">0</span> / 13 | Hits: <span id="belt-hits">0</span> / 9</p>
 
           <!-- Inventory Item Usage - Positioned absolutely to not affect layout -->
           <div id="calendar-use-button" style="
@@ -1156,7 +1163,7 @@
 
       if (window.DiasiteState && window.DiasiteState.player && window.DiasiteState.player.inventory) {
         const hasCalendar = window.DiasiteState.player.inventory.includes('nudeCalendar');
-        const hasEnoughHits = currentHits >= 7;
+        const hasEnoughHits = currentHits >= 6;
         calendarButton.style.display = (hasCalendar && hasEnoughHits) ? 'block' : 'none';
       }
     }
@@ -1268,34 +1275,8 @@
         statusEl.textContent = `Oma is counting: ${countdown}...`;
         statusEl.style.color = 'var(--muted-red)';
 
-        // Create or reuse Walking Opa sprite during countdown
-        if (!walkingEmoji) {
-          walkingEmoji = document.createElement('img');
-          walkingEmoji.src = 'assets/sprites/people/opaSprite.png';
-          walkingEmoji.style.cssText = 'position:absolute;top:50%;left:20%;width:120px;height:120px;object-fit:contain;z-index:150;transition:left 0.5s;';
-          document.querySelector('#oma-opa-shnol').appendChild(walkingEmoji);
-        } else {
-          // Reset position if sprite already exists
-          walkingEmoji.style.left = '20%';
-        }
-        
-        let walkPosition = 20;
-        let walkDirection = 1;
-        let isPaused = false;
-        const walkInterval = setInterval(() => {
-          if (!isPaused && gameActive) {
-            walkPosition += walkDirection * 10;
-            if (walkPosition > 70 || walkPosition < 20) {
-              walkDirection *= -1;
-              // Pause randomly at direction changes
-              if (Math.random() < 0.3) {
-                isPaused = true;
-                setTimeout(() => { isPaused = false; }, 1000 + Math.random() * 1000);
-              }
-            }
-            walkingEmoji.style.left = walkPosition + '%';
-          }
-        }, 500);
+        // Don't show walking Opa sprite - it interferes with the cheeks layout
+        let walkInterval = null;
 
         const countInterval = setInterval(() => {
           countdown--;
@@ -1303,8 +1284,6 @@
             statusEl.textContent = `Oma is counting: ${countdown}...`;
           } else {
             clearInterval(countInterval);
-            // STOP walking during hit, but don't remove sprite
-            isPaused = true;
 
             // Show belt swing
             animEl.textContent = beltSwing === 'left' ? '💥⬅️' : '➡️💥';
@@ -1323,7 +1302,7 @@
                 // Show belt image hitting cheek
                 const beltEmoji = document.createElement('img');
                 beltEmoji.src = 'assets/sprites/objects/belt.png';
-                beltEmoji.style.cssText = 'position:absolute;width:100px;height:100px;object-fit:contain;z-index:250;animation:beltSwing 0.3s ease-out;';
+                beltEmoji.style.cssText = 'position:absolute;width:300px;height:300px;object-fit:contain;z-index:250;animation:beltSwing 0.3s ease-out;transform:scaleX(-1);';
                 const cheekRect = hitCheek.getBoundingClientRect();
                 const pageRect = document.querySelector('#oma-opa-shnol').getBoundingClientRect();
                 beltEmoji.style.left = (cheekRect.left - pageRect.left + 30) + 'px';
@@ -1364,10 +1343,10 @@
                 statusEl.textContent = `✨ Nice dodge! The belt swung ${beltSwing}, you showed ${playerChoice}!`;
                 statusEl.style.color = 'green';
 
-                if (dodged >= 10) {
+                if (dodged >= 13) {
                   gameActive = false;
                   clearInterval(walkInterval);
-                  walkingEmoji.remove();
+                  if (walkingEmoji) walkingEmoji.remove();
                   setTimeout(() => {
                     statusEl.textContent = '🎉 YOU WIN! Belt-dodging master!';
 
@@ -1599,29 +1578,25 @@
           <img src="/assets/sprites/places/omaopamorg.png" alt="Oma & Opa Morg" class="location-image" onerror="this.style.display='none'" />
         </div>
 
-        <div class="game-container">
-          <!-- ASCII MP3 Player -->
-          <div id="mp3-player" style="background:#222;color:#0f0;font-family:monospace;padding:20px;border:3px solid #0f0;margin-bottom:20px;">
-            <pre id="mp3-display" style="margin:0;font-size:0.8rem;">
-╔═══════════════════════════════════════╗
-║  🎵  OMA'S TAPE COLLECTION  🎵       ║
-╠═══════════════════════════════════════╣
-║ ► Track 1: Kalinka.mp3 [PLACEHOLDER] ║
-║   Track 2: Katjuscha.mp3 [PLACEHOLDER]║
-║   Track 3: Korobeiniki.mp3 [PLACEHOLDER]║
-╠═══════════════════════════════════════╣
-║ Status: STOPPED                      ║
-║ ↑↓: Select  SPACE: Play  P: Pause  ║
-╚═══════════════════════════════════════╝</pre>
-          </div>
-          
-          <!-- Typing Game -->
-          <div id="typing-game" style="text-align:center;padding:20px;">
-            <h3 style="margin-bottom:10px;">Schnell! Oma redet!</h3>
-            <p id="typing-status" style="font-size:1.2rem;margin:10px 0;">Tippe "nein" wenn der Mund aufgeht!</p>
-            <div id="typing-mouth" style="font-size:4rem;margin:20px 0;">😶</div>
-            <input id="typing-input" type="text" style="font-size:1.5rem;padding:10px;border:3px solid #000;font-family:'Nineteen Ninety Seven',monospace;width:200px;" placeholder="Tippe hier..." />
-            <p id="typing-score" style="font-size:1rem;margin-top:10px;">Richtige: <span id="typing-correct">0</span> / 10</p>
+        <div class="game-container" style="min-height:500px;">
+          <!-- Stroop Test Game -->
+          <div id="stroop-game" style="text-align:center;padding:30px;">
+            <h3 style="margin-bottom:15px;font-size:1.5rem;">Versuche Oma zu erklären, was du meinst!</h3>
+            <p id="stroop-instructions" style="font-size:1rem;margin:15px 0;color:#666;">Schreibe die <strong>FARBE</strong> vom Wort, nicht das Wort selbst!</p>
+
+            <div id="stroop-word-display" style="font-size:6rem;margin:30px 0;font-weight:bold;min-height:120px;display:flex;align-items:center;justify-content:center;">
+              <!-- Word will appear here -->
+            </div>
+
+            <input id="stroop-input" type="text"
+              style="font-size:2rem;padding:15px;border:4px solid #000;font-family:'Nineteen Ninety Seven',monospace;width:300px;text-align:center;text-transform:lowercase;"
+              placeholder="Farbe..."
+              autocomplete="off"
+              spellcheck="false" />
+
+            <p id="stroop-status" style="font-size:1.2rem;margin:20px 0;min-height:30px;"></p>
+            <p id="stroop-score" style="font-size:1.3rem;margin-top:15px;font-weight:bold;">Richtige: <span id="stroop-correct">0</span> / 13 (20 Sekunden)</p>
+            <p style="font-size:0.9rem;color:#999;margin-top:10px;">Drücke K zum Überspringen</p>
           </div>
         </div>
       </div>
@@ -1638,163 +1613,180 @@
     </div>
   </div>
   <script>
+    // ===== STROOP TEST GAME (Oma & Opa Morg) =====
     (function() {
       const keys = {};
       let gameWon = false;
       let gameActive = false;
       let correctAnswers = 0;
-      const neededAnswers = 10;
-      let mouthOpenInterval = null;
+      const neededAnswers = 13;
+      const timeLimit = 20; // 20 seconds
+      let startTime = null;
+      let timerInterval = null;
+      let currentWord = null;
+      let currentColor = null;
+      let input = null;
+      let statusEl = null;
+      let correctEl = null;
+      let wordDisplay = null;
 
-      // MP3 Player state
-      let selectedTrack = 0;
-      let playerStatus = 'STOPPED';
-      const tracks = ['Kalinka.mp3', 'Katjuscha.mp3', 'Korobeiniki.mp3'];
+      // Color pairs: word / display color
+      const stroopPairs = [
+        { word: 'grün', color: '#FFD700', answer: 'gelb' },      // "green" in yellow
+        { word: 'rot', color: '#0000FF', answer: 'blau' },       // "red" in blue
+        { word: 'blau', color: '#8B4513', answer: 'braun' },     // "blue" in brown
+        { word: 'gelb', color: '#008000', answer: 'grün' },      // "yellow" in green
+        { word: 'braun', color: '#FF0000', answer: 'rot' },      // "brown" in red
+        { word: 'grün', color: '#FF0000', answer: 'rot' },       // "green" in red
+        { word: 'rot', color: '#FFD700', answer: 'gelb' },       // "red" in yellow
+        { word: 'blau', color: '#008000', answer: 'grün' },      // "blue" in green
+      ];
 
-      document.addEventListener('keydown', (e) => { 
-        keys[e.code] = true;
-        
-        // MP3 Player controls
-        const omaMorgPage = document.getElementById('oma-opa-morg');
-        if (omaMorgPage && omaMorgPage.classList.contains('active')) {
-          if (e.code === 'ArrowUp') {
-            e.preventDefault();
-            selectedTrack = (selectedTrack - 1 + tracks.length) % tracks.length;
-            updateMP3Display();
-          } else if (e.code === 'ArrowDown') {
-            e.preventDefault();
-            selectedTrack = (selectedTrack + 1) % tracks.length;
-            updateMP3Display();
-          } else if (e.code === 'Space') {
-            e.preventDefault();
-            playerStatus = playerStatus === 'PLAYING' ? 'PAUSED' : 'PLAYING';
-            updateMP3Display();
-          } else if (e.code === 'KeyP') {
-            playerStatus = 'PAUSED';
-            updateMP3Display();
-          }
-        }
-      });
+      document.addEventListener('keydown', (e) => { keys[e.code] = true; });
       document.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
-      function updateMP3Display() {
-        const display = document.getElementById('mp3-display');
-        if (!display) return;
-        
-        const trackLines = tracks.map((track, i) => {
-          const marker = i === selectedTrack ? '►' : ' ';
-          return `║ ${marker} Track ${i + 1}: ${track.padEnd(22)} [PLACEHOLDER]║`;
-        }).join('\n');
-
-        display.textContent = `╔═══════════════════════════════════════╗
-║  🎵  OMA'S TAPE COLLECTION  🎵       ║
-╠═══════════════════════════════════════╣
-${trackLines}
-╠═══════════════════════════════════════╣
-║ Status: ${playerStatus.padEnd(27)}║
-║ ↑↓: Select  SPACE: Play  P: Pause  ║
-╚═══════════════════════════════════════╝`;
-      }
-
-      // Start typing game when page becomes active
-      const typingObserver = new MutationObserver(() => {
+      // Start game when page becomes active
+      const stroopObserver = new MutationObserver(() => {
         const omaMorgPage = document.getElementById('oma-opa-morg');
         if (omaMorgPage && omaMorgPage.classList.contains('active') && !gameActive && !gameWon) {
-          startTypingGame();
+          startStroopGame();
+        } else if (!omaMorgPage || !omaMorgPage.classList.contains('active')) {
+          // Reset when leaving page
+          if (timerInterval) clearInterval(timerInterval);
+          gameActive = false;
         }
       });
 
       const omaMorgPage = document.getElementById('oma-opa-morg');
       if (omaMorgPage) {
-        typingObserver.observe(omaMorgPage, { attributes: true, attributeFilter: ['class'] });
+        stroopObserver.observe(omaMorgPage, { attributes: true, attributeFilter: ['class'] });
       }
 
-      function startTypingGame() {
+      function startStroopGame() {
+        console.log('🎨 Starting Stroop test game');
         gameActive = true;
         correctAnswers = 0;
-        const input = document.getElementById('typing-input');
-        const mouthEl = document.getElementById('typing-mouth');
-        const statusEl = document.getElementById('typing-status');
-        const correctEl = document.getElementById('typing-correct');
+        startTime = Date.now();
 
-        if (!input || !mouthEl) {
-          console.error('Typing game elements not found!');
+        // Get elements once
+        if (!input) input = document.getElementById('stroop-input');
+        if (!wordDisplay) wordDisplay = document.getElementById('stroop-word-display');
+        if (!statusEl) statusEl = document.getElementById('stroop-status');
+        if (!correctEl) correctEl = document.getElementById('stroop-correct');
+
+        if (!input || !wordDisplay) {
+          console.error('Stroop game elements not found!');
           return;
         }
 
+        // Remove old listener before adding new one
+        input.removeEventListener('input', handleInput);
+
         input.value = '';
-        input.focus();
+        input.disabled = false;
         correctEl.textContent = '0';
-        
-        console.log('✅ Typing game started!');
 
-        // Random mouth opening
-        mouthOpenInterval = setInterval(() => {
-          if (!gameActive) return;
+        // Start timer countdown
+        updateTimer();
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(updateTimer, 100);
 
-          // Force mouth open with different emoji
-          mouthEl.innerHTML = '😮';
-          statusEl.textContent = 'NEIN SAGEN! Schnell!';
+        // Show first word
+        showNextWord();
+
+        // Handle typing - STRICT MODE
+        input.addEventListener('input', handleInput);
+      }
+
+      function updateTimer() {
+        if (!startTime) return;
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const remaining = timeLimit - elapsed;
+
+        if (remaining <= 0) {
+          // TIME'S UP!
+          clearInterval(timerInterval);
+          gameActive = false;
+          statusEl.textContent = `⏰ Zeit abgelaufen! Du hast ${correctAnswers} von ${neededAnswers} geschafft!`;
           statusEl.style.color = '#ff4444';
+          input.disabled = true;
+          input.removeEventListener('input', handleInput);
 
-          const openTime = Date.now();
-          let answered = false;
-
-          // Check input
-          const checkInput = setInterval(() => {
-            if (answered) {
-              clearInterval(checkInput);
-              return;
-            }
-            if (input.value.toLowerCase().includes('nein')) {
-              const responseTime = Date.now() - openTime;
-              if (responseTime < 3000) {
-                answered = true;
-                correctAnswers++;
-                correctEl.textContent = correctAnswers;
-                statusEl.textContent = '✓ Gut gemacht!';
-                statusEl.style.color = '#00aa00';
-                input.value = '';
-
-                if (correctAnswers >= neededAnswers) {
-                  winGame();
-                  clearInterval(checkInput);
-                  return;
-                }
-              }
-              mouthEl.innerHTML = '😶';
-              clearInterval(checkInput);
-            }
-          }, 50);
-
-          // Close mouth after 3s
+          // Auto-restart after 3 seconds
           setTimeout(() => {
-            if (!answered) {
-              mouthEl.innerHTML = '😶';
-              clearInterval(checkInput);
-            }
-            statusEl.textContent = 'Warte auf nächste Chance...';
-            statusEl.style.color = '#666';
-            clearInterval(checkInput);
-          }, 2000);
+            startStroopGame();
+          }, 3000);
+        } else {
+          // Update timer display in status
+          if (!statusEl.textContent.includes('✓') && !statusEl.textContent.includes('❌')) {
+            statusEl.textContent = `⏱️ Zeit: ${remaining}s`;
+            statusEl.style.color = remaining <= 5 ? '#ff6600' : '#666';
+          }
+        }
+      }
 
-        }, 3000 + Math.random() * 2000);
+      function handleInput(e) {
+        if (!gameActive) return;
+
+        const typed = input.value.toLowerCase().trim();
+        const expected = currentWord.answer;
+
+        // Check if current input matches the beginning of the answer
+        if (typed.length > 0 && !expected.startsWith(typed)) {
+          // WRONG LETTER - GAME OVER
+          gameActive = false;
+          clearInterval(timerInterval);
+          statusEl.textContent = '❌ Falsch! Du bist raus!';
+          statusEl.style.color = '#ff0000';
+          input.removeEventListener('input', handleInput);
+          input.disabled = true;
+
+          setTimeout(() => {
+            startStroopGame();
+          }, 2000);
+          return;
+        }
+
+        // Check if complete and correct
+        if (typed === expected) {
+          correctAnswers++;
+          correctEl.textContent = correctAnswers;
+          statusEl.textContent = '✓ Richtig!';
+          statusEl.style.color = '#00aa00';
+          input.value = '';
+
+          if (correctAnswers >= neededAnswers) {
+            winGame();
+          } else {
+            setTimeout(() => {
+              statusEl.textContent = '';
+              showNextWord();
+            }, 800);
+          }
+        }
+      }
+
+      function showNextWord() {
+        // Random word
+        currentWord = stroopPairs[Math.floor(Math.random() * stroopPairs.length)];
+        if (!wordDisplay) wordDisplay = document.getElementById('stroop-word-display');
+        wordDisplay.textContent = currentWord.word.toUpperCase();
+        wordDisplay.style.color = currentWord.color;
+        if (input) input.focus();
       }
 
       function winGame() {
         gameActive = false;
         gameWon = true;
-        if (mouthOpenInterval) clearInterval(mouthOpenInterval);
 
-        const statusEl = document.getElementById('typing-status');
-        statusEl.textContent = '🎉 Geschafft! Du hast die gelben Shorts gewonnen!';
-        statusEl.style.color = '#00aa00';
-
-        // Add yellow shorts to inventory
-        if (window.DiasiteInventory && window.DiasiteState) {
-          window.DiasiteState.player.inventory.push('yellowShorts');
-          window.DiasiteInventory.render();
+        // Stop timer
+        if (timerInterval) {
+          clearInterval(timerInterval);
         }
+
+        const statusEl = document.getElementById('stroop-status');
+        statusEl.textContent = '🎉 Geschafft! Die gelben Shorts sind dein!';
+        statusEl.style.color = '#00aa00';
 
         setTimeout(() => {
           if (typeof gameManager !== 'undefined') {
@@ -1802,69 +1794,41 @@ ${trackLines}
           }
 
           setTimeout(() => {
-            if(window.CharacterDialogue) {
-              window.CharacterDialogue.showDialogue('jen', "Oma ist zufrieden! Weiter geht's!", {
-                duration: 2000,
-                onComplete: () => {
-                  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-                  const landingPage = document.getElementById('landing-page');
-                  if (landingPage) {
-                    landingPage.classList.add('active');
-                    setTimeout(() => {
-                      window.dispatchEvent(new CustomEvent('gameWon', {
-                        detail: { gameId: 'oma-opa-morg' }
-                      }));
-                    }, 100);
-                  }
-                }
-              });
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const landingPage = document.getElementById('landing-page');
+            if (landingPage) {
+              landingPage.classList.add('active');
+              setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('gameWon', {
+                  detail: { gameId: 'oma-opa-morg' }
+                }));
+              }, 100);
             }
-          }, 100);
+          }, 1500);
         }, 2000);
       }
 
-      // CHEAT: Press K to skip this level
-      const checkCheat = setInterval(() => {
+      // CHEAT: Press K to skip
+      setInterval(() => {
         const omaMorgPage = document.getElementById('oma-opa-morg');
         if (keys['KeyK'] && !gameWon && omaMorgPage && omaMorgPage.classList.contains('active')) {
-          if (mouthOpenInterval) clearInterval(mouthOpenInterval);
           gameWon = true;
           gameActive = false;
-          clearInterval(checkCheat);
-          
-          // Add yellow shorts to inventory
-          if (window.DiasiteInventory && window.DiasiteState) {
-            if (!window.DiasiteState.player.inventory.includes('yellowShorts')) {
-              window.DiasiteState.player.inventory.push('yellowShorts');
-              window.DiasiteInventory.render();
-            }
-          }
 
           if (typeof gameManager !== 'undefined') {
             gameManager.markWon('oma-opa-morg');
           }
 
-          // Navigate after short delay
-          setTimeout(() => {
-            if(window.CharacterDialogue) {
-              window.CharacterDialogue.showDialogue('jen', 'Weiter zum nächsten Ort!', {
-                duration: 2000,
-                onComplete: () => {
-                  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-                  const landingPage = document.getElementById('landing-page');
-                  if (landingPage) {
-                    landingPage.classList.add('active');
-
-                    setTimeout(() => {
-                      window.dispatchEvent(new CustomEvent('gameWon', {
-                        detail: { gameId: 'oma-opa-morg' }
-                      }));
-                    }, 100);
-                  }
-                }
-              });
-            }
-          }, 500);
+          document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+          const landingPage = document.getElementById('landing-page');
+          if (landingPage) {
+            landingPage.classList.add('active');
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('gameWon', {
+                detail: { gameId: 'oma-opa-morg' }
+              }));
+            }, 100);
+          }
         }
       }, 100);
     })();
@@ -2294,55 +2258,58 @@ ${trackLines}
       window.startSnailsGame = function() {
         const overlay = document.querySelector('#snails .play-overlay');
         if (overlay) overlay.classList.add('hidden');
-        
+
         const wall = document.getElementById('snail-wall');
         const caughtEl = document.getElementById('snails-caught');
         const totalEl = document.getElementById('snails-total');
         const timerEl = document.getElementById('snail-timer');
-        
+
         if(!wall) return;
-        
+
         const totalSnails = 42;
-        const timeLimit = 30;
+        const timeLimit = 35; // Changed from 30 to 35 seconds
         let caught = 0;
         let startTime = Date.now();
         gameRunning = true;
-        
+
         wall.innerHTML = '';
         wall.style.cssText = 'position:relative;width:100%;height:65vh;max-width:650px;margin:0;background-image:url("assets/sprites/places/wall.jpeg");background-size:cover;background-position:center;border-radius:12px;border:4px solid #8b5a3c;box-shadow:inset 0 0 20px rgba(0,0,0,0.3);overflow:hidden;';
-        
+
         totalEl.textContent = totalSnails;
-        
+        caughtEl.textContent = '0'; // Reset caught counter
+        timerEl.textContent = timeLimit; // Reset timer display
+        timerEl.style.color = ''; // Reset timer color
+
         // Create snails
         for(let i=0; i<totalSnails; i++){
           const snail = document.createElement('img');
           snail.src = 'assets/sprites/objects/schnecke.png';
           const rand = Math.random();
-          let size = rand < 0.6 ? 8 + Math.random() * 10 : rand < 0.9 ? 20 + Math.random() * 10 : 35 + Math.random() * 10;
+          let size = rand < 0.6 ? 4 + Math.random() * 6 : rand < 0.9 ? 15 + Math.random() * 8 : 30 + Math.random() * 10;
           snail.style.cssText = `position:absolute;left:${5+Math.random()*85}%;top:${5+Math.random()*85}%;width:${size}px;height:${size}px;object-fit:contain;background:transparent;border:none;cursor:pointer;transition:transform 0.1s;z-index:${Math.floor(Math.random()*10)};`;
-          
+
           snail.addEventListener('click', ()=>{
             if(!gameRunning) return;
             caught++;
             caughtEl.textContent = caught;
             snail.remove();
-            
+
             if(caught === totalSnails){
               gameRunning = false;
               clearInterval(gameInterval);
-              
+
               window.gameManager && window.gameManager.markWon('snails');
-              
+
               // Full timeline in showOmaReward: Oma -> both bounce -> Jen solo -> navigate
               showOmaReward();
             }
           });
-          
+
           snail.addEventListener('mouseenter', ()=> snail.style.transform='scale(1.2)');
           snail.addEventListener('mouseleave', ()=> snail.style.transform='scale(1)');
           wall.appendChild(snail);
         }
-        
+
         // Timer with K cheat
         gameInterval = setInterval(()=>{
           // Stop interval if page is no longer active
@@ -2359,28 +2326,37 @@ ${trackLines}
           if(keys['KeyK']){
             gameRunning = false;
             clearInterval(gameInterval);
-            
+
             window.gameManager && window.gameManager.markWon('snails');
-            
+
             // Full timeline in showOmaReward: Oma -> both bounce -> Jen solo -> navigate
             showOmaReward();
-            
+
             return;
           }
-          
+
           const elapsed = Math.floor((Date.now()-startTime)/1000);
           const remaining = timeLimit - elapsed;
-          
+
           if(remaining <= 0){
             gameRunning = false;
             clearInterval(gameInterval);
             timerEl.textContent = '0';
             timerEl.style.color = '#ff4444';
 
-
-
             window.gameManager && window.gameManager.markLost('snails');
-            wall.querySelectorAll('button').forEach(s => { s.style.opacity='0.3'; s.style.pointerEvents='none'; });
+            wall.querySelectorAll('img').forEach(s => { s.style.opacity='0.3'; s.style.pointerEvents='none'; });
+
+            // Show restart button
+            const restartBtn = document.createElement('button');
+            restartBtn.textContent = '🔄 Nochmal versuchen';
+            restartBtn.className = 'play-btn';
+            restartBtn.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;';
+            restartBtn.onclick = () => {
+              restartBtn.remove();
+              window.startSnailsGame();
+            };
+            wall.appendChild(restartBtn);
           } else {
             timerEl.textContent = remaining;
             if(remaining <= 10) timerEl.style.color = '#ff6600';
@@ -2418,8 +2394,8 @@ ${trackLines}
 
         // Create canvas
         const canvas = document.createElement('canvas');
-        canvas.width = 450;
-        canvas.height = 450;
+        canvas.width = 400;
+        canvas.height = 400;
         canvas.style.cssText = `
           background: #b57671;
           border: 4px solid #8b5a3c;
@@ -2622,11 +2598,8 @@ ${trackLines}
         </div>
 
         <div class="game-container">
-          <div class="play-overlay">
-            <button class="play-btn" onclick="alert('Fisch-Spiel kommt bald!')">▶ Play</button>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:center;height:450px;font-size:3rem;color:#888;">
-            🐟 Fisch-Spiel<br/>Coming Soon
+          <div style="display:flex;align-items:center;justify-content:center;height:450px;font-size:1.5rem;color:#666;text-align:center;padding:20px;">
+            Besuch Oma Shelya und erfahre mehr über ihre Lupe...
           </div>
         </div>
       </div>
@@ -2642,6 +2615,194 @@ ${trackLines}
       </div>
     </div>
   </div>
+
+  <script>
+    // ===== SHELYA DIALOGUE ENCOUNTER =====
+    (function() {
+      let hasTriggered = false;
+
+      const observer = new MutationObserver(() => {
+        const shelyaPage = document.getElementById('oma-shelya');
+        if (!shelyaPage) return;
+
+        if (shelyaPage.classList.contains('active') && !hasTriggered) {
+          hasTriggered = true;
+          console.log('🎬 Triggering Shelya dialogue encounter');
+
+          setTimeout(() => {
+            showShelyaDialogue();
+          }, 1000);
+        }
+
+        // Reset if page becomes inactive
+        if (!shelyaPage.classList.contains('active')) {
+          hasTriggered = false;
+        }
+      });
+
+      observer.observe(document.body, {
+        attributes: true,
+        subtree: true,
+        attributeFilter: ['class']
+      });
+
+      let shelyaSpriteElement = null; // Store sprite globally
+
+      function showShelyaDialogue() {
+        const shelyaPage = document.getElementById('oma-shelya');
+        if (!shelyaPage || !shelyaPage.classList.contains('active')) {
+          console.log('⚠️ Shelya page not active');
+          return;
+        }
+
+        console.log('✅ Starting Shelya dialogue sequence');
+
+        // Create Shelya sprite ONCE at the beginning
+        shelyaSpriteElement = document.createElement('img');
+        shelyaSpriteElement.src = '/assets/sprites/people/shelyaSprite.png';
+        shelyaSpriteElement.className = 'character-animation-element shelya-sprite';
+        shelyaSpriteElement.style.cssText = 'position:absolute;right:-350px;bottom:100px;width:300px;height:300px;object-fit:contain;z-index:100;transition:right 1s ease-out;';
+        shelyaPage.appendChild(shelyaSpriteElement);
+
+        // Walk in animation
+        setTimeout(() => {
+          shelyaSpriteElement.style.right = '250px';
+          shelyaSpriteElement.style.animation = 'characterBounce 2s ease-in-out infinite';
+
+          // PART 1: Shelya asks how they're doing
+          setTimeout(() => {
+            showShelyaDialogue_Part("Wie geht es euch, Kinder?", () => {
+              // After 3 seconds, show Steve's response
+              setTimeout(() => {
+                showKidsResponse("Ach, ganz gut, po starikovski!", () => {
+                  // After 2.5 seconds, show Shelya's second dialogue
+                  setTimeout(() => {
+                    showShelyaDialogue_Part("Nur habe ich meine Lupe jemandem geliehen, und finde sie nicht mehr...", () => {
+                      // After 3.5 seconds, show kids giving the magnifying glass
+                      setTimeout(() => {
+                        showKidsResponse("Hier, Oma! Wir haben sie gefunden!", () => {
+                          // Remove magnifying glass from inventory
+                          if (window.DiasiteInventory) {
+                            window.DiasiteInventory.removeItem('magnifying-glass');
+                            console.log('🔍 Magnifying glass removed from inventory');
+                          }
+
+                          // After 2.5 seconds, show Shelya's thanks
+                          setTimeout(() => {
+                            showShelyaDialogue_Part("Danke, meine Lieben! Das bedeutet mir sehr viel!", () => {
+                              // Finish and navigate back
+                              setTimeout(() => {
+                                completeShelyaEncounter();
+                              }, 2000);
+                            });
+                          }, 2500);
+                        });
+                      }, 3500);
+                    });
+                  }, 2500);
+                });
+              }, 3000);
+            });
+          }, 1000);
+        }, 100);
+      }
+
+      function showShelyaDialogue_Part(text, onComplete) {
+        // Just show dialogue bubble, sprite already exists
+        const bubble = document.createElement('div');
+        bubble.className = 'character-animation-element';
+        bubble.innerHTML = `
+          <div style="position:relative;background:white;padding:18px 24px;border-radius:20px;border:3px solid #f59e0b;box-shadow:0 6px 20px rgba(0,0,0,0.3);font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;max-width:380px;text-align:left;">
+            ${text}
+            <div style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;border-bottom:18px solid #f59e0b;"></div>
+            <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-bottom:15px solid white;"></div>
+          </div>
+        `;
+        bubble.style.cssText = 'position:fixed;bottom:60px;right:380px;z-index:9999;opacity:0;transition:opacity 0.5s;';
+        document.body.appendChild(bubble);
+
+        setTimeout(() => { bubble.style.opacity = '1'; }, 10);
+
+        setTimeout(() => {
+          bubble.style.opacity = '0';
+          setTimeout(() => {
+            bubble.remove();
+            onComplete();
+          }, 500);
+        }, 3000);
+      }
+
+      function showKidsResponse(text, onComplete) {
+        const jenSprite = document.querySelector('#oma-shelya .jen-sprite');
+        const steveSprite = document.querySelector('#oma-shelya .steve-sprite-static');
+
+        if (jenSprite) jenSprite.style.animation = 'characterBounce 2s ease-in-out infinite';
+        if (steveSprite) steveSprite.style.animation = 'characterBounce 2s ease-in-out infinite';
+
+        const bubble = document.createElement('div');
+        bubble.className = 'character-animation-element';
+        bubble.innerHTML = `
+          <div style="position:relative;background:white;padding:18px 24px;border-radius:20px;border:3px solid #667eea;box-shadow:0 6px 20px rgba(0,0,0,0.3);font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;max-width:380px;text-align:left;">
+            ${text}
+            <div style="position:absolute;left:-18px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:15px solid transparent;border-bottom:15px solid transparent;border-right:18px solid #667eea;"></div>
+            <div style="position:absolute;left:-14px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:12px solid transparent;border-bottom:12px solid transparent;border-right:15px solid white;"></div>
+          </div>
+        `;
+        bubble.style.cssText = 'position:fixed;bottom:60px;right:530px;z-index:9999;opacity:0;transition:opacity 0.5s;';
+        document.body.appendChild(bubble);
+
+        setTimeout(() => { bubble.style.opacity = '1'; }, 10);
+
+        setTimeout(() => {
+          bubble.style.opacity = '0';
+          setTimeout(() => {
+            bubble.remove();
+            if (jenSprite) jenSprite.style.animation = '';
+            if (steveSprite) steveSprite.style.animation = '';
+            onComplete();
+          }, 500);
+        }, 2500);
+      }
+
+      function completeShelyaEncounter() {
+        // Clean up all animation elements
+        document.querySelectorAll('.character-animation-element, .shelya-sprite').forEach(el => el.remove());
+
+        // Mark game as won
+        if (typeof gameManager !== 'undefined') {
+          gameManager.markWon('oma-shelya');
+        }
+
+        // Navigate back to landing page
+        console.log('🗺️ Navigating back to landing page');
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        const landingPage = document.getElementById('landing-page');
+        if (landingPage) {
+          landingPage.classList.add('active');
+
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('gameWon', {
+              detail: { gameId: 'oma-shelya' }
+            }));
+
+            // Unlock bunker
+            setTimeout(() => {
+              const bunkerHotspot = document.querySelector('.map-hotspot[data-target="bunker"]');
+              if (bunkerHotspot) {
+                bunkerHotspot.classList.remove('locked');
+                bunkerHotspot.style.setProperty('pointer-events', 'auto', 'important');
+                bunkerHotspot.style.setProperty('cursor', 'pointer', 'important');
+                bunkerHotspot.style.setProperty('opacity', '1', 'important');
+                bunkerHotspot.style.setProperty('filter', 'none', 'important');
+                bunkerHotspot.style.setProperty('animation', 'pulse 2s ease-in-out infinite', 'important');
+                console.log('✅ Unlocked bunker location after Shelya dialogue');
+              }
+            }, 200);
+          }, 100);
+        }
+      }
+    })();
+  </script>
 
   <!-- Inventory Bar -->
   <aside id="inventory">

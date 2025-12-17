@@ -12,7 +12,7 @@ class GameState {
       name: '',
       language: CONFIG.defaultLanguage,
       currentLocation: 'welcome', // Start bei Welcome Screen
-      inventory: [],
+      inventory: ['magnifying-glass'], // Start with magnifying glass
       visitedLocations: [],
       achievements: []
     };
