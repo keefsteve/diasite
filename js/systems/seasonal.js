@@ -21,25 +21,25 @@ class SeasonalSystem {
     this.seasonConfig = {
       winter: {
         emojis: ['*', '·', '❅'],
-        count: 12,
+        count: 24,
         animationName: 'snowfall',
         duration: '10s'
       },
       spring: {
         emojis: ['~', "'", '.'],
-        count: 25,
+        count: 75,
         animationName: 'windblown',
         duration: '15s'
       },
       summer: {
         emojis: ['+', '×', '°'],
-        count: 28,
+        count: 168,
         animationName: 'sparkle',
         duration: '8s'
       },
       autumn: {
         emojis: ['^', 'v', '/'],
-        count: 14,
+        count: 28,
         animationName: 'leaffall',
         duration: '11s'
       }
@@ -123,22 +123,22 @@ class SeasonalSystem {
           opacity: 1;
         }
         20% {
-          transform: translate(120px, -30px) rotate(45deg);
+          transform: translate(120px, -80px) rotate(45deg);
         }
         40% {
-          transform: translate(80px, 40px) rotate(-30deg);
+          transform: translate(80px, -120px) rotate(-30deg);
         }
         60% {
-          transform: translate(180px, 10px) rotate(60deg);
+          transform: translate(180px, -180px) rotate(60deg);
         }
         80% {
-          transform: translate(100px, 80px) rotate(-45deg);
+          transform: translate(100px, -240px) rotate(-45deg);
         }
         95% {
           opacity: 1;
         }
         100% {
-          transform: translate(250px, 120px) rotate(90deg);
+          transform: translate(250px, -300px) rotate(90deg);
           opacity: 0;
         }
       }
@@ -211,7 +211,7 @@ class SeasonalSystem {
       particle.textContent = randomEmoji;
 
       let left, top;
-      
+
       // Special positioning for summer (cone from top-left)
       if (this.currentSeason === 'summer') {
         // Cone shape: concentrated top-left, spreading to 75% width
@@ -219,6 +219,10 @@ class SeasonalSystem {
         const maxWidth = 75; // 75% of screen width
         left = coneProgress * maxWidth * Math.random(); // Random within expanding cone
         top = Math.random() * 40; // Top 40% of screen
+      } else if (this.currentSeason === 'spring') {
+        // Spring: start from bottom, blow upward
+        left = Math.random() * 100;
+        top = window.innerHeight + 20; // Start below screen
       } else {
         // Default: random horizontal position, start from top
         left = Math.random() * 100;

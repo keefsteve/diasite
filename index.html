@@ -22,18 +22,22 @@
 
     <!-- Seasonal Controls - under clock -->
     <div id="seasonal-controls" style="position:absolute;top:140px;right:20px;display:flex;gap:10px;z-index:200;">
-      <button class="season-btn" data-season="spring" title="Frühling">🌸</button>
-      <button class="season-btn" data-season="summer" title="Sommer">☀️</button>
-      <button class="season-btn" data-season="autumn" title="Herbst">🍂</button>
-      <button class="season-btn" data-season="winter" title="Winter">❄️</button>
-      <button class="season-btn active" data-season="reality" title="Realität">🌍</button>
+      <button class="season-btn" data-season="spring" title="Frühling">Frühling</button>
+      <button class="season-btn" data-season="summer" title="Sommer">Sommer</button>
+      <button class="season-btn" data-season="autumn" title="Herbst">Herbst</button>
+      <button class="season-btn" data-season="winter" title="Winter">Winter</button>
+      <button class="season-btn active" data-season="reality" title="Realität">Realität</button>
     </div>
     <style>
       .season-btn {
-        width: 50px;
-        height: 50px;
-        font-size: 1.5rem;
+        padding: 8px 12px;
+        min-width: 80px;
+        height: 40px;
+        font-size: 0.8rem;
+        font-family: 'Nineteen Ninety Seven', monospace;
+        font-weight: bold;
         background: rgba(0,0,0,0.7);
+        color: #00ff88;
         border: 2px solid #00ff88;
         border-radius: 8px;
         cursor: pointer;
@@ -46,8 +50,9 @@
       }
       .season-btn.active {
         background: #00ff88;
+        color: #000;
         border-color: #000;
-        transform: scale(1.15);
+        transform: scale(1.05);
       }
       #red-clock-btn:hover {
         transform: scale(1.1);
@@ -290,16 +295,18 @@
 
       // ASCII Seagulls flying across the landing page with wing flapping
       (function() {
-        // Different wing positions for flapping animation - better bird shapes
+        // Single character seagull animation
         const seagullFrames = {
-          left: ['◁∨◁', '◁-◁', '◁∧◁'],
-          right: ['▷∨▷', '▷-▷', '▷∧▷'],
-          front: ['∽∨∽', '∽-∽', '∽∧∽', '∽-∽']
+          left: ['v', '^', '-'],
+          right: ['v', '^', '-'],
+          front: ['v', '^', '-']
         };
 
         function spawnSeagull() {
-          // Only spawn if on landing page
-          if (!document.getElementById('landing-page').classList.contains('active')) {
+          // Only spawn on outdoor locations
+          const outdoorLocations = ['landing-page', 'botanical-garden', 'snails', 'krivaya'];
+          const activePage = document.querySelector('.page.active');
+          if (!activePage || !outdoorLocations.includes(activePage.id)) {
             return;
           }
 
@@ -462,14 +469,14 @@
       let hookY = 50;
       const hookSpeed = 3;
       
-      // Camera position - moves around randomly
+      // Camera position - moves around randomly (faster now)
       const cameraObj = {
         x: 100 + Math.random() * 400,
         y: 300 + Math.random() * 80,
         size: 40,
         emoji: '📷',
-        dx: (Math.random() - 0.5) * 2,
-        dy: (Math.random() - 0.5) * 1
+        dx: (Math.random() - 0.5) * 4,  // Doubled speed
+        dy: (Math.random() - 0.5) * 2   // Doubled speed
       };
       
       // Activate game when fountain page is active
@@ -488,15 +495,15 @@
       
       // WASD controls with confusing direction swapping
       const keyMap = {
-        w: { dx: 0, dy: -15 },
-        a: { dx: -15, dy: 0 },
-        s: { dx: 0, dy: 15 },
-        d: { dx: 15, dy: 0 }
+        w: { dx: 0, dy: -7.5 },
+        a: { dx: -7.5, dy: 0 },
+        s: { dx: 0, dy: 7.5 },
+        d: { dx: 7.5, dy: 0 }
       };
       
       let currentKeyMap = {...keyMap};
       
-      // Swap directions every 3-5 seconds
+      // Swap directions more frequently (every 1.5-3 seconds)
       setInterval(() => {
         if (!gameActive) return;
         const keys = ['w', 'a', 's', 'd'];
@@ -508,7 +515,7 @@
           [shuffled[2]]: values[2],
           [shuffled[3]]: values[3]
         };
-      }, 3000 + Math.random() * 2000);
+      }, 1500 + Math.random() * 1500);
       
       document.addEventListener('keydown', (e) => {
         if (!gameActive) return;
@@ -547,10 +554,16 @@
         // Move camera around (makes it harder)
         cameraObj.x += cameraObj.dx;
         cameraObj.y += cameraObj.dy;
-        
+
         // Bounce camera off walls
         if (cameraObj.x < 50 || cameraObj.x > canvas.width - 50) cameraObj.dx *= -1;
         if (cameraObj.y < 250 || cameraObj.y > canvas.height - 50) cameraObj.dy *= -1;
+
+        // Randomly change camera direction asynchronously (5% chance per frame)
+        if (Math.random() < 0.05) {
+          cameraObj.dx = (Math.random() - 0.5) * 4;
+          cameraObj.dy = (Math.random() - 0.5) * 2;
+        }
         
         // Draw camera
         ctx.font = '40px Arial';
@@ -596,7 +609,31 @@
         ctx.fillText('Kamera gefunden!', canvas.width / 2, canvas.height / 2 + 60);
         
         window.flashMessage && window.flashMessage('📷 Kamera gefunden!', 2000);
-        
+
+        // Mark fountain game as won
+        if (typeof gameManager !== 'undefined') {
+          gameManager.markWon('fountain');
+
+          // Dispatch gameWon event to unlock next location
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('gameWon', {
+              detail: { gameId: 'fountain' }
+            }));
+
+            // Manually unlock oma-opa-morg hotspot as fallback
+            setTimeout(() => {
+              const hotspot = document.querySelector('.map-hotspot[data-target="oma-opa-morg"]');
+              if (hotspot) {
+                hotspot.classList.remove('locked');
+                hotspot.style.setProperty('pointer-events', 'auto', 'important');
+                hotspot.style.setProperty('cursor', 'pointer', 'important');
+                hotspot.style.setProperty('opacity', '1', 'important');
+                console.log('✅ Manually unlocked oma-opa-morg hotspot');
+              }
+            }, 200);
+          }, 100);
+        }
+
         setTimeout(() => {
           openPolaroidCamera();
         }, 1500);
@@ -1279,7 +1316,12 @@
                   gameActive = false;
                   setTimeout(() => {
                     statusEl.textContent = '😢 Game Over! Try again!';
-                    flashMessage('Too many hits! Better luck next time!');
+
+                    // Only show message if still on oma-opa-shnol page
+                    const shnolPage = document.getElementById('oma-opa-shnol');
+                    if (shnolPage && shnolPage.classList.contains('active')) {
+                      flashMessage('Too many hits! Better luck next time!');
+                    }
                   }, 1500);
                   return;
                 }
@@ -1294,7 +1336,12 @@
                   gameActive = false;
                   setTimeout(() => {
                     statusEl.textContent = '🎉 YOU WIN! Belt-dodging master!';
-                    flashMessage('You successfully dodged the belt 7 times! 🎉');
+
+                    // Only show message if still on oma-opa-shnol page
+                    const shnolPage = document.getElementById('oma-opa-shnol');
+                    if (shnolPage && shnolPage.classList.contains('active')) {
+                      flashMessage('You successfully dodged the belt 7 times! 🎉');
+                    }
 
                     // Mark game won
                     if (typeof gameManager !== 'undefined') {
@@ -1658,8 +1705,186 @@
       
       document.addEventListener('keydown', (e) => { keys[e.code] = true; });
       document.addEventListener('keyup', (e) => { keys[e.code] = false; });
-      
+
+      /**
+       * Generic Character Encounter System
+       * Can be used for any character encounter (granny, grandparents, etc.)
+       * @param {Object} config - Configuration object
+       * @param {string} config.pageId - ID of the page where encounter happens
+       * @param {string} config.characterSprite - Path to character sprite image
+       * @param {string} config.characterDialogue - What the character says
+       * @param {string} config.jenResponse - Jen's response (optional)
+       * @param {string} config.steveResponse - Steve's response (optional for both kids)
+       * @param {string} config.gameId - Game ID for marking won/unlocking
+       */
+      function showCharacterEncounter(config) {
+        console.log('👤 Character encounter:', config.gameId);
+        const page = document.querySelector(`#${config.pageId}`);
+        if(!page) {
+          console.error(`❌ Page ${config.pageId} not found!`);
+          return;
+        }
+
+        if(!page.classList.contains('active')) {
+          console.warn(`⚠️ Page ${config.pageId} not active, skipping animation`);
+          return;
+        }
+
+        // Clean up any existing character animation elements
+        document.querySelectorAll('.character-animation-element').forEach(el => el.remove());
+
+        const jenSprite = document.querySelector(`#${config.pageId} .jen-sprite`);
+        const steveSprite = document.querySelector(`#${config.pageId} .steve-sprite-static`);
+        if(jenSprite) jenSprite.style.animation = '';
+        if(steveSprite) steveSprite.style.animation = '';
+
+        // STEP 1: Character walks in
+        const characterSprite = document.createElement('img');
+        characterSprite.src = config.characterSprite;
+        characterSprite.className = 'character-animation-element';
+        characterSprite.style.cssText = 'position:absolute;right:-350px;bottom:100px;width:350px;height:350px;object-fit:contain;z-index:100;transition:right 1s ease-out;';
+        page.appendChild(characterSprite);
+
+        setTimeout(() => {
+          characterSprite.style.right = '300px';
+          characterSprite.style.animation = 'characterBounce 2s ease-in-out infinite';
+        }, 100);
+
+        // STEP 2: Character speaks
+        setTimeout(() => {
+          if(!page.classList.contains('active')) return;
+
+          const characterBubble = document.createElement('div');
+          characterBubble.className = 'character-animation-element';
+          characterBubble.innerHTML = `
+            <div style="position:relative;background:white;padding:18px 24px;border-radius:20px;border:3px solid #f59e0b;box-shadow:0 6px 20px rgba(0,0,0,0.3);font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;max-width:380px;text-align:left;">
+              ${config.characterDialogue}
+              <div style="position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;border-top:18px solid #f59e0b;"></div>
+              <div style="position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:15px solid white;"></div>
+            </div>
+          `;
+          characterBubble.style.cssText = 'position:fixed;bottom:60px;right:430px;z-index:9999;opacity:0;transition:opacity 0.5s;';
+          document.body.appendChild(characterBubble);
+
+          setTimeout(() => { characterBubble.style.opacity = '1'; }, 10);
+
+          // STEP 3: Hide character bubble after 4s
+          setTimeout(() => {
+            characterBubble.style.opacity = '0';
+            setTimeout(() => {
+              characterBubble.remove();
+
+              // STEP 4: Both kids respond (if steveResponse provided)
+              if(!page.classList.contains('active')) return;
+
+              if(config.steveResponse) {
+                if(jenSprite) jenSprite.style.animation = 'characterBounce 2s ease-in-out infinite';
+                if(steveSprite) steveSprite.style.animation = 'characterBounce 2s ease-in-out infinite';
+
+                const kidsBubble = document.createElement('div');
+                kidsBubble.className = 'character-animation-element';
+                kidsBubble.innerHTML = `
+                  <div style="position:relative;background:white;padding:18px 24px;border-radius:20px;border:3px solid #667eea;box-shadow:0 6px 20px rgba(0,0,0,0.3);font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;max-width:380px;text-align:left;">
+                    ${config.steveResponse}
+                    <div style="position:absolute;left:-18px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:15px solid transparent;border-bottom:15px solid transparent;border-right:18px solid #667eea;"></div>
+                    <div style="position:absolute;left:-14px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:12px solid transparent;border-bottom:12px solid transparent;border-right:15px solid white;"></div>
+                  </div>
+                `;
+                kidsBubble.style.cssText = 'position:fixed;bottom:60px;right:530px;z-index:9999;opacity:0;transition:opacity 0.5s;';
+                document.body.appendChild(kidsBubble);
+
+                setTimeout(() => { kidsBubble.style.opacity = '1'; }, 10);
+
+                // Remove kids bubble after 2.5s
+                setTimeout(() => {
+                  kidsBubble.style.opacity = '0';
+                  setTimeout(() => {
+                    kidsBubble.remove();
+                    if(steveSprite) steveSprite.style.animation = '';
+
+                    if(config.jenResponse) {
+                      showJenFinalResponse();
+                    } else {
+                      cleanup();
+                    }
+                  }, 500);
+                }, 2500);
+              } else if(config.jenResponse) {
+                showJenFinalResponse();
+              } else {
+                cleanup();
+              }
+
+              function showJenFinalResponse() {
+                if(!page.classList.contains('active')) return;
+
+                if(jenSprite) jenSprite.style.animation = 'characterBounce 2s ease-in-out infinite';
+
+                const jenBubble = document.createElement('div');
+                jenBubble.className = 'character-animation-element';
+                jenBubble.innerHTML = `
+                  <div style="position:relative;background:white;padding:18px 24px;border-radius:20px;border:3px solid #667eea;box-shadow:0 6px 20px rgba(0,0,0,0.3);font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;max-width:380px;text-align:left;">
+                    ${config.jenResponse}
+                    <div style="position:absolute;left:-18px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:15px solid transparent;border-bottom:15px solid transparent;border-right:18px solid #667eea;"></div>
+                    <div style="position:absolute;left:-14px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:12px solid transparent;border-bottom:12px solid transparent;border-right:15px solid white;"></div>
+                  </div>
+                `;
+                jenBubble.style.cssText = 'position:fixed;bottom:60px;right:530px;z-index:9999;opacity:0;transition:opacity 0.5s;';
+                document.body.appendChild(jenBubble);
+
+                setTimeout(() => { jenBubble.style.opacity = '1'; }, 10);
+
+                setTimeout(() => {
+                  jenBubble.style.opacity = '0';
+                  setTimeout(() => {
+                    jenBubble.remove();
+                    cleanup();
+                  }, 500);
+                }, 4500);
+              }
+
+              function cleanup() {
+                characterSprite.remove();
+                if(jenSprite) jenSprite.style.animation = '';
+                if(steveSprite) steveSprite.style.animation = '';
+
+                setTimeout(() => {
+                  console.log('🗺️ Navigating back to landing page');
+                  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                  const landingPage = document.getElementById('landing-page');
+                  if (landingPage) {
+                    landingPage.classList.add('active');
+
+                    setTimeout(() => {
+                      console.log(`🎮 Dispatching gameWon for ${config.gameId}`);
+                      window.dispatchEvent(new CustomEvent('gameWon', {
+                        detail: { gameId: config.gameId }
+                      }));
+                    }, 100);
+                  }
+                }, 1000);
+              }
+            }, 500);
+          }, 4000);
+        }, 1200);
+      }
+
+      // Expose globally for other pages to use
+      window.showCharacterEncounter = showCharacterEncounter;
+
       function showOmaReward() {
+        showCharacterEncounter({
+          pageId: 'snails',
+          characterSprite: '/assets/sprites/objects/nesquikOma.png',
+          characterDialogue: 'Gut gemacht Kinder, hier, eine Packung Nesquik!',
+          steveResponse: 'Danke liebe Frau!!',
+          jenResponse: 'Che za staruxa... Komm zur nächsten Location!',
+          gameId: 'snails'
+        });
+      }
+
+      // Keep old implementation as backup/reference (commented out)
+      function showOmaReward_OLD() {
         console.log('👵 showOmaReward called - Complete timeline');
         const snailsPage = document.querySelector('#snails');
         if(!snailsPage) {
@@ -1674,7 +1899,7 @@
         }
 
         // Clean up any existing granny animation elements
-        document.querySelectorAll('.granny-animation-element').forEach(el => el.remove());
+        document.querySelectorAll('.character-animation-element').forEach(el => el.remove());
 
         // Stop all animations initially
         const jenSprite = document.querySelector('#snails .jen-sprite');
@@ -1767,7 +1992,7 @@
 
                   setTimeout(() => { jenFinalBubble.style.opacity = '1'; }, 10);
 
-                  // STEP 6: After 3s, clean up everything and navigate
+                  // STEP 6: After 4.5s, clean up everything and navigate
                   setTimeout(() => {
                     jenFinalBubble.style.opacity = '0';
                     setTimeout(() => {
@@ -1776,7 +2001,7 @@
                       if(jenSprite) jenSprite.style.animation = '';
                       if(steveSprite) steveSprite.style.animation = '';
 
-                      // Wait longer before navigation so Jen can finish speaking
+                      // Wait before navigation so Jen can finish speaking
                       setTimeout(() => {
                         // Navigate back to landing page
                         console.log('🗺️ Navigating back to landing page');
@@ -1795,7 +2020,7 @@
                         }
                       }, 1000);
                     }, 500);
-                  }, 3000);
+                  }, 4500);
                 }, 500);
               }, 2500);
             }, 500);
@@ -1857,8 +2082,16 @@
         
         // Timer with K cheat
         gameInterval = setInterval(()=>{
+          // Stop interval if page is no longer active
+          const snailsPage = document.getElementById('snails');
+          if (!snailsPage || !snailsPage.classList.contains('active')) {
+            clearInterval(gameInterval);
+            gameRunning = false;
+            return;
+          }
+
           if(!gameRunning) return;
-          
+
           // CHEAT: K to win
           if(keys['KeyK']){
             gameRunning = false;
@@ -1880,7 +2113,13 @@
             clearInterval(gameInterval);
             timerEl.textContent = '0';
             timerEl.style.color = '#ff4444';
-            window.flashMessage && window.flashMessage(`Time's up! You caught ${caught}/${totalSnails} snails.`);
+
+            // Only show message if still on snails page
+            const snailsPage = document.getElementById('snails');
+            if (snailsPage && snailsPage.classList.contains('active')) {
+              window.flashMessage && window.flashMessage(`Time's up! You caught ${caught}/${totalSnails} snails.`);
+            }
+
             window.gameManager && window.gameManager.markLost('snails');
             wall.querySelectorAll('button').forEach(s => { s.style.opacity='0.3'; s.style.pointerEvents='none'; });
           } else {
