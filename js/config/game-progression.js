@@ -96,8 +96,9 @@ export const PROGRESSION = {
   'oma-opa-morg': {
     level: 6,
     displayName: 'Oma & Opa Morg',
-    game: null, // Noch zu implementieren
-    collectible: 'yellow-shorts',
+    game: 'typing-game',
+    collectible: 'yellowShorts',
+    unlocks: [],
     missionAfter: 'Gehe nun zu Oma Shelya. Beeil dich!',
     unlocks: ['oma-shelya'],
     character: null,

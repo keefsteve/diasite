@@ -1232,6 +1232,7 @@
       let dodged = 0;
       let hits = 0;
       let gameActive = true;
+      let walkingEmoji = null; // Store Opa sprite globally
 
       function makePick(playerChoice) {
         if (!gameActive) return;
@@ -1254,11 +1255,16 @@
         statusEl.textContent = `Oma is counting: ${countdown}...`;
         statusEl.style.color = 'var(--muted-red)';
 
-        // Walking Opa sprite during countdown
-        const walkingEmoji = document.createElement('img');
-        walkingEmoji.src = 'assets/sprites/people/opaSprite.png';
-        walkingEmoji.style.cssText = 'position:absolute;top:50%;left:20%;width:80px;height:80px;object-fit:contain;z-index:150;transition:left 0.5s;';
-        document.querySelector('#oma-opa-shnol').appendChild(walkingEmoji);
+        // Create or reuse Walking Opa sprite during countdown
+        if (!walkingEmoji) {
+          walkingEmoji = document.createElement('img');
+          walkingEmoji.src = 'assets/sprites/people/opaSprite.png';
+          walkingEmoji.style.cssText = 'position:absolute;top:50%;left:20%;width:120px;height:120px;object-fit:contain;z-index:150;transition:left 0.5s;';
+          document.querySelector('#oma-opa-shnol').appendChild(walkingEmoji);
+        } else {
+          // Reset position if sprite already exists
+          walkingEmoji.style.left = '20%';
+        }
         
         let walkPosition = 20;
         let walkDirection = 1;
@@ -1301,10 +1307,10 @@
                 hitCheek.style.transform = 'scale(1.3) rotate(5deg)';
                 hitCheek.style.animation = 'hitWiggle 0.5s ease-in-out';
                 
-                // Show belt emoji hitting cheek
+                // Show belt image hitting cheek
                 const beltEmoji = document.createElement('img');
-                beltEmoji.src = 'assets/sprites/people/belt.png';
-                beltEmoji.style.cssText = 'position:absolute;font-size:3rem;z-index:250;animation:beltSwing 0.3s ease-out;';
+                beltEmoji.src = 'assets/sprites/objects/belt.png';
+                beltEmoji.style.cssText = 'position:absolute;width:100px;height:100px;object-fit:contain;z-index:250;animation:beltSwing 0.3s ease-out;';
                 const cheekRect = hitCheek.getBoundingClientRect();
                 const pageRect = document.querySelector('#oma-opa-shnol').getBoundingClientRect();
                 beltEmoji.style.left = (cheekRect.left - pageRect.left + 30) + 'px';
@@ -1317,6 +1323,14 @@
                 hitsEl.textContent = hits;
                 statusEl.textContent = `💥 OUCH! The belt hit your ${playerChoice} cheek!`;
                 statusEl.style.color = '#ff4444';
+
+                // Show Opa speech bubble with random phrase (right side, triangle up)
+                const opaPhrase = ['я тебя выебу!!', 'тыыыы мразьььь!', 'а ну сюда!', 'получай!', 'нанах тебе!!'][Math.floor(Math.random() * 5)];
+                const opaBubble = document.createElement('div');
+                opaBubble.style.cssText = 'position:fixed;bottom:140px;right:100px;background:white;padding:15px 20px;border:3px solid #000;box-shadow:5px 5px 0 #000;font-family:"Nineteen Ninety Seven",monospace;font-size:1.1rem;z-index:9999;';
+                opaBubble.innerHTML = `${opaPhrase}<div style="position:absolute;top:-15px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-bottom:15px solid #000;"></div><div style="position:absolute;top:-11px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:12px solid white;"></div>`;
+                document.body.appendChild(opaBubble);
+                setTimeout(() => opaBubble.remove(), 2000);
 
                 // Check if calendar button should appear
                 checkInventoryForCalendar();
@@ -1573,10 +1587,28 @@
         </div>
 
         <div class="game-container">
-          <div style="text-align:center;padding:40px;">
-            <h3 style="font-size:2rem;color:var(--terracotta);margin-bottom:20px;">Coming Soon!</h3>
-            <p style="font-size:1.2rem;color:#666;">This game is still under development.</p>
-            <p style="font-size:1rem;color:#888;margin-top:20px;">Press K to skip for now</p>
+          <!-- ASCII MP3 Player -->
+          <div id="mp3-player" style="background:#222;color:#0f0;font-family:monospace;padding:20px;border:3px solid #0f0;margin-bottom:20px;">
+            <pre id="mp3-display" style="margin:0;font-size:0.8rem;">
+╔═══════════════════════════════════════╗
+║  🎵  OMA'S TAPE COLLECTION  🎵       ║
+╠═══════════════════════════════════════╣
+║ ► Track 1: Kalinka.mp3 [PLACEHOLDER] ║
+║   Track 2: Katjuscha.mp3 [PLACEHOLDER]║
+║   Track 3: Korobeiniki.mp3 [PLACEHOLDER]║
+╠═══════════════════════════════════════╣
+║ Status: STOPPED                      ║
+║ ↑↓: Select  SPACE: Play  P: Pause  ║
+╚═══════════════════════════════════════╝</pre>
+          </div>
+          
+          <!-- Typing Game -->
+          <div id="typing-game" style="text-align:center;padding:20px;">
+            <h3 style="margin-bottom:10px;">Schnell! Oma redet!</h3>
+            <p id="typing-status" style="font-size:1.2rem;margin:10px 0;">Tippe "nein" wenn der Mund aufgeht!</p>
+            <div id="typing-mouth" style="font-size:4rem;margin:20px 0;">😶</div>
+            <input id="typing-input" type="text" style="font-size:1.5rem;padding:10px;border:3px solid #000;font-family:'Nineteen Ninety Seven',monospace;width:200px;" placeholder="Tippe hier..." />
+            <p id="typing-score" style="font-size:1rem;margin-top:10px;">Richtige: <span id="typing-correct">0</span> / 10</p>
           </div>
         </div>
       </div>
@@ -1596,15 +1628,190 @@
     (function() {
       const keys = {};
       let gameWon = false;
+      let gameActive = false;
+      let correctAnswers = 0;
+      const neededAnswers = 10;
+      let mouthOpenInterval = null;
 
-      document.addEventListener('keydown', (e) => { keys[e.code] = true; });
+      // MP3 Player state
+      let selectedTrack = 0;
+      let playerStatus = 'STOPPED';
+      const tracks = ['Kalinka.mp3', 'Katjuscha.mp3', 'Korobeiniki.mp3'];
+
+      document.addEventListener('keydown', (e) => { 
+        keys[e.code] = true;
+        
+        // MP3 Player controls
+        const omaMorgPage = document.getElementById('oma-opa-morg');
+        if (omaMorgPage && omaMorgPage.classList.contains('active')) {
+          if (e.code === 'ArrowUp') {
+            e.preventDefault();
+            selectedTrack = (selectedTrack - 1 + tracks.length) % tracks.length;
+            updateMP3Display();
+          } else if (e.code === 'ArrowDown') {
+            e.preventDefault();
+            selectedTrack = (selectedTrack + 1) % tracks.length;
+            updateMP3Display();
+          } else if (e.code === 'Space') {
+            e.preventDefault();
+            playerStatus = playerStatus === 'PLAYING' ? 'PAUSED' : 'PLAYING';
+            updateMP3Display();
+          } else if (e.code === 'KeyP') {
+            playerStatus = 'PAUSED';
+            updateMP3Display();
+          }
+        }
+      });
       document.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+      function updateMP3Display() {
+        const display = document.getElementById('mp3-display');
+        if (!display) return;
+        
+        const trackLines = tracks.map((track, i) => {
+          const marker = i === selectedTrack ? '►' : ' ';
+          return `║ ${marker} Track ${i + 1}: ${track.padEnd(22)} [PLACEHOLDER]║`;
+        }).join('\n');
+
+        display.textContent = `╔═══════════════════════════════════════╗
+║  🎵  OMA'S TAPE COLLECTION  🎵       ║
+╠═══════════════════════════════════════╣
+${trackLines}
+╠═══════════════════════════════════════╣
+║ Status: ${playerStatus.padEnd(27)}║
+║ ↑↓: Select  SPACE: Play  P: Pause  ║
+╚═══════════════════════════════════════╝`;
+      }
+
+      // Start typing game when page becomes active
+      const typingObserver = new MutationObserver(() => {
+        const omaMorgPage = document.getElementById('oma-opa-morg');
+        if (omaMorgPage && omaMorgPage.classList.contains('active') && !gameActive && !gameWon) {
+          startTypingGame();
+        }
+      });
+
+      const omaMorgPage = document.getElementById('oma-opa-morg');
+      if (omaMorgPage) {
+        typingObserver.observe(omaMorgPage, { attributes: true, attributeFilter: ['class'] });
+      }
+
+      function startTypingGame() {
+        gameActive = true;
+        correctAnswers = 0;
+        const input = document.getElementById('typing-input');
+        const mouthEl = document.getElementById('typing-mouth');
+        const statusEl = document.getElementById('typing-status');
+        const correctEl = document.getElementById('typing-correct');
+
+        if (!input || !mouthEl) return;
+
+        input.value = '';
+        input.focus();
+        correctEl.textContent = '0';
+
+        // Random mouth opening
+        mouthOpenInterval = setInterval(() => {
+          if (!gameActive) return;
+
+          // Force mouth open with different emoji
+          mouthEl.innerHTML = '😮';
+          statusEl.textContent = 'NEIN SAGEN! Schnell!';
+          statusEl.style.color = '#ff4444';
+
+          const openTime = Date.now();
+          let answered = false;
+
+          // Check input
+          const checkInput = setInterval(() => {
+            if (answered) {
+              clearInterval(checkInput);
+              return;
+            }
+            if (input.value.toLowerCase().includes('nein')) {
+              const responseTime = Date.now() - openTime;
+              if (responseTime < 3000) {
+                answered = true;
+                correctAnswers++;
+                correctEl.textContent = correctAnswers;
+                statusEl.textContent = '✓ Gut gemacht!';
+                statusEl.style.color = '#00aa00';
+                input.value = '';
+
+                if (correctAnswers >= neededAnswers) {
+                  winGame();
+                  clearInterval(checkInput);
+                  return;
+                }
+              }
+              mouthEl.innerHTML = '😶';
+              clearInterval(checkInput);
+            }
+          }, 50);
+
+          // Close mouth after 3s
+          setTimeout(() => {
+            if (!answered) {
+              mouthEl.innerHTML = '😶';
+              clearInterval(checkInput);
+            }
+            statusEl.textContent = 'Warte auf nächste Chance...';
+            statusEl.style.color = '#666';
+            clearInterval(checkInput);
+          }, 2000);
+
+        }, 3000 + Math.random() * 2000);
+      }
+
+      function winGame() {
+        gameActive = false;
+        gameWon = true;
+        if (mouthOpenInterval) clearInterval(mouthOpenInterval);
+
+        const statusEl = document.getElementById('typing-status');
+        statusEl.textContent = '🎉 Geschafft! Du hast die gelben Shorts gewonnen!';
+        statusEl.style.color = '#00aa00';
+
+        // Add yellow shorts to inventory
+        if (window.DiasiteInventory && window.DiasiteState) {
+          window.DiasiteState.player.inventory.push('yellowShorts');
+          window.DiasiteInventory.render();
+        }
+
+        setTimeout(() => {
+          if (typeof gameManager !== 'undefined') {
+            gameManager.markWon('oma-opa-morg');
+          }
+
+          setTimeout(() => {
+            if(window.CharacterDialogue) {
+              window.CharacterDialogue.showDialogue('jen', 'Oma ist zufrieden! Weiter geht\\'s!', {
+                duration: 2000,
+                onComplete: () => {
+                  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                  const landingPage = document.getElementById('landing-page');
+                  if (landingPage) {
+                    landingPage.classList.add('active');
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent('gameWon', {
+                        detail: { gameId: 'oma-opa-morg' }
+                      }));
+                    }, 100);
+                  }
+                }
+              });
+            }
+          }, 100);
+        }, 2000);
+      }
 
       // CHEAT: Press K to skip this level
       const checkCheat = setInterval(() => {
         const omaMorgPage = document.getElementById('oma-opa-morg');
         if (keys['KeyK'] && !gameWon && omaMorgPage && omaMorgPage.classList.contains('active')) {
+          if (mouthOpenInterval) clearInterval(mouthOpenInterval);
           gameWon = true;
+          gameActive = false;
           clearInterval(checkCheat);
 
           if (typeof gameManager !== 'undefined') {
@@ -1646,7 +1853,7 @@
     <div class="location-content">
       <div class="location-top-row">
         <div class="location-image-container">
-          <img src="/assets/sprites/places/home.jpeg" alt="Home" class="location-image" onerror="this.style.display='none'" />
+          <img src="/assets/sprites/places/home.png" alt="Home" class="location-image" onerror="this.style.display='none'" />
         </div>
 
         <div class="game-container">
@@ -2082,11 +2289,11 @@
         
         // Create snails
         for(let i=0; i<totalSnails; i++){
-          const snail = document.createElement('button');
-          snail.textContent = '🐌';
+          const snail = document.createElement('img');
+          snail.src = 'assets/sprites/objects/schnecke.png';
           const rand = Math.random();
-          let size = rand < 0.6 ? 0.3 + Math.random() * 0.7 : rand < 0.9 ? 1.5 + Math.random() : 2.5 + Math.random() * 1.5;
-          snail.style.cssText = `position:absolute;left:${5+Math.random()*85}%;top:${5+Math.random()*85}%;font-size:${size}rem;background:transparent;border:none;cursor:pointer;transition:transform 0.1s;z-index:${Math.floor(Math.random()*10)};`;
+          let size = rand < 0.6 ? 20 + Math.random() * 30 : rand < 0.9 ? 60 + Math.random() * 30 : 90 + Math.random() * 40;
+          snail.style.cssText = `position:absolute;left:${5+Math.random()*85}%;top:${5+Math.random()*85}%;width:${size}px;height:${size}px;object-fit:contain;background:transparent;border:none;cursor:pointer;transition:transform 0.1s;z-index:${Math.floor(Math.random()*10)};`;
           
           snail.addEventListener('click', ()=>{
             if(!gameRunning) return;
@@ -2162,268 +2369,215 @@
   <!-- ============================================ -->
   <script>
     (function() {
-      // Global keys object for cheat
+      // Keys for cheat
       const keys = {};
       document.addEventListener('keydown', (e) => { keys[e.code] = true; });
       document.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
-      /**
-       * Initializes the maze minigame for Krivaya Gorka location
-       */
       window.startMazeGame = function() {
-        const gameId = 'krivaya';
-        const page = document.getElementById(gameId);
-        if (!page) return;
-
         console.log('🌀 Starting Maze Game');
 
-        // 1. Hide overlay
+        const page = document.getElementById('krivaya');
+        if (!page) return;
+
+        // Hide overlay
         const overlay = page.querySelector('.play-overlay');
         if (overlay) overlay.classList.add('hidden');
 
         const container = page.querySelector('.game-container');
 
-        // Clear any existing game content
+        // Clear existing
         const existingCanvas = container.querySelector('canvas');
         if (existingCanvas) existingCanvas.remove();
 
-        // 2. Setup Canvas
+        // Create canvas
         const canvas = document.createElement('canvas');
-        canvas.width = 600;
-        canvas.height = 600;
+        canvas.width = 450;
+        canvas.height = 450;
         canvas.style.cssText = `
-          background: #fff;
+          background: #b57671;
           border: 4px solid #8b5a3c;
           border-radius: 8px;
-          cursor: none;
+          cursor: crosshair;
           box-shadow: 0 0 20px rgba(0,0,0,0.2);
-          max-width: 100%;
-          height: auto;
+          display: block;
+          margin: 0 auto;
         `;
         container.appendChild(canvas);
 
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
-        // 3. Game State
-        let gameActive = true;
-        let startTime = Date.now();
-        const timeLimit = 60; // 60 seconds
-        let mouseX = 50; // Start pos (left side)
-        let mouseY = 300; // Start pos (middle)
+        // Game state
+        let gameActive = false;
+        let startTime = null;
+        const timeLimit = 60;
+        let mouseX = canvas.width / 2;
+        let mouseY = canvas.height / 2;
+        let mazeImageData = null;
+        let currentMaze = Math.floor(Math.random() * 4) + 1; // Random maze 1-4
 
-        // 4. Load Maze Image (randomly select from maze1-maze4)
+        // Load maze image
         const mazeImg = new Image();
-        const mazeNumber = Math.floor(Math.random() * 4) + 1; // Random 1-4
-        mazeImg.src = `assets/objects/maze${mazeNumber}.png`;
-        console.log(`🌀 Loading maze${mazeNumber}.png`);
-
-        mazeImg.onerror = () => {
-          // Fallback: Draw a simple maze if image not found
-          console.warn('⚠️ Maze image not found, using fallback');
-          drawFallbackMaze(ctx, canvas.width, canvas.height);
-          startGameLoop();
-        };
+        mazeImg.src = `assets/sprites/objects/maze${currentMaze}.png`;
 
         mazeImg.onload = () => {
-          console.log(`✅ Maze image loaded: maze${mazeNumber}.png`);
-          startGameLoop();
+          console.log('✅ Maze loaded!');
+          // Fill background first
+          ctx.fillStyle = '#b57671';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          // Draw maze centered and slightly smaller to show entrance
+          const mazeSize = canvas.width * 0.9;
+          const offset = (canvas.width - mazeSize) / 2;
+          ctx.drawImage(mazeImg, offset, offset, mazeSize, mazeSize);
+          mazeImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+          // Start game
+          gameActive = true;
+          startTime = Date.now();
+          gameLoop();
         };
 
-        // 5. Fallback Maze (if image doesn't exist)
-        function drawFallbackMaze(ctx, w, h) {
+        mazeImg.onerror = () => {
+          console.error('❌ Failed to load maze1.png');
           ctx.fillStyle = '#fff';
-          ctx.fillRect(0, 0, w, h);
-
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
           ctx.fillStyle = '#000';
-          ctx.lineWidth = 20;
+          ctx.font = '20px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText('Maze image not found!', canvas.width/2, canvas.height/2);
+          ctx.fillText('Expected: assets/sprites/objects/maze1.png', canvas.width/2, canvas.height/2 + 30);
+        };
 
-          // Draw simple maze walls
-          // Outer border
-          ctx.strokeRect(10, 10, w-20, h-20);
+        // Check if pixel is a wall (black)
+        function isWall(x, y) {
+          if (!mazeImageData) return false;
+          x = Math.floor(Math.max(0, Math.min(canvas.width - 1, x)));
+          y = Math.floor(Math.max(0, Math.min(canvas.height - 1, y)));
 
-          // Horizontal walls
-          ctx.beginPath();
-          ctx.moveTo(100, 100); ctx.lineTo(w-200, 100);
-          ctx.moveTo(200, 200); ctx.lineTo(w-100, 200);
-          ctx.moveTo(100, 300); ctx.lineTo(w-200, 300);
-          ctx.moveTo(200, 400); ctx.lineTo(w-100, 400);
-          ctx.moveTo(100, 500); ctx.lineTo(w-200, 500);
-          ctx.stroke();
+          const index = (y * canvas.width + x) * 4;
+          const r = mazeImageData.data[index];
+          const g = mazeImageData.data[index + 1];
+          const b = mazeImageData.data[index + 2];
+          const a = mazeImageData.data[index + 3];
 
-          // Vertical walls
-          ctx.beginPath();
-          ctx.moveTo(150, 50); ctx.lineTo(150, 250);
-          ctx.moveTo(300, 150); ctx.lineTo(300, 350);
-          ctx.moveTo(450, 50); ctx.lineTo(450, 250);
-          ctx.moveTo(450, 350); ctx.lineTo(450, 550);
-          ctx.stroke();
-
-          // Draw start (green) and goal (red)
-          ctx.fillStyle = '#00ff00';
-          ctx.fillRect(20, 290, 40, 40);
-          ctx.fillStyle = '#ff0000';
-          ctx.fillRect(w-60, 290, 40, 40);
+          // Black pixels = walls (RGB sum < 100, alpha > 200)
+          return (r + g + b < 100) && (a > 200);
         }
 
-        // 6. Game Loop
-        function startGameLoop() {
-          function gameLoop() {
-            if (!gameActive) return;
-
-            // Clear
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw Maze
-            if (mazeImg.complete && mazeImg.naturalWidth > 0) {
-              ctx.drawImage(mazeImg, 0, 0, canvas.width, canvas.height);
-            }
-
-            // Collision Detection (Pixel based) - check center of cursor
-            const checkX = Math.floor(Math.max(0, Math.min(canvas.width - 1, mouseX)));
-            const checkY = Math.floor(Math.max(0, Math.min(canvas.height - 1, mouseY)));
-            const pixel = ctx.getImageData(checkX, checkY, 1, 1).data;
-
-            // Black wall = dark pixels (RGB sum < 100) with opacity > 200
-            const isWall = (pixel[0] + pixel[1] + pixel[2] < 100) && (pixel[3] > 200);
-
-            // Check Time
-            const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            const remaining = timeLimit - elapsed;
-
-            // Draw Cursor (colored dot)
-            ctx.beginPath();
-            ctx.arc(mouseX, mouseY, 10, 0, Math.PI * 2);
-            ctx.fillStyle = isWall ? '#ff0000' : '#00ff00';
-            ctx.fill();
-            ctx.strokeStyle = isWall ? '#cc0000' : '#00cc00';
-            ctx.lineWidth = 3;
-            ctx.stroke();
-
-            // Draw Timer
-            ctx.fillStyle = remaining < 10 ? '#ff0000' : '#000';
-            ctx.font = 'bold 20px "Nineteen Ninety Seven", monospace';
-            ctx.fillText(`Time: ${remaining}s`, 20, 40);
-
-            // Draw Start and Goal markers
-            ctx.fillStyle = '#00ff00';
-            ctx.fillRect(10, 280, 30, 40);
-            ctx.fillStyle = '#ff0000';
-            ctx.fillRect(canvas.width - 40, 280, 30, 40);
-
-            // Time's up
-            if (remaining <= 0) {
-              gameOver('Time Up!');
-              return;
-            }
-
-            // Wall collision - reset to start
-            if (isWall) {
-              mouseX = 30;
-              mouseY = 300;
-
-              // Shake effect
-              canvas.style.transform = 'translateX(5px)';
-              setTimeout(() => canvas.style.transform = 'none', 100);
-            }
-
-            // Win Condition: Reached goal area on right side
-            if (mouseX > canvas.width - 50 && mouseY > 280 && mouseY < 320) {
-              gameWin();
-              return;
-            }
-
-            requestAnimationFrame(gameLoop);
-          }
-
-          gameLoop();
-        }
-
-        // 7. Input Handling
-        function updateMousePos(e) {
+        // Mouse tracking
+        canvas.addEventListener('mousemove', (e) => {
           const rect = canvas.getBoundingClientRect();
           const scaleX = canvas.width / rect.width;
           const scaleY = canvas.height / rect.height;
-
           mouseX = (e.clientX - rect.left) * scaleX;
           mouseY = (e.clientY - rect.top) * scaleY;
+        });
+
+        // Game loop
+        function gameLoop() {
+          if (!gameActive) return;
+
+          // Clear and redraw maze
+          ctx.fillStyle = '#b57671';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          if (mazeImg.complete) {
+            const mazeSize = canvas.width * 0.9;
+            const offset = (canvas.width - mazeSize) / 2;
+            ctx.drawImage(mazeImg, offset, offset, mazeSize, mazeSize);
+          }
+
+          // Check collision
+          const hitWall = isWall(mouseX, mouseY);
+
+          // Draw cursor
+          ctx.beginPath();
+          ctx.arc(mouseX, mouseY, 8, 0, Math.PI * 2);
+          ctx.fillStyle = hitWall ? '#ff0000' : '#00ff00';
+          ctx.fill();
+          ctx.strokeStyle = '#000';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          // Timer
+          const elapsed = Math.floor((Date.now() - startTime) / 1000);
+          const remaining = timeLimit - elapsed;
+          ctx.fillStyle = remaining < 10 ? '#ff0000' : '#000';
+          ctx.font = 'bold 24px "Nineteen Ninety Seven", monospace';
+          ctx.fillText(`${remaining}s`, 20, 40);
+
+          // Check time
+          if (remaining <= 0) {
+            endGame(false);
+            return;
+          }
+
+          // Check wall collision - GAME OVER if hit
+          if (hitWall) {
+            endGame(false, 'WAND BERÜHRT!');
+            return;
+          }
+
+          // Check win (right side)
+          if (mouseX > canvas.width - 40) {
+            endGame(true);
+            return;
+          }
+
+          // Cheat
+          if (keys['KeyK']) {
+            endGame(true);
+            return;
+          }
+
+          requestAnimationFrame(gameLoop);
         }
 
-        canvas.addEventListener('mousemove', updateMousePos);
-
-        // 8. Win/Loss Handlers
-        function gameOver(reason) {
+        // End game
+        function endGame(won, message) {
           gameActive = false;
-          canvas.removeEventListener('mousemove', updateMousePos);
 
-          ctx.fillStyle = 'rgba(0,0,0,0.7)';
+          ctx.fillStyle = 'rgba(0,0,0,0.8)';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = '#ff0000';
-          ctx.font = '40px "Nineteen Ninety Seven"';
+
           ctx.textAlign = 'center';
-          ctx.fillText(reason, canvas.width/2, canvas.height/2 - 40);
+          ctx.font = '48px "Nineteen Ninety Seven"';
+          ctx.fillStyle = won ? '#00ff00' : '#ff0000';
+          ctx.fillText(won ? 'WIN!' : message || 'TIME UP!', canvas.width/2, canvas.height/2 - 40);
 
           ctx.font = '20px "Nineteen Ninety Seven"';
           ctx.fillStyle = '#fff';
-          ctx.fillText('Click to try a new maze!', canvas.width/2, canvas.height/2 + 20);
+          ctx.fillText(won ? 'Nasse Klamotten gefunden!' : 'Click to try again', canvas.width/2, canvas.height/2 + 20);
 
-          // Click to retry with NEW maze
-          const retryHandler = () => {
-            canvas.remove();
-            canvas.removeEventListener('click', retryHandler);
-            window.startMazeGame(); // Start fresh with new random maze
-          };
-
-          canvas.addEventListener('click', retryHandler);
-          canvas.style.cursor = 'pointer';
-        }
-
-        function gameWin() {
-          gameActive = false;
-
-          // Victory Visuals
-          ctx.fillStyle = 'rgba(255,255,255,0.9)';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = '#00aa00';
-          ctx.font = '40px "Nineteen Ninety Seven"';
-          ctx.textAlign = 'center';
-          ctx.fillText('MAZE CLEARED!', canvas.width/2, canvas.height/2 - 40);
-          ctx.font = '20px "Nineteen Ninety Seven"';
-          ctx.fillStyle = '#666';
-          ctx.fillText('Nasse Klamotten gefunden!', canvas.width/2, canvas.height/2 + 20);
-
-          // Mark game as won
-          setTimeout(() => {
-            if (window.gameManager) {
-              window.gameManager.markWon('krivaya');
-            }
-
-            // Navigate back to landing page
+          if (won) {
             setTimeout(() => {
-              document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-              const landingPage = document.getElementById('landing-page');
-              if (landingPage) {
-                landingPage.classList.add('active');
-
-                // Dispatch gameWon event
-                setTimeout(() => {
-                  window.dispatchEvent(new CustomEvent('gameWon', {
-                    detail: { gameId: 'krivaya' }
-                  }));
-                }, 100);
+              if (window.gameManager) {
+                window.gameManager.markWon('krivaya');
               }
-            }, 1500);
-          }, 1000);
-        }
-
-        // 9. Cheat Code (K key)
-        const cheatHandler = (e) => {
-          if (e.code === 'KeyK' && gameActive) {
-            console.log('🎮 Cheat activated!');
-            gameWin();
-            document.removeEventListener('keydown', cheatHandler);
+              setTimeout(() => {
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                const landingPage = document.getElementById('landing-page');
+                if (landingPage) {
+                  landingPage.classList.add('active');
+                  setTimeout(() => {
+                    window.dispatchEvent(new CustomEvent('gameWon', {
+                      detail: { gameId: 'krivaya' }
+                    }));
+                  }, 100);
+                }
+              }, 1500);
+            }, 1000);
+          } else {
+            // Change maze for next try
+            currentMaze = (currentMaze % 4) + 1;
+            canvas.onclick = () => {
+              mouseX = canvas.width / 2;
+              mouseY = canvas.height / 2;
+              canvas.onclick = null;
+              canvas.remove();
+              window.startMazeGame();
+            };
           }
-        };
-        document.addEventListener('keydown', cheatHandler);
+        }
       };
     })();
   </script>
