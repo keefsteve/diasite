@@ -470,6 +470,11 @@
       let hookY = 50;
       const hookSpeed = 3;
 
+      // Keys for cheat
+      const keys = {};
+      document.addEventListener('keydown', (e) => { keys[e.code] = true; });
+      document.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
       // Camera position - moves around randomly (faster tempo)
       const cameraObj = {
         x: 100 + Math.random() * 400,
@@ -589,6 +594,14 @@
         // Check collision with camera
         const dist = Math.sqrt(Math.pow(hookX - cameraObj.x, 2) + Math.pow(hookY - cameraObj.y, 2));
         if (dist < 30) {
+          cameraFound = true;
+          gameActive = false;
+          onCameraFound();
+          return;
+        }
+        
+        // Cheat: K to win
+        if (keys['KeyK']) {
           cameraFound = true;
           gameActive = false;
           onCameraFound();
@@ -1704,11 +1717,16 @@ ${trackLines}
         const statusEl = document.getElementById('typing-status');
         const correctEl = document.getElementById('typing-correct');
 
-        if (!input || !mouthEl) return;
+        if (!input || !mouthEl) {
+          console.error('Typing game elements not found!');
+          return;
+        }
 
         input.value = '';
         input.focus();
         correctEl.textContent = '0';
+        
+        console.log('✅ Typing game started!');
 
         // Random mouth opening
         mouthOpenInterval = setInterval(() => {
@@ -1785,7 +1803,7 @@ ${trackLines}
 
           setTimeout(() => {
             if(window.CharacterDialogue) {
-              window.CharacterDialogue.showDialogue('jen', 'Oma ist zufrieden! Weiter geht\\'s!', {
+              window.CharacterDialogue.showDialogue('jen', "Oma ist zufrieden! Weiter geht's!", {
                 duration: 2000,
                 onComplete: () => {
                   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1813,6 +1831,14 @@ ${trackLines}
           gameWon = true;
           gameActive = false;
           clearInterval(checkCheat);
+          
+          // Add yellow shorts to inventory
+          if (window.DiasiteInventory && window.DiasiteState) {
+            if (!window.DiasiteState.player.inventory.includes('yellowShorts')) {
+              window.DiasiteState.player.inventory.push('yellowShorts');
+              window.DiasiteInventory.render();
+            }
+          }
 
           if (typeof gameManager !== 'undefined') {
             gameManager.markWon('oma-opa-morg');
@@ -1987,8 +2013,8 @@ ${trackLines}
           characterBubble.innerHTML = `
             <div style="position:relative;background:white;padding:18px 24px;border-radius:20px;border:3px solid #f59e0b;box-shadow:0 6px 20px rgba(0,0,0,0.3);font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;max-width:380px;text-align:left;">
               ${config.characterDialogue}
-              <div style="position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;border-top:18px solid #f59e0b;"></div>
-              <div style="position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:15px solid white;"></div>
+              <div style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;border-bottom:18px solid #f59e0b;"></div>
+              <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-bottom:15px solid white;"></div>
             </div>
           `;
           characterBubble.style.cssText = 'position:fixed;bottom:60px;right:430px;z-index:9999;opacity:0;transition:opacity 0.5s;';
@@ -2292,7 +2318,7 @@ ${trackLines}
           const snail = document.createElement('img');
           snail.src = 'assets/sprites/objects/schnecke.png';
           const rand = Math.random();
-          let size = rand < 0.6 ? 20 + Math.random() * 30 : rand < 0.9 ? 60 + Math.random() * 30 : 90 + Math.random() * 40;
+          let size = rand < 0.6 ? 8 + Math.random() * 10 : rand < 0.9 ? 20 + Math.random() * 10 : 35 + Math.random() * 10;
           snail.style.cssText = `position:absolute;left:${5+Math.random()*85}%;top:${5+Math.random()*85}%;width:${size}px;height:${size}px;object-fit:contain;background:transparent;border:none;cursor:pointer;transition:transform 0.1s;z-index:${Math.floor(Math.random()*10)};`;
           
           snail.addEventListener('click', ()=>{
@@ -2486,13 +2512,14 @@ ${trackLines}
             ctx.drawImage(mazeImg, offset, offset, mazeSize, mazeSize);
           }
 
-          // Check collision
-          const hitWall = isWall(mouseX, mouseY);
+          // Check collision - only center point
+          const touchingWall = isWall(mouseX, mouseY);
 
           // Draw cursor
+          const cursorRadius = 8;
           ctx.beginPath();
-          ctx.arc(mouseX, mouseY, 8, 0, Math.PI * 2);
-          ctx.fillStyle = hitWall ? '#ff0000' : '#00ff00';
+          ctx.arc(mouseX, mouseY, cursorRadius, 0, Math.PI * 2);
+          ctx.fillStyle = touchingWall ? '#ff0000' : '#00ff00';
           ctx.fill();
           ctx.strokeStyle = '#000';
           ctx.lineWidth = 2;
@@ -2512,7 +2539,7 @@ ${trackLines}
           }
 
           // Check wall collision - GAME OVER if hit
-          if (hitWall) {
+          if (touchingWall) {
             endGame(false, 'WAND BERÜHRT!');
             return;
           }
@@ -2660,7 +2687,7 @@ ${trackLines}
   <script src="/js/games/fountain-jump.js"></script>
   <script src="/js/games/fountain-integration.js"></script>
   <script defer src="/app.js"></script>
-  <script defer src="/minigames.js"></script>
+  <!-- <script defer src="/minigames.js"></script> Disabled - snails game now inline -->
 
   <!-- Steve Speaking Animation Helper -->
   <script>
