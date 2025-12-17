@@ -17,6 +17,37 @@
       <div id="clock-time" style="font-size:1.05rem;letter-spacing:3px;"></div>
     </div>
 
+    <!-- Seasonal Controls -->
+    <div id="seasonal-controls" style="position:absolute;top:20px;left:20px;display:flex;gap:10px;z-index:200;">
+      <button class="season-btn" data-season="spring" title="Frühling">🌸</button>
+      <button class="season-btn" data-season="summer" title="Sommer">☀️</button>
+      <button class="season-btn" data-season="autumn" title="Herbst">🍂</button>
+      <button class="season-btn" data-season="winter" title="Winter">❄️</button>
+      <button class="season-btn active" data-season="reality" title="Realität">🌍</button>
+    </div>
+    <style>
+      .season-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+        background: rgba(0,0,0,0.7);
+        border: 2px solid #00ff88;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      }
+      .season-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(0,255,136,0.4);
+      }
+      .season-btn.active {
+        background: #00ff88;
+        border-color: #000;
+        transform: scale(1.15);
+      }
+    </style>
+
     <!-- Mission box on the right side -->
     <div id="mission-box" class="riddle-note landing-riddle-note" style="position:absolute;bottom:150px;right:40px;left:auto;max-width:380px;text-align:left;">
       Finde den nächsten Ort.
@@ -161,6 +192,32 @@
 
       updateClock();
       setInterval(updateClock, 1000);
+
+      // Seasonal Controls functionality
+      document.querySelectorAll('.season-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          // Remove active from all
+          document.querySelectorAll('.season-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          
+          const season = btn.dataset.season;
+          
+          // Wait for Seasonal system to load
+          const checkSeasonal = () => {
+            if (window.Seasonal) {
+              if (season === 'reality') {
+                window.Seasonal.detectSeason();
+              } else {
+                window.Seasonal.currentSeason = season;
+              }
+              window.Seasonal.checkAndUpdate();
+            } else {
+              setTimeout(checkSeasonal, 100);
+            }
+          };
+          checkSeasonal();
+        });
+      });
 
       // Mission Box Updater (powered by Messages system)
       // Note: The actual logic is in js/systems/messages.js
@@ -351,12 +408,14 @@
       let hookY = 50;
       const hookSpeed = 3;
       
-      // Camera position
+      // Camera position - moves around randomly
       const cameraObj = {
         x: 100 + Math.random() * 400,
         y: 300 + Math.random() * 80,
         size: 40,
-        emoji: '📷'
+        emoji: '📷',
+        dx: (Math.random() - 0.5) * 2,
+        dy: (Math.random() - 0.5) * 1
       };
       
       // Activate game when fountain page is active
@@ -401,6 +460,14 @@
         for (let i = 0; i < 5; i++) {
           ctx.fillRect(0, i * 80 + (Date.now() / 100 % 80), canvas.width, 40);
         }
+        
+        // Move camera around (makes it harder)
+        cameraObj.x += cameraObj.dx;
+        cameraObj.y += cameraObj.dy;
+        
+        // Bounce camera off walls
+        if (cameraObj.x < 50 || cameraObj.x > canvas.width - 50) cameraObj.dx *= -1;
+        if (cameraObj.y < 250 || cameraObj.y > canvas.height - 50) cameraObj.dy *= -1;
         
         // Draw camera
         ctx.font = '40px Arial';
@@ -928,14 +995,14 @@
     // Global hits counter accessible from checkInventoryForCalendar
     let currentHits = 0;
 
-    // Check if player has nudeCalendar and has been hit at least 2 times
+    // Check if player has nudeCalendar and has been hit at least 7 times
     function checkInventoryForCalendar() {
       const calendarButton = document.getElementById('calendar-use-button');
       if (!calendarButton) return;
 
       if (window.DiasiteState && window.DiasiteState.player && window.DiasiteState.player.inventory) {
         const hasCalendar = window.DiasiteState.player.inventory.includes('nudeCalendar');
-        const hasEnoughHits = currentHits >= 2;
+        const hasEnoughHits = currentHits >= 7;
         calendarButton.style.display = (hasCalendar && hasEnoughHits) ? 'block' : 'none';
       }
     }
@@ -1041,12 +1108,28 @@
         statusEl.textContent = `Oma is counting: ${countdown}...`;
         statusEl.style.color = 'var(--muted-red)';
 
+        // Walking emoji during countdown
+        const walkingEmoji = document.createElement('div');
+        walkingEmoji.style.cssText = 'position:absolute;top:50%;left:20%;font-size:3rem;z-index:150;transition:left 0.5s;';
+        walkingEmoji.textContent = '🚶';
+        document.querySelector('#oma-opa-shnol').appendChild(walkingEmoji);
+        
+        let walkPosition = 20;
+        let walkDirection = 1;
+        const walkInterval = setInterval(() => {
+          walkPosition += walkDirection * 10;
+          if (walkPosition > 70 || walkPosition < 20) walkDirection *= -1;
+          walkingEmoji.style.left = walkPosition + '%';
+        }, 500);
+
         const countInterval = setInterval(() => {
           countdown--;
           if (countdown > 0) {
             statusEl.textContent = `Oma is counting: ${countdown}...`;
           } else {
             clearInterval(countInterval);
+            clearInterval(walkInterval);
+            walkingEmoji.remove();
 
             // Show belt swing
             animEl.textContent = beltSwing === 'left' ? '💥⬅️' : '➡️💥';
@@ -1061,6 +1144,17 @@
                 const hitCheek = playerChoice === 'left' ? leftBtn : rightBtn;
                 hitCheek.style.transform = 'scale(1.3) rotate(5deg)';
                 hitCheek.style.animation = 'hitWiggle 0.5s ease-in-out';
+                
+                // Show belt emoji hitting cheek
+                const beltEmoji = document.createElement('div');
+                beltEmoji.textContent = '🔨';
+                beltEmoji.style.cssText = 'position:absolute;font-size:3rem;z-index:250;animation:beltSwing 0.3s ease-out;';
+                const cheekRect = hitCheek.getBoundingClientRect();
+                const pageRect = document.querySelector('#oma-opa-shnol').getBoundingClientRect();
+                beltEmoji.style.left = (cheekRect.left - pageRect.left + 30) + 'px';
+                beltEmoji.style.top = (cheekRect.top - pageRect.top + 30) + 'px';
+                document.querySelector('#oma-opa-shnol').appendChild(beltEmoji);
+                setTimeout(() => beltEmoji.remove(), 300);
 
                 hits++;
                 currentHits = hits; // Update global counter
@@ -1071,7 +1165,7 @@
                 // Check if calendar button should appear
                 checkInventoryForCalendar();
 
-                if (hits >= 3) {
+                if (hits >= 8) {
                   gameActive = false;
                   setTimeout(() => {
                     statusEl.textContent = '😢 Game Over! Try again!';
@@ -1086,7 +1180,7 @@
                 statusEl.textContent = `✨ Nice dodge! The belt swung ${beltSwing}, you showed ${playerChoice}!`;
                 statusEl.style.color = 'green';
 
-                if (dodged >= 7) {
+                if (dodged >= 10) {
                   gameActive = false;
                   setTimeout(() => {
                     statusEl.textContent = '🎉 YOU WIN! Belt-dodging master!';
@@ -1472,21 +1566,24 @@
                       if(jenSprite) jenSprite.style.animation = '';
                       if(steveSprite) steveSprite.style.animation = '';
 
-                      // Navigate back to landing page
-                      console.log('🗺️ Navigating back to landing page');
-                      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-                      const landingPage = document.getElementById('landing-page');
-                      if (landingPage) {
-                        landingPage.classList.add('active');
+                      // Wait longer before navigation so Jen can finish speaking
+                      setTimeout(() => {
+                        // Navigate back to landing page
+                        console.log('🗺️ Navigating back to landing page');
+                        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                        const landingPage = document.getElementById('landing-page');
+                        if (landingPage) {
+                          landingPage.classList.add('active');
 
-                        // Dispatch gameWon event to unlock next location
-                        setTimeout(() => {
-                          console.log('🎮 Dispatching gameWon for snails -> unlocking krivaya');
-                          window.dispatchEvent(new CustomEvent('gameWon', {
-                            detail: { gameId: 'snails' }
-                          }));
-                        }, 100);
-                      }
+                          // Dispatch gameWon event to unlock next location
+                          setTimeout(() => {
+                            console.log('🎮 Dispatching gameWon for snails -> unlocking krivaya');
+                            window.dispatchEvent(new CustomEvent('gameWon', {
+                              detail: { gameId: 'snails' }
+                            }));
+                          }, 100);
+                        }
+                      }, 1000);
                     }, 500);
                   }, 3000);
                 }, 500);

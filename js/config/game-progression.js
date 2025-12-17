@@ -25,8 +25,8 @@ export const PROGRESSION = {
     displayName: 'Fountain',
     game: 'camera-fishing',
     collectible: 'camera',
-    missionAfter: 'Du hast die Kamera! Besuche "Home" um deine Fotos zu entwickeln.',
-    unlocks: ['home'],
+    missionAfter: 'Gehe nun zu Oma und Opa Morg!',
+    unlocks: ['oma-opa-morg'],
     character: 'jen',
     dialogue: 'Komm zur nächsten Location!',
     buttonVisible: true

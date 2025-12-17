@@ -277,6 +277,9 @@ class SeasonalSystem {
 // Initialize and export
 export const Seasonal = new SeasonalSystem();
 
+// Expose globally for seasonal controls
+window.Seasonal = Seasonal;
+
 // Auto-initialize when DOM is ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => Seasonal.init());
