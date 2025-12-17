@@ -101,15 +101,16 @@
 
     <!-- Map GPS COORDINATES Hotspots -->
     <button class="map-hotspot locked" data-target="fountain" style="left:58%;top:4%"></button>
-    <button class="map-hotspot locked" data-target="oma-opa-shnol" style="left:58%;top:81%"></button>
-    <button class="map-hotspot" data-target="snails" style="left:65.5%;top:79.5%"></button>
-    <button class="map-hotspot locked" data-target="krivaya" style="left:45%;top:35%"></button>
-    <button class="map-hotspot locked" data-target="oma-shelya" style="left:30%;top:60%"></button>
+    <button class="map-hotspot locked" data-target="oma-opa-shnol" style="left:55%;top:83%"></button>
+    <button class="map-hotspot" data-target="snails" style="left:64%;top:80%"></button>
+    <button class="map-hotspot locked" data-target="krivaya" style="left:41%;top:47%"></button>
+    <!-- ADJUST THESE COORDINATES: left:X%;top:Y% where X is horizontal (0-100) and Y is vertical (0-100) -->
+    <button class="map-hotspot locked" data-target="oma-opa-morg" style="left:52%;top:11%"></button>
+    <button class="map-hotspot locked" data-target="oma-shelya" style="left:37%;top:27%"></button>
     <button class="map-hotspot locked" data-target="bunker" style="left:70%;top:40%"></button>
     <button class="map-hotspot locked" data-target="school" style="left:55%;top:50%"></button>
     <button class="map-hotspot locked" data-target="tanke" style="left:80%;top:65%"></button>
     <button class="map-hotspot locked" data-target="home" style="left:50%;top:70%"></button>
-    <button class="map-hotspot locked" data-target="oma-opa-morg" style="left:40%;top:45%"></button>
 
     <!-- Hot/Cold Tracker -->
     <div id="hotcold-tracker"></div>
@@ -1483,7 +1484,7 @@
     <div class="location-content">
       <div class="location-top-row">
         <div class="location-image-container">
-          <img src="/assets/sprites/places/krivaya-gorka.jpeg" alt="Krivaya Gorka" class="location-image" onerror="this.style.display='none'" />
+          <img src="/assets/sprites/places/krivaya.png" alt="Krivaya Gorka" class="location-image" onerror="this.style.display='none'" />
         </div>
 
         <div class="game-container">
@@ -1703,37 +1704,52 @@
       document.addEventListener('keydown', (e) => { keys[e.code] = true; });
       document.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
+      // ===== GLOBAL STATE: Prevent multiple simultaneous animations =====
+      let isCharacterAnimationRunning = false;
+      let animationTimeouts = [];
+
       /**
-       * Generic Character Encounter System
-       * Can be used for any character encounter (granny, grandparents, etc.)
-       * @param {Object} config - Configuration object
-       * @param {string} config.pageId - ID of the page where encounter happens
-       * @param {string} config.characterSprite - Path to character sprite image
-       * @param {string} config.characterDialogue - What the character says
-       * @param {string} config.jenResponse - Jen's response (optional)
-       * @param {string} config.steveResponse - Steve's response (optional for both kids)
-       * @param {string} config.gameId - Game ID for marking won/unlocking
+       * CLEAN CHARACTER ENCOUNTER SYSTEM
+       * Prevents race conditions and state pollution
        */
       function showCharacterEncounter(config) {
-        console.log('👤 Character encounter:', config.gameId);
+        // Validate
+        if (!config?.pageId || !config?.characterSprite || !config?.characterDialogue) {
+          console.error('❌ Invalid config');
+          return;
+        }
+
         const page = document.querySelector(`#${config.pageId}`);
-        if(!page) {
-          console.error(`❌ Page ${config.pageId} not found!`);
+        if (!page?.classList.contains('active')) {
+          console.warn(`⚠️ Page not active: ${config.pageId}`);
           return;
         }
 
-        if(!page.classList.contains('active')) {
-          console.warn(`⚠️ Page ${config.pageId} not active, skipping animation`);
+        // PREVENT DUPLICATE CALLS
+        if (isCharacterAnimationRunning) {
+          console.warn('⚠️ Animation already running - blocking duplicate');
           return;
         }
 
-        // Clean up any existing character animation elements
-        document.querySelectorAll('.character-animation-element').forEach(el => el.remove());
+        console.log(`🎬 START animation: ${config.gameId}`);
+        isCharacterAnimationRunning = true;
 
-        const jenSprite = document.querySelector(`#${config.pageId} .jen-sprite`);
-        const steveSprite = document.querySelector(`#${config.pageId} .steve-sprite-static`);
-        if(jenSprite) jenSprite.style.animation = '';
-        if(steveSprite) steveSprite.style.animation = '';
+        // AGGRESSIVE CLEANUP: Clear everything
+        animationTimeouts.forEach(clearTimeout);
+        animationTimeouts = [];
+        document.querySelectorAll('.character-animation-element, .granny-animation-element, .oma-bubble').forEach(el => el.remove());
+
+        // RESET ALL SPRITES
+        const jenSprite = page.querySelector('.jen-sprite');
+        const steveSprite = page.querySelector('.steve-sprite-static');
+        [jenSprite, steveSprite].forEach(sprite => {
+          if (sprite) {
+            sprite.style.animation = '';
+            sprite.style.transform = '';
+          }
+        });
+
+        console.log('✅ Cleanup done, starting fresh');
 
         // STEP 1: Character walks in
         const characterSprite = document.createElement('img');
@@ -1742,13 +1758,13 @@
         characterSprite.style.cssText = 'position:absolute;right:-350px;bottom:100px;width:350px;height:350px;object-fit:contain;z-index:100;transition:right 1s ease-out;';
         page.appendChild(characterSprite);
 
-        setTimeout(() => {
+        animationTimeouts.push(setTimeout(() => {
           characterSprite.style.right = '300px';
           characterSprite.style.animation = 'characterBounce 2s ease-in-out infinite';
-        }, 100);
+        }, 100));
 
         // STEP 2: Character speaks
-        setTimeout(() => {
+        animationTimeouts.push(setTimeout(() => {
           if(!page.classList.contains('active')) return;
 
           const characterBubble = document.createElement('div');
@@ -1763,12 +1779,12 @@
           characterBubble.style.cssText = 'position:fixed;bottom:60px;right:430px;z-index:9999;opacity:0;transition:opacity 0.5s;';
           document.body.appendChild(characterBubble);
 
-          setTimeout(() => { characterBubble.style.opacity = '1'; }, 10);
+          animationTimeouts.push(setTimeout(() => { characterBubble.style.opacity = '1'; }, 10));
 
           // STEP 3: Hide character bubble after 3s
-          setTimeout(() => {
+          animationTimeouts.push(setTimeout(() => {
             characterBubble.style.opacity = '0';
-            setTimeout(() => {
+            animationTimeouts.push(setTimeout(() => {
               characterBubble.remove();
 
               // STEP 4: Both kids respond (if steveResponse provided)
@@ -1790,12 +1806,12 @@
                 kidsBubble.style.cssText = 'position:fixed;bottom:60px;right:530px;z-index:9999;opacity:0;transition:opacity 0.5s;';
                 document.body.appendChild(kidsBubble);
 
-                setTimeout(() => { kidsBubble.style.opacity = '1'; }, 10);
+                animationTimeouts.push(setTimeout(() => { kidsBubble.style.opacity = '1'; }, 10));
 
                 // Remove kids bubble after 2.5s
-                setTimeout(() => {
+                animationTimeouts.push(setTimeout(() => {
                   kidsBubble.style.opacity = '0';
-                  setTimeout(() => {
+                  animationTimeouts.push(setTimeout(() => {
                     kidsBubble.remove();
                     if(steveSprite) steveSprite.style.animation = '';
 
@@ -1804,8 +1820,8 @@
                     } else {
                       cleanup();
                     }
-                  }, 500);
-                }, 2500);
+                  }, 500));
+                }, 2500));
               } else if(config.jenResponse) {
                 showJenFinalResponse();
               } else {
@@ -1829,15 +1845,15 @@
                 jenBubble.style.cssText = 'position:fixed;bottom:60px;right:530px;z-index:9999;opacity:0;transition:opacity 0.5s;';
                 document.body.appendChild(jenBubble);
 
-                setTimeout(() => { jenBubble.style.opacity = '1'; }, 10);
+                animationTimeouts.push(setTimeout(() => { jenBubble.style.opacity = '1'; }, 10));
 
-                setTimeout(() => {
+                animationTimeouts.push(setTimeout(() => {
                   jenBubble.style.opacity = '0';
-                  setTimeout(() => {
+                  animationTimeouts.push(setTimeout(() => {
                     jenBubble.remove();
                     cleanup();
-                  }, 500);
-                }, 3500);
+                  }, 500));
+                }, 3500));
               }
 
               function cleanup() {
@@ -1845,31 +1861,38 @@
                 if(jenSprite) jenSprite.style.animation = '';
                 if(steveSprite) steveSprite.style.animation = '';
 
-                setTimeout(() => {
+                // RESET ANIMATION FLAG
+                isCharacterAnimationRunning = false;
+                console.log('🏁 Animation complete, flag reset');
+
+                animationTimeouts.push(setTimeout(() => {
                   console.log('🗺️ Navigating back to landing page');
                   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
                   const landingPage = document.getElementById('landing-page');
                   if (landingPage) {
                     landingPage.classList.add('active');
 
-                    setTimeout(() => {
+                    animationTimeouts.push(setTimeout(() => {
                       console.log(`🎮 Dispatching gameWon for ${config.gameId}`);
                       window.dispatchEvent(new CustomEvent('gameWon', {
                         detail: { gameId: config.gameId }
                       }));
-                    }, 100);
+                    }, 100));
                   }
-                }, 1000);
+                }, 1000));
               }
-            }, 500);
-          }, 3000);  // 3 seconds for character dialogue
-        }, 1500);     // 1.5 seconds walk-in time
+            }, 500));
+          }, 3000));  // 3 seconds for character dialogue
+        }, 2000));     // 2 seconds walk-in time (increased to prevent overlap)
       }
 
       // Expose globally for other pages to use
       window.showCharacterEncounter = showCharacterEncounter;
 
+      // ===== BULLETPROOF GRANNY ANIMATION =====
+      // This is the ONLY granny function. Don't create duplicates!
       function showOmaReward() {
+        console.log('👵 Starting granny animation (using generic showCharacterEncounter)');
         showCharacterEncounter({
           pageId: 'snails',
           characterSprite: '/assets/sprites/objects/nesquikOma.png',
@@ -1879,6 +1902,8 @@
           gameId: 'snails'
         });
       }
+      // Expose globally
+      window.showOmaReward = showOmaReward;
 
       // Keep old implementation as backup/reference (commented out)
       function showOmaReward_OLD() {

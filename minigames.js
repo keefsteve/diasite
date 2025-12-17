@@ -379,99 +379,17 @@ console.log('✅ window.initGamesForPage =', typeof window.initGamesForPage);
 console.log('✅ window.showJenVictory =', typeof window.showJenVictory);
 
 // ========== JEN VICTORY ANIMATION ==========
+// DEPRECATED: This function is disabled. Use showOmaReward() from index.html instead.
+// The bulletproof character encounter system handles all animations now.
 function showJenVictory() {
-  console.log('🎉 Jen Victory Animation!');
+  console.log('⚠️ OLD showJenVictory() called - REDIRECTING to showOmaReward()');
 
-  // Find Jen sprite on current page
-  const jenSprite = document.querySelector('#snails .jen-sprite');
-  if (!jenSprite) {
-    console.warn('Jen sprite not found on snails page');
-    return;
+  // Redirect to the bulletproof granny animation system
+  if (typeof window.showOmaReward === 'function') {
+    window.showOmaReward();
+  } else {
+    console.error('❌ showOmaReward not found! Make sure index.html is loaded.');
   }
-
-  // Add bouncing animation (nur Y-Achse)
-  console.log('✅ Found Jen sprite, adding bounce');
-  jenSprite.style.animation = 'characterBounce 2s ease-in-out infinite';
-
-  // Create speech bubble with triangle - positioned right bottom, above inventory
-  const bubble = document.createElement('div');
-  bubble.innerHTML = `
-    <div style="
-      position: relative;
-      background: white;
-      padding: 18px 24px;
-      border-radius: 20px;
-      border: 3px solid #ff69b4;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-      font-family: 'Nineteen Ninety Seven', monospace;
-      font-size: 1rem;
-      max-width: 380px;
-      text-align: left;
-    ">
-      Komm zur nächsten Location!
-      <div style="
-        position: absolute;
-        left: -18px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 0;
-        height: 0;
-        border-top: 15px solid transparent;
-        border-bottom: 15px solid transparent;
-        border-right: 18px solid #ff69b4;
-      "></div>
-      <div style="
-        position: absolute;
-        left: -14px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 0;
-        height: 0;
-        border-top: 12px solid transparent;
-        border-bottom: 12px solid transparent;
-        border-right: 15px solid white;
-      "></div>
-    </div>
-  `;
-  bubble.style.cssText = `
-    position: fixed;
-    bottom: 60px;
-    right: 530px;
-    z-index: 9999;
-    opacity: 0;
-    transition: opacity 0.5s ease-out;
-  `;
-  document.body.appendChild(bubble);
-  console.log('✅ Jen bubble added to body');
-
-  // Trigger fade-in and start bounce
-  setTimeout(() => {
-    bubble.style.opacity = '1';
-    bubble.style.animation = 'bubbleBounce 2s ease-in-out infinite';
-  }, 10);
-
-  // Remove bubble after 2.5 seconds and stop animation
-  setTimeout(() => {
-    bubble.style.opacity = '0';
-    setTimeout(() => {
-      bubble.remove();
-      jenSprite.style.animation = '';
-      console.log('🗑️ Jen bubble removed');
-
-      // Navigate back to landing page immediately
-      console.log('🗺️ Navigating to landing page');
-      
-      // Fallback navigation (always use this for reliability)
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      const landingPage = document.getElementById('landing-page');
-      if (landingPage) {
-        landingPage.classList.add('active');
-        console.log('✅ Landing page activated');
-      } else {
-        console.error('❌ Landing page not found!');
-      }
-    }, 300);
-  }, 2500);
 }
 
 // ========== TYPING GAME ==========
