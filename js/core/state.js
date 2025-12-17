@@ -22,7 +22,8 @@ class GameState {
       gamesPlayed: {},
       gamesWon: {},
       collectiblesFound: [],
-      photosToken: 0 // Anzahl geschossener Polaroids
+      photosToken: 0, // Anzahl geschossener Polaroids
+      photos: [] // Polaroid photos array
     };
     
     // Session Data (nicht persistent)

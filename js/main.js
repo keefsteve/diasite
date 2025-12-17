@@ -17,6 +17,10 @@ import { Messages } from './systems/messages.js';
 import './systems/character-dialogue.js';
 import './systems/game-flow.js';
 
+// Load new feature systems
+import { Seasonal } from './systems/seasonal.js';
+import { Polaroid } from './systems/polaroid.js';
+
 class App {
   constructor() {
     this.initialized = false;
