@@ -1679,8 +1679,11 @@
           return;
         }
 
-        // Remove old listener before adding new one
-        input.removeEventListener('input', handleInput);
+        // Clear any existing listener
+        const oldInput = input;
+        if (oldInput && oldInput._stroopHandler) {
+          oldInput.removeEventListener('input', oldInput._stroopHandler);
+        }
 
         input.value = '';
         input.disabled = false;
@@ -1695,6 +1698,8 @@
         showNextWord();
 
         // Handle typing - STRICT MODE
+        // Store handler reference for proper cleanup
+        input._stroopHandler = handleInput;
         input.addEventListener('input', handleInput);
       }
 
@@ -1706,11 +1711,14 @@
         if (remaining <= 0) {
           // TIME'S UP!
           clearInterval(timerInterval);
+          timerInterval = null;
           gameActive = false;
           statusEl.textContent = `⏰ Zeit abgelaufen! Du hast ${correctAnswers} von ${neededAnswers} geschafft!`;
           statusEl.style.color = '#ff4444';
           input.disabled = true;
-          input.removeEventListener('input', handleInput);
+          if (input._stroopHandler) {
+            input.removeEventListener('input', input._stroopHandler);
+          }
 
           // Auto-restart after 3 seconds
           setTimeout(() => {
@@ -1736,9 +1744,12 @@
           // WRONG LETTER - GAME OVER
           gameActive = false;
           clearInterval(timerInterval);
+          timerInterval = null;
           statusEl.textContent = '❌ Falsch! Du bist raus!';
           statusEl.style.color = '#ff0000';
-          input.removeEventListener('input', handleInput);
+          if (input._stroopHandler) {
+            input.removeEventListener('input', input._stroopHandler);
+          }
           input.disabled = true;
 
           setTimeout(() => {

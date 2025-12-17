@@ -160,8 +160,24 @@ class InventoryManager {
       
       // Get translated name
       const itemName = i18n.t(`collectibles.${itemId}`);
-      itemEl.textContent = itemName.split(' ')[0]; // Just the emoji
       itemEl.title = itemName; // Full name on hover
+      
+      // Use sprite images for specific items
+      const spriteMap = {
+        'magnifying-glass': '/assets/sprites/objects/lupe.png',
+        'yellow-shorts': '/assets/sprites/objects/boxers.png'
+      };
+
+      if (spriteMap[itemId]) {
+        const img = document.createElement('img');
+        img.src = spriteMap[itemId];
+        img.alt = itemName;
+        img.style.cssText = 'width:100%;height:100%;object-fit:contain;image-rendering:pixelated;';
+        itemEl.appendChild(img);
+      } else {
+        // Fallback to emoji for other items
+        itemEl.textContent = itemName.split(' ')[0]; // Just the emoji
+      }
       
       // Click to select
       itemEl.addEventListener('click', () => this.selectItem(itemId, itemEl));
