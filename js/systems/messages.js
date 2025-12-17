@@ -28,9 +28,17 @@ class MessageSystem {
     const el = document.createElement('div');
     el.className = 'flash-message';
     el.textContent = msg;
-    
+
+    // Stack messages vertically if multiple exist
+    const existingMessages = document.querySelectorAll('.flash-message');
+    if (existingMessages.length > 0) {
+      // Calculate vertical offset based on number of existing messages
+      const offset = existingMessages.length * 70; // 70px spacing per message
+      el.style.top = `${20 + offset}px`;
+    }
+
     document.body.appendChild(el);
-    
+
     setTimeout(() => el.remove(), duration);
   }
 

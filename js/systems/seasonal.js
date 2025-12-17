@@ -20,26 +20,26 @@ class SeasonalSystem {
     // Particle configurations per season
     this.seasonConfig = {
       winter: {
-        emoji: '❄️',
-        count: 8,
+        emojis: ['*', '·', '❅'],
+        count: 12,
         animationName: 'snowfall',
         duration: '10s'
       },
       spring: {
-        emoji: '🌸',
-        count: 6,
-        animationName: 'petalfall',
-        duration: '12s'
+        emojis: ['~', "'", '.'],
+        count: 25,
+        animationName: 'windblown',
+        duration: '15s'
       },
       summer: {
-        emoji: '✨',
-        count: 5,
+        emojis: ['+', '×', '°'],
+        count: 28,
         animationName: 'sparkle',
         duration: '8s'
       },
       autumn: {
-        emoji: '🍂',
-        count: 7,
+        emojis: ['^', 'v', '/'],
+        count: 14,
         animationName: 'leaffall',
         duration: '11s'
       }
@@ -114,19 +114,31 @@ class SeasonalSystem {
         }
       }
       
-      @keyframes petalfall {
+      @keyframes windblown {
         0% {
-          transform: translateY(-20px) translateX(0) rotate(0deg);
+          transform: translate(0, 0) rotate(0deg);
           opacity: 0;
         }
-        10% {
+        5% {
           opacity: 1;
         }
-        90% {
+        20% {
+          transform: translate(120px, -30px) rotate(45deg);
+        }
+        40% {
+          transform: translate(80px, 40px) rotate(-30deg);
+        }
+        60% {
+          transform: translate(180px, 10px) rotate(60deg);
+        }
+        80% {
+          transform: translate(100px, 80px) rotate(-45deg);
+        }
+        95% {
           opacity: 1;
         }
         100% {
-          transform: translateY(100vh) translateX(-40px) rotate(-180deg);
+          transform: translate(250px, 120px) rotate(90deg);
           opacity: 0;
         }
       }
@@ -193,16 +205,32 @@ class SeasonalSystem {
     for (let i = 0; i < config.count; i++) {
       const particle = document.createElement('div');
       particle.className = 'seasonal-particle';
-      particle.textContent = config.emoji;
+
+      // Randomly select emoji from the season's emoji array
+      const randomEmoji = config.emojis[Math.floor(Math.random() * config.emojis.length)];
+      particle.textContent = randomEmoji;
+
+      let left, top;
       
-      // Random horizontal position
-      const left = Math.random() * 100;
+      // Special positioning for summer (cone from top-left)
+      if (this.currentSeason === 'summer') {
+        // Cone shape: concentrated top-left, spreading to 75% width
+        const coneProgress = Math.random(); // 0 to 1
+        const maxWidth = 75; // 75% of screen width
+        left = coneProgress * maxWidth * Math.random(); // Random within expanding cone
+        top = Math.random() * 40; // Top 40% of screen
+      } else {
+        // Default: random horizontal position, start from top
+        left = Math.random() * 100;
+        top = -20;
+      }
+      
       const delay = Math.random() * parseInt(config.duration);
       const duration = parseInt(config.duration) + (Math.random() * 3 - 1.5); // ±1.5s variation
       
       particle.style.cssText = `
         left: ${left}%;
-        top: -20px;
+        top: ${top}px;
         animation: ${config.animationName} ${duration}s linear ${delay}s infinite;
       `;
       
@@ -223,7 +251,8 @@ class SeasonalSystem {
   checkAndUpdate() {
     const shouldBeActive = this.isOutdoorLocation();
     
-    if (shouldBeActive && !this.isActive) {
+    if (shouldBeActive) {
+      // Re-spawn particles even if already active (for season changes)
       this.activate();
     } else if (!shouldBeActive && this.isActive) {
       this.deactivate();

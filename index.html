@@ -16,9 +16,12 @@
       <div id="clock-day" style="font-size:0.95rem;letter-spacing:2px;margin-bottom:6px;"></div>
       <div id="clock-time" style="font-size:1.05rem;letter-spacing:3px;"></div>
     </div>
+    
+    <!-- Red Clock Button -->
+    <button id="red-clock-btn" style="position:absolute;top:30px;right:260px;width:40px;height:40px;background:#ff0000;border:3px solid #000;border-radius:50%;cursor:pointer;z-index:201;box-shadow:0 4px 8px rgba(0,0,0,0.4);"></button>
 
-    <!-- Seasonal Controls -->
-    <div id="seasonal-controls" style="position:absolute;top:20px;left:20px;display:flex;gap:10px;z-index:200;">
+    <!-- Seasonal Controls - under clock -->
+    <div id="seasonal-controls" style="position:absolute;top:140px;right:20px;display:flex;gap:10px;z-index:200;">
       <button class="season-btn" data-season="spring" title="Frühling">🌸</button>
       <button class="season-btn" data-season="summer" title="Sommer">☀️</button>
       <button class="season-btn" data-season="autumn" title="Herbst">🍂</button>
@@ -45,6 +48,19 @@
         background: #00ff88;
         border-color: #000;
         transform: scale(1.15);
+      }
+      #red-clock-btn:hover {
+        transform: scale(1.1);
+      }
+      .mirror-clock {
+        position: fixed;
+        font-family: 'Nineteen Ninety Seven', monospace;
+        font-size: 2rem;
+        color: #ff0000;
+        z-index: 300;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        transform: scaleX(-1);
+        pointer-events: none;
       }
     </style>
 
@@ -79,7 +95,7 @@
     </div>
 
     <!-- Map Hotspots -->
-    <button class="map-hotspot" data-target="fountain" style="left:58%;top:4%"></button>
+    <button class="map-hotspot locked" data-target="fountain" style="left:58%;top:4%"></button>
     <button class="map-hotspot locked" data-target="oma-opa-shnol" style="left:58%;top:81%"></button>
     <button class="map-hotspot" data-target="snails" style="left:65.5%;top:79.5%"></button>
     <button class="map-hotspot locked" data-target="krivaya" style="left:45%;top:35%"></button>
@@ -88,6 +104,7 @@
     <button class="map-hotspot locked" data-target="school" style="left:55%;top:50%"></button>
     <button class="map-hotspot locked" data-target="tanke" style="left:80%;top:65%"></button>
     <button class="map-hotspot locked" data-target="home" style="left:50%;top:70%"></button>
+    <button class="map-hotspot locked" data-target="oma-opa-morg" style="left:40%;top:45%"></button>
 
     <!-- Hot/Cold Tracker -->
     <div id="hotcold-tracker"></div>
@@ -192,6 +209,43 @@
 
       updateClock();
       setInterval(updateClock, 1000);
+      
+      // Red Clock Button - Mirror Clock Toggle
+      const redClockBtn = document.getElementById('red-clock-btn');
+      let mirrorClockVisible = false;
+      let mirrorClockEl = null;
+      
+      if (redClockBtn) {
+        redClockBtn.addEventListener('click', () => {
+          if (mirrorClockVisible) {
+            // Remove mirror clock
+            if (mirrorClockEl) mirrorClockEl.remove();
+            mirrorClockVisible = false;
+          } else {
+            // Create mirror clock at random position
+            mirrorClockEl = document.createElement('div');
+            mirrorClockEl.className = 'mirror-clock';
+            const timeEl = document.getElementById('clock-time');
+            mirrorClockEl.textContent = timeEl.textContent;
+            
+            // Random position (avoid edges)
+            mirrorClockEl.style.left = (100 + Math.random() * (window.innerWidth - 300)) + 'px';
+            mirrorClockEl.style.top = (100 + Math.random() * (window.innerHeight - 200)) + 'px';
+            
+            document.body.appendChild(mirrorClockEl);
+            mirrorClockVisible = true;
+            
+            // Update mirror clock time
+            const updateMirror = setInterval(() => {
+              if (mirrorClockVisible && mirrorClockEl) {
+                mirrorClockEl.textContent = document.getElementById('clock-time').textContent;
+              } else {
+                clearInterval(updateMirror);
+              }
+            }, 1000);
+          }
+        });
+      }
 
       // Seasonal Controls functionality
       document.querySelectorAll('.season-btn').forEach(btn => {
@@ -432,11 +486,40 @@
       
       observer.observe(fountainPage, { attributes: true, attributeFilter: ['class'] });
       
-      // Mouse movement
-      canvas.addEventListener('mousemove', (e) => {
+      // WASD controls with confusing direction swapping
+      const keyMap = {
+        w: { dx: 0, dy: -15 },
+        a: { dx: -15, dy: 0 },
+        s: { dx: 0, dy: 15 },
+        d: { dx: 15, dy: 0 }
+      };
+      
+      let currentKeyMap = {...keyMap};
+      
+      // Swap directions every 3-5 seconds
+      setInterval(() => {
         if (!gameActive) return;
-        const rect = canvas.getBoundingClientRect();
-        hookX = e.clientX - rect.left;
+        const keys = ['w', 'a', 's', 'd'];
+        const shuffled = keys.sort(() => Math.random() - 0.5);
+        const values = [keyMap.w, keyMap.a, keyMap.s, keyMap.d];
+        currentKeyMap = {
+          [shuffled[0]]: values[0],
+          [shuffled[1]]: values[1],
+          [shuffled[2]]: values[2],
+          [shuffled[3]]: values[3]
+        };
+      }, 3000 + Math.random() * 2000);
+      
+      document.addEventListener('keydown', (e) => {
+        if (!gameActive) return;
+        const key = e.key.toLowerCase();
+        if (currentKeyMap[key]) {
+          hookX += currentKeyMap[key].dx;
+          hookY += currentKeyMap[key].dy;
+          hookX = Math.max(10, Math.min(canvas.width - 10, hookX));
+          hookY = Math.max(10, Math.min(canvas.height - 10, hookY));
+          e.preventDefault();
+        }
       });
       
       function startFishingGame() {
@@ -488,12 +571,7 @@
         ctx.beginPath();
         ctx.arc(hookX, hookY, 8, 0, Math.PI * 2);
         ctx.fill();
-        
-        // Lower hook automatically
-        if (hookY < canvas.height - 20) {
-          hookY += hookSpeed;
-        }
-        
+
         // Check collision with camera
         const dist = Math.sqrt(Math.pow(hookX - cameraObj.x, 2) + Math.pow(hookY - cameraObj.y, 2));
         if (dist < 30) {
@@ -926,7 +1004,7 @@
         </div>
 
         <div class="game-container" style="position:relative;">
-          <p class="game-instructions">Dodge the belt! Dodged: <span id="belt-dodged">0</span> / 7 | Hits: <span id="belt-hits">0</span> / 3</p>
+          <p class="game-instructions">Dodge the belt! Dodged: <span id="belt-dodged">0</span> / 10 | Hits: <span id="belt-hits">0</span> / 9</p>
 
           <!-- Inventory Item Usage - Positioned absolutely to not affect layout -->
           <div id="calendar-use-button" style="
@@ -946,9 +1024,26 @@
               font-family: 'Nineteen Ninety Seven', monospace;
               box-shadow: 4px 4px 0px #000;
               transition: all 0.1s;
+              display: block;
+              margin-bottom: 10px;
             " onmouseover="this.style.boxShadow='2px 2px 0px #000'; this.style.transform='translate(2px, 2px)'"
                onmouseout="this.style.boxShadow='4px 4px 0px #000'; this.style.transform='translate(0, 0)'">
               Opa mit dem Nacktmagazin bestechen
+            </button>
+            <button onclick="declineCalendar()" style="
+              background: #666;
+              color: #fff;
+              border: 3px solid #000;
+              padding: 10px 18px;
+              font-size: 0.9rem;
+              cursor: pointer;
+              font-family: 'Nineteen Ninety Seven', monospace;
+              box-shadow: 4px 4px 0px #000;
+              transition: all 0.1s;
+              display: block;
+            " onmouseover="this.style.boxShadow='2px 2px 0px #000'; this.style.transform='translate(2px, 2px)'"
+               onmouseout="this.style.boxShadow='4px 4px 0px #000'; this.style.transform='translate(0, 0)'">
+              Nein, ich verdiene es.
             </button>
           </div>
 
@@ -1008,13 +1103,18 @@
     }
 
     // Use calendar to win immediately
+    window.declineCalendar = function() {
+      const calendarButtonContainer = document.getElementById('calendar-use-button');
+      if (calendarButtonContainer) {
+        calendarButtonContainer.style.display = 'none';
+      }
+    };
+
     window.useCalendarToWin = function() {
       const calendarButton = document.getElementById('calendar-use-button');
       if (calendarButton) {
         calendarButton.style.display = 'none';
       }
-
-      window.flashMessage && window.flashMessage('Oma and Opa love the calendar! 📅');
 
       // Remove calendar from inventory
       if (window.DiasiteInventory) {
@@ -1116,10 +1216,20 @@
         
         let walkPosition = 20;
         let walkDirection = 1;
+        let isPaused = false;
         const walkInterval = setInterval(() => {
-          walkPosition += walkDirection * 10;
-          if (walkPosition > 70 || walkPosition < 20) walkDirection *= -1;
-          walkingEmoji.style.left = walkPosition + '%';
+          if (!isPaused) {
+            walkPosition += walkDirection * 10;
+            if (walkPosition > 70 || walkPosition < 20) {
+              walkDirection *= -1;
+              // Pause randomly at direction changes
+              if (Math.random() < 0.3) {
+                isPaused = true;
+                setTimeout(() => { isPaused = false; }, 1000 + Math.random() * 1000);
+              }
+            }
+            walkingEmoji.style.left = walkPosition + '%';
+          }
         }, 500);
 
         const countInterval = setInterval(() => {
@@ -1395,6 +1505,85 @@
     })();
   </script>
 
+  <!-- Oma & Opa Morg Page -->
+  <div id="oma-opa-morg" class="page" style="align-items: flex-start; justify-content: flex-start;">
+    <div class="page-header">
+      <h2>Oma & Opa Morg</h2>
+      <button class="back-btn" data-target="landing-page">← Zurück</button>
+    </div>
+    <div class="location-content">
+      <div class="location-top-row">
+        <div class="location-image-container">
+          <img src="/assets/sprites/places/oma-opa-morg.jpeg" alt="Oma & Opa Morg" class="location-image" onerror="this.style.display='none'" />
+        </div>
+
+        <div class="game-container">
+          <div style="text-align:center;padding:40px;">
+            <h3 style="font-size:2rem;color:var(--terracotta);margin-bottom:20px;">Coming Soon!</h3>
+            <p style="font-size:1.2rem;color:#666;">This game is still under development.</p>
+            <p style="font-size:1rem;color:#888;margin-top:20px;">Press K to skip for now</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="location-message-row">
+        <div class="riddle-note location-message-box">
+          Bei Oma und Opa Morg gab es immer die besten Geschichten und leckeres Essen!
+        </div>
+        <div class="location-sprites">
+          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
+          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function() {
+      const keys = {};
+      let gameWon = false;
+
+      document.addEventListener('keydown', (e) => { keys[e.code] = true; });
+      document.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+      // CHEAT: Press K to skip this level
+      const checkCheat = setInterval(() => {
+        const omaMorgPage = document.getElementById('oma-opa-morg');
+        if (keys['KeyK'] && !gameWon && omaMorgPage && omaMorgPage.classList.contains('active')) {
+          gameWon = true;
+          clearInterval(checkCheat);
+
+          window.flashMessage && window.flashMessage('Skipped Oma & Opa Morg! 🎉');
+
+          if (typeof gameManager !== 'undefined') {
+            gameManager.markWon('oma-opa-morg');
+          }
+
+          // Navigate after short delay
+          setTimeout(() => {
+            if(window.CharacterDialogue) {
+              window.CharacterDialogue.showDialogue('jen', 'Weiter zum nächsten Ort!', {
+                duration: 2000,
+                onComplete: () => {
+                  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                  const landingPage = document.getElementById('landing-page');
+                  if (landingPage) {
+                    landingPage.classList.add('active');
+
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent('gameWon', {
+                        detail: { gameId: 'oma-opa-morg' }
+                      }));
+                    }, 100);
+                  }
+                }
+              });
+            }
+          }, 500);
+        }
+      }, 100);
+    })();
+  </script>
+
   <!-- Home Page -->
   <div id="home" class="page" style="align-items: flex-start; justify-content: flex-start;">
     <div class="page-header">
@@ -1478,6 +1667,15 @@
           return;
         }
 
+        // Check if snails page is active
+        if(!snailsPage.classList.contains('active')) {
+          console.warn('⚠️ Snails page not active, skipping animation');
+          return;
+        }
+
+        // Clean up any existing granny animation elements
+        document.querySelectorAll('.granny-animation-element').forEach(el => el.remove());
+
         // Stop all animations initially
         const jenSprite = document.querySelector('#snails .jen-sprite');
         const steveSprite = document.querySelector('#snails .steve-sprite-static');
@@ -1487,6 +1685,7 @@
         // STEP 1: Create Oma sprite - walks in from right (starts off-screen)
         const omaSprite = document.createElement('img');
         omaSprite.src = '/assets/sprites/objects/nesquikOma.png';
+        omaSprite.className = 'granny-animation-element';
         omaSprite.style.cssText = 'position:absolute;right:-350px;bottom:100px;width:350px;height:350px;object-fit:contain;z-index:100;transition:right 1s ease-out;';
         snailsPage.appendChild(omaSprite);
 
@@ -1498,8 +1697,11 @@
 
         // STEP 2: Show Oma bubble (100px more to the right, after walk-in completes)
         setTimeout(() => {
+          // Check if still on snails page
+          if(!snailsPage.classList.contains('active')) return;
+
           const omaBubble = document.createElement('div');
-          omaBubble.className = 'oma-bubble';
+          omaBubble.className = 'oma-bubble granny-animation-element';
           omaBubble.innerHTML = `
             <div style="position:relative;background:white;padding:18px 24px;border-radius:20px;border:3px solid #f59e0b;box-shadow:0 6px 20px rgba(0,0,0,0.3);font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;max-width:380px;text-align:left;">
               Gut gemacht Kinder, hier, eine Packung Nesquik!
@@ -1519,10 +1721,14 @@
               omaBubble.remove();
 
               // STEP 4: Both Jen and Steve bounce, show "Danke liebe Frau!!" for 2.5s
+              // Check if still on snails page
+              if(!snailsPage.classList.contains('active')) return;
+
               if(jenSprite) jenSprite.style.animation = 'characterBounce 2s ease-in-out infinite';
               if(steveSprite) steveSprite.style.animation = 'characterBounce 2s ease-in-out infinite';
 
               const thanksBubble = document.createElement('div');
+              thanksBubble.className = 'granny-animation-element';
               thanksBubble.innerHTML = `
                 <div style="position:relative;background:white;padding:18px 24px;border-radius:20px;border:3px solid #667eea;box-shadow:0 6px 20px rgba(0,0,0,0.3);font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;max-width:380px;text-align:left;">
                   Danke liebe Frau!!
@@ -1541,10 +1747,14 @@
                 setTimeout(() => {
                   thanksBubble.remove();
 
+                  // Check if still on snails page
+                  if(!snailsPage.classList.contains('active')) return;
+
                   // Stop Steve bouncing, keep Jen bouncing
                   if(steveSprite) steveSprite.style.animation = '';
 
                   const jenFinalBubble = document.createElement('div');
+                  jenFinalBubble.className = 'granny-animation-element';
                   jenFinalBubble.innerHTML = `
                     <div style="position:relative;background:white;padding:18px 24px;border-radius:20px;border:3px solid #667eea;box-shadow:0 6px 20px rgba(0,0,0,0.3);font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;max-width:380px;text-align:left;">
                       Che za staruxa... Komm zur nächsten Location!
@@ -1633,7 +1843,6 @@
               gameRunning = false;
               clearInterval(gameInterval);
               
-              window.flashMessage && window.flashMessage('All snails caught! 🐌');
               window.gameManager && window.gameManager.markWon('snails');
               
               // Full timeline in showOmaReward: Oma -> both bounce -> Jen solo -> navigate
@@ -1655,7 +1864,6 @@
             gameRunning = false;
             clearInterval(gameInterval);
             
-            window.flashMessage && window.flashMessage('Cheat activated! 🐌');
             window.gameManager && window.gameManager.markWon('snails');
             
             // Full timeline in showOmaReward: Oma -> both bounce -> Jen solo -> navigate

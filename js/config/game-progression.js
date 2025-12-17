@@ -71,7 +71,7 @@ export const PROGRESSION = {
     game: null, // Noch zu implementieren
     collectible: 'wet-clothes',
     missionAfter: 'Gehe nun zum Fountain. Beeil dich!',
-    unlocks: ['fountain-video'],
+    unlocks: ['fountain'],
     character: null,
     dialogue: null,
     buttonVisible: true,
