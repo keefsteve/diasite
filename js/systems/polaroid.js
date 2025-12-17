@@ -12,66 +12,17 @@ class PolaroidSystem {
     this.stream = null;
     this.videoElement = null;
     this.cameraModal = null;
+    this.photosTaken = 0;
   }
   
   init() {
-    this.addCameraButtonToFountain();
     this.setupHomeGallery();
     console.log('✅ Polaroid system initialized');
   }
   
-  // Add camera button to fountain location
-  addCameraButtonToFountain() {
-    const fountainPage = document.getElementById('fountain');
-    if (!fountainPage) {
-      console.warn('⚠️ Fountain page not found for Polaroid system');
-      return;
-    }
-    
-    // Check if button already exists
-    if (document.getElementById('polaroid-camera-btn')) return;
-    
-    // Create camera button
-    const button = document.createElement('button');
-    button.id = 'polaroid-camera-btn';
-    button.className = 'polaroid-camera-btn';
-    button.innerHTML = '📷';
-    button.title = 'Take a Polaroid';
-    button.style.cssText = `
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      width: 60px;
-      height: 60px;
-      background: #f5f5dc;
-      border: 4px solid #8b7355;
-      border-radius: 8px;
-      font-size: 2rem;
-      cursor: pointer;
-      z-index: 100;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-      transition: transform 0.2s;
-    `;
-    
-    button.addEventListener('mouseenter', () => {
-      button.style.transform = 'scale(1.1)';
-    });
-    
-    button.addEventListener('mouseleave', () => {
-      button.style.transform = 'scale(1)';
-    });
-    
-    button.addEventListener('click', () => {
-      this.openCamera();
-    });
-    
-    fountainPage.appendChild(button);
-    console.log('📷 Camera button added to fountain');
-  }
-  
-  // Open camera modal
+  // Open camera modal with Polaroid frame
   async openCamera() {
-    console.log('📷 Opening camera...');
+    console.log('📷 Opening Polaroid camera...');
     
     // Create modal
     this.cameraModal = document.createElement('div');
@@ -91,17 +42,44 @@ class PolaroidSystem {
       gap: 20px;
     `;
     
+    // Polaroid frame container
+    const polaroidFrame = document.createElement('div');
+    polaroidFrame.style.cssText = `
+      background: #f5f5dc;
+      padding: 20px 20px 60px 20px;
+      border-radius: 8px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+      position: relative;
+    `;
+    
     // Video element
     this.videoElement = document.createElement('video');
     this.videoElement.autoplay = true;
     this.videoElement.playsInline = true;
     this.videoElement.style.cssText = `
-      width: 80%;
-      max-width: 600px;
-      border: 8px solid #f5f5dc;
-      border-radius: 12px;
+      width: 500px;
+      height: 375px;
+      display: block;
       transform: scaleX(-1);
+      border: 2px solid #ddd;
     `;
+    
+    // Polaroid label at bottom
+    const label = document.createElement('div');
+    label.textContent = 'Polaroid';
+    label.style.cssText = `
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Courier New', monospace;
+      font-size: 1.2rem;
+      color: #666;
+      font-weight: bold;
+    `;
+    
+    polaroidFrame.appendChild(this.videoElement);
+    polaroidFrame.appendChild(label);
     
     // Button container
     const buttonContainer = document.createElement('div');
@@ -149,7 +127,7 @@ class PolaroidSystem {
     buttonContainer.appendChild(captureBtn);
     buttonContainer.appendChild(closeBtn);
     
-    this.cameraModal.appendChild(this.videoElement);
+    this.cameraModal.appendChild(polaroidFrame);
     this.cameraModal.appendChild(buttonContainer);
     document.body.appendChild(this.cameraModal);
     
@@ -198,11 +176,140 @@ class PolaroidSystem {
     // Save to storage
     this.savePhoto(imageData);
     
+    // Increment photos taken
+    this.photosTaken++;
+    
     // Close camera
     this.closeCamera();
     
     // Show success message
-    window.flashMessage && window.flashMessage('📷 Polaroid captured! Visit home to develop it.', 3000);
+    window.flashMessage && window.flashMessage('📷 Polaroid captured!', 2000);
+    
+    // Ask for another photo after short delay
+    setTimeout(() => {
+      this.askForAnotherPhoto();
+    }, 1500);
+  }
+  
+  // Ask if user wants another photo
+  askForAnotherPhoto() {
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 30px;
+    `;
+    
+    const text = document.createElement('div');
+    text.textContent = 'Noch ein Foto machen?';
+    text.style.cssText = `
+      font-family: 'Nineteen Ninety Seven', monospace;
+      font-size: 2rem;
+      color: #00ff88;
+      text-align: center;
+    `;
+    
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.cssText = `
+      display: flex;
+      gap: 30px;
+    `;
+    
+    // Yes button
+    const yesBtn = document.createElement('button');
+    yesBtn.textContent = 'Y - Ja';
+    yesBtn.style.cssText = `
+      padding: 20px 50px;
+      font-size: 1.5rem;
+      font-family: 'Nineteen Ninety Seven', monospace;
+      background: #00ff88;
+      color: #000;
+      border: 3px solid #000;
+      cursor: pointer;
+      box-shadow: 4px 4px 0 #000;
+    `;
+    yesBtn.addEventListener('click', () => {
+      modal.remove();
+      this.openCamera();
+    });
+    
+    // No button
+    const noBtn = document.createElement('button');
+    noBtn.textContent = 'N - Nein';
+    noBtn.style.cssText = `
+      padding: 20px 50px;
+      font-size: 1.5rem;
+      font-family: 'Nineteen Ninety Seven', monospace;
+      background: #ff5555;
+      color: #fff;
+      border: 3px solid #000;
+      cursor: pointer;
+      box-shadow: 4px 4px 0 #000;
+    `;
+    noBtn.addEventListener('click', () => {
+      modal.remove();
+      this.finishPhotoSession();
+    });
+    
+    // Keyboard shortcuts
+    const keyHandler = (e) => {
+      if (e.key.toLowerCase() === 'y') {
+        modal.remove();
+        document.removeEventListener('keydown', keyHandler);
+        this.openCamera();
+      } else if (e.key.toLowerCase() === 'n') {
+        modal.remove();
+        document.removeEventListener('keydown', keyHandler);
+        this.finishPhotoSession();
+      }
+    };
+    document.addEventListener('keydown', keyHandler);
+    
+    buttonContainer.appendChild(yesBtn);
+    buttonContainer.appendChild(noBtn);
+    modal.appendChild(text);
+    modal.appendChild(buttonContainer);
+    document.body.appendChild(modal);
+  }
+  
+  // Finish photo session and navigate
+  finishPhotoSession() {
+    console.log('📷 Photo session finished');
+    
+    // Show Jen dialogue
+    if (window.CharacterDialogue) {
+      window.CharacterDialogue.showDialogue('jen', 'Komm zur nächsten Location!', {
+        duration: 3000,
+        bounce: true,
+        onComplete: () => {
+          // Mark fountain as won
+          window.gameManager && window.gameManager.markWon('fountain');
+          
+          // Navigate back to landing page
+          document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+          const landingPage = document.getElementById('landing-page');
+          if (landingPage) {
+            landingPage.classList.add('active');
+            
+            // Dispatch gameWon event
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('gameWon', {
+                detail: { gameId: 'fountain' }
+              }));
+            }, 100);
+          }
+        }
+      });
+    }
   }
   
   // Save photo to localStorage
@@ -430,6 +537,9 @@ document.head.appendChild(style);
 
 // Initialize and export
 export const Polaroid = new PolaroidSystem();
+
+// Expose globally for fountain fishing game
+window.PolaroidFountain = Polaroid;
 
 // Auto-initialize when DOM is ready
 if (document.readyState === 'loading') {

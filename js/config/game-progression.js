@@ -19,18 +19,17 @@ export const PROGRESSION = {
     oneTimeOnly: true
   },
 
-  // Level 1: Fountain (placeholder for now)
+  // Level 1: Fountain (Camera fishing game)
   'fountain': {
     level: 1,
     displayName: 'Fountain',
-    game: null,
-    collectible: null,
-    missionAfter: 'Placeholder for future content',
-    unlocks: [],
-    character: null,
-    dialogue: null,
-    buttonVisible: true,
-    todo: 'To be implemented later'
+    game: 'camera-fishing',
+    collectible: 'camera',
+    missionAfter: 'Du hast die Kamera! Besuche "Home" um deine Fotos zu entwickeln.',
+    unlocks: ['home'],
+    character: 'jen',
+    dialogue: 'Komm zur nächsten Location!',
+    buttonVisible: true
   },
 
   // Level 2: Uni Center
