@@ -14,11 +14,11 @@ class GameManager {
     // Game configurations
     this.games = {
       'home': { collectible: 'key' },
-      'snails': { collectible: 'snail' },
+      'snails': { collectible: null }, // Nesquik and snail added directly in game code
       'bunker': { collectible: 'blanket' },
       'krivaya': { collectible: 'wet-clothes' },
       'tanke': { collectible: 'pasxa' },
-      'fountain': { collectible: 'nudeCalendar' },
+      'fountain': { collectible: 'camera' },
       'oma-opa-morg': { collectible: 'yellow-shorts' },
       'oma-opa-shnol': { collectible: 'sheep' },
       'oma-shelya': { collectible: null }, // Dialogue encounter, no collectible

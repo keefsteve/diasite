@@ -58,6 +58,9 @@ class InventoryManager {
       // Save state
       Storage.saveState();
 
+      // Dispatch inventory updated event
+      window.dispatchEvent(new CustomEvent('inventoryUpdated', { detail: { itemId } }));
+
       return true;
     }
 
@@ -76,6 +79,9 @@ class InventoryManager {
 
       // Save state
       Storage.saveState();
+
+      // Dispatch inventory updated event
+      window.dispatchEvent(new CustomEvent('inventoryUpdated', { detail: { itemId } }));
 
       return true;
     }

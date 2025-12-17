@@ -635,6 +635,13 @@
         ctx.fillStyle = '#fff';
         ctx.fillText('Kamera gefunden!', canvas.width / 2, canvas.height / 2 + 60);
 
+        // Add camera to inventory
+        if (window.DiasiteInventory) {
+          setTimeout(() => {
+            window.DiasiteInventory.addItem('camera');
+          }, 1000);
+        }
+
         // Mark fountain game as won
         if (typeof gameManager !== 'undefined') {
           gameManager.markWon('fountain');
@@ -1117,9 +1124,9 @@
             <div id="belt-status" style="font-size:1.5rem;font-weight:700;margin:20px 0;min-height:50px;color:var(--terracotta)">
               Pick which cheek to show!
             </div>
-            <div style="width:600px;height:450px;margin:30px auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
+            <div style="width:600px;height:450px;margin:10px auto 0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:10px;">
               <!-- Background cheeks image (centered, top) -->
-              <img src="assets/sprites/objects/cheeks.png" alt="Cheeks" style="width:350px;height:280px;object-fit:contain;pointer-events:none;" onerror="this.style.display='none';console.error('Cheeks image not found')" />
+              <img src="assets/sprites/objects/cheeks.png" alt="Cheeks" style="width:350px;height:280px;object-fit:contain;pointer-events:none;margin-top:20px;" onerror="this.style.display='none';console.error('Cheeks image not found')" />
 
               <!-- Clickable cheeks row (centered, bottom) -->
               <div style="display:flex;align-items:center;justify-content:center;gap:0px;margin-top:-245px;margin-left:-10px;">
@@ -1136,7 +1143,7 @@
                      onerror="this.style.display='none';console.error('Right cheek image not found')" />
               </div>
             </div>
-            <div id="belt-animation" style="font-size:6rem;min-height:100px;display:flex;align-items:center;justify-content:center;"></div>
+            <div id="belt-animation" style="font-size:6rem;min-height:100px;display:flex;align-items:center;justify-content:center;margin-top:20px;"></div>
           </div>
         </div>
       </div>
@@ -2309,6 +2316,16 @@
               gameRunning = false;
               clearInterval(gameInterval);
 
+              // Add collectibles to inventory with flash messages
+              if (window.DiasiteInventory) {
+                setTimeout(() => {
+                  window.DiasiteInventory.addItem('snail');
+                }, 500);
+                setTimeout(() => {
+                  window.DiasiteInventory.addItem('nesquik');
+                }, 1500);
+              }
+
               window.gameManager && window.gameManager.markWon('snails');
 
               // Full timeline in showOmaReward: Oma -> both bounce -> Jen solo -> navigate
@@ -2815,11 +2832,169 @@
     })();
   </script>
 
+  <!-- Bunker Page -->
+  <div id="bunker" class="page" style="align-items: flex-start; justify-content: flex-start;">
+    <div class="page-header">
+      <h2>Bunker</h2>
+      <button class="back-btn" data-target="landing-page">← Zurück</button>
+    </div>
+    <div class="location-content">
+      <div class="location-top-row">
+        <div class="location-image-container">
+          <img src="/assets/sprites/places/bunker.png" alt="Bunker" class="location-image" onerror="this.style.display='none'" />
+        </div>
+        <div class="game-container">
+          <div style="text-align:center;padding:40px;">
+            <p style="font-size:1.4rem;color:var(--terracotta);margin-bottom:30px;">
+              Der Bunker wartet auf sein Spiel...
+            </p>
+            <button class="play-btn" onclick="alert('Spiel noch nicht implementiert!')">▶ Play</button>
+          </div>
+        </div>
+      </div>
+      <div class="location-message-row">
+        <div class="riddle-note location-message-box">
+          Im Bunker ist es dunkel und kühl. Hier spielten wir manchmal Verstecken.
+        </div>
+        <div class="location-sprites">
+          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
+          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- School Page -->
+  <div id="school" class="page" style="align-items: flex-start; justify-content: flex-start;">
+    <div class="page-header">
+      <h2>School</h2>
+      <button class="back-btn" data-target="landing-page">← Zurück</button>
+    </div>
+    <div class="location-content">
+      <div class="location-top-row">
+        <div class="location-image-container">
+          <img src="/assets/sprites/places/school.png" alt="School" class="location-image" onerror="this.style.display='none'" />
+        </div>
+        <div class="game-container">
+          <div style="text-align:center;padding:40px;">
+            <p style="font-size:1.4rem;color:var(--terracotta);margin-bottom:30px;">
+              Die Schule wartet auf ihr Spiel...
+            </p>
+            <button class="play-btn" onclick="alert('Spiel noch nicht implementiert!')">▶ Play</button>
+          </div>
+        </div>
+      </div>
+      <div class="location-message-row">
+        <div class="riddle-note location-message-box">
+          Unsere Schule, wo wir so viele Stunden verbracht haben.
+        </div>
+        <div class="location-sprites">
+          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
+          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tanke Page -->
+  <div id="tanke" class="page" style="align-items: flex-start; justify-content: flex-start;">
+    <div class="page-header">
+      <h2>Tanke</h2>
+      <button class="back-btn" data-target="landing-page">← Zurück</button>
+    </div>
+    <div class="location-content">
+      <div class="location-top-row">
+        <div class="location-image-container">
+          <img src="/assets/sprites/places/tanke.png" alt="Tanke" class="location-image" onerror="this.style.display='none'" />
+        </div>
+        <div class="game-container">
+          <div style="text-align:center;padding:40px;">
+            <p style="font-size:1.4rem;color:var(--terracotta);margin-bottom:30px;">
+              Die Tankstelle wartet auf ihr Spiel...
+            </p>
+            <button class="play-btn" onclick="alert('Spiel noch nicht implementiert!')">▶ Play</button>
+          </div>
+        </div>
+      </div>
+      <div class="location-message-row">
+        <div class="riddle-note location-message-box">
+          Die Tankstelle, wo wir manchmal Süßigkeiten gekauft haben.
+        </div>
+        <div class="location-sprites">
+          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
+          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Polaroid Camera Button (left side) -->
+  <button id="polaroid-camera-btn" style="
+    position: fixed;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 70px;
+    height: 70px;
+    background: #f0ebe5;
+    border: 4px solid #b8a898;
+    border-radius: 12px;
+    cursor: pointer;
+    z-index: 500;
+    display: none;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+    transition: all 0.2s;
+  " onclick="openPolaroid()" onmouseover="this.style.transform='translateY(-50%) scale(1.1)'" onmouseout="this.style.transform='translateY(-50%) scale(1)'">
+    <img src="/assets/sprites/objects/cam.png" alt="Camera" style="width:100%;height:100%;object-fit:contain;image-rendering:pixelated;" />
+  </button>
+
   <!-- Inventory Bar -->
   <aside id="inventory">
     <div class="inventory-title">Inventory</div>
     <div id="items"></div>
   </aside>
+
+  <!-- Polaroid Camera Logic -->
+  <script>
+    // Show camera button when camera is in inventory and on landing page
+    function updateCameraButtonVisibility() {
+      const cameraBtn = document.getElementById('polaroid-camera-btn');
+      const landingPage = document.getElementById('landing-page');
+      
+      if (!cameraBtn || !landingPage) return;
+      
+      const isOnLandingPage = landingPage.classList.contains('active');
+      const hasCamera = window.DiasiteState && 
+                       window.DiasiteState.player && 
+                       window.DiasiteState.player.inventory && 
+                       window.DiasiteState.player.inventory.includes('camera');
+      
+      cameraBtn.style.display = (isOnLandingPage && hasCamera) ? 'block' : 'none';
+    }
+
+    // Open polaroid interface
+    window.openPolaroid = function() {
+      if (window.DiasitePolaroid) {
+        window.DiasitePolaroid.open();
+      }
+    };
+
+    // Monitor page changes and inventory updates
+    const pageObserver = new MutationObserver(() => {
+      updateCameraButtonVisibility();
+    });
+
+    const landingPage = document.getElementById('landing-page');
+    if (landingPage) {
+      pageObserver.observe(landingPage, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    // Check visibility on inventory changes
+    window.addEventListener('inventoryUpdated', updateCameraButtonVisibility);
+    
+    // Initial check
+    setTimeout(updateCameraButtonVisibility, 1000);
+  </script>
 
   <!-- Pre-load check -->
   <script>
