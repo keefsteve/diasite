@@ -1620,223 +1620,146 @@
     </div>
   </div>
   <script>
-    // ===== STROOP TEST GAME (Oma & Opa Morg) =====
+    // ===== STROOP TEST GAME (Oma & Opa Morg) - SIMPLIFIED =====
     (function() {
       const keys = {};
       let gameWon = false;
       let gameActive = false;
-      let correctAnswers = 0;
-      const neededAnswers = 13;
-      const timeLimit = 20; // 20 seconds
+      let correctCount = 0;
+      const NEEDED = 13;
+      const TIME_LIMIT = 20;
       let startTime = null;
       let timerInterval = null;
-      let currentWord = null;
-      let currentColor = null;
-      let input = null;
-      let statusEl = null;
-      let correctEl = null;
-      let wordDisplay = null;
+      let currentPair = null;
 
-      // Color pairs: word / display color
       const stroopPairs = [
-        { word: 'grün', color: '#FFD700', answer: 'gelb' },      // "green" in yellow
-        { word: 'rot', color: '#0000FF', answer: 'blau' },       // "red" in blue
-        { word: 'blau', color: '#8B4513', answer: 'braun' },     // "blue" in brown
-        { word: 'gelb', color: '#008000', answer: 'grün' },      // "yellow" in green
-        { word: 'braun', color: '#FF0000', answer: 'rot' },      // "brown" in red
-        { word: 'grün', color: '#FF0000', answer: 'rot' },       // "green" in red
-        { word: 'rot', color: '#FFD700', answer: 'gelb' },       // "red" in yellow
-        { word: 'blau', color: '#008000', answer: 'grün' },      // "blue" in green
+        { word: 'grün', color: '#FFD700', answer: 'gelb' },
+        { word: 'rot', color: '#0000FF', answer: 'blau' },
+        { word: 'blau', color: '#8B4513', answer: 'braun' },
+        { word: 'gelb', color: '#008000', answer: 'grün' },
+        { word: 'braun', color: '#FF0000', answer: 'rot' },
+        { word: 'grün', color: '#FF0000', answer: 'rot' },
+        { word: 'rot', color: '#FFD700', answer: 'gelb' },
+        { word: 'blau', color: '#008000', answer: 'grün' },
       ];
 
       document.addEventListener('keydown', (e) => { keys[e.code] = true; });
       document.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
-      // Start game when page becomes active
       const stroopObserver = new MutationObserver(() => {
-        const omaMorgPage = document.getElementById('oma-opa-morg');
-        if (omaMorgPage && omaMorgPage.classList.contains('active') && !gameActive && !gameWon) {
-          startStroopGame();
-        } else if (!omaMorgPage || !omaMorgPage.classList.contains('active')) {
-          // Reset when leaving page
-          if (timerInterval) clearInterval(timerInterval);
-          gameActive = false;
+        const page = document.getElementById('oma-opa-morg');
+        if (page && page.classList.contains('active') && !gameActive && !gameWon) {
+          startGame();
+        } else if (!page || !page.classList.contains('active')) {
+          stopGame();
         }
       });
 
-      const omaMorgPage = document.getElementById('oma-opa-morg');
-      if (omaMorgPage) {
-        stroopObserver.observe(omaMorgPage, { attributes: true, attributeFilter: ['class'] });
-      }
+      const page = document.getElementById('oma-opa-morg');
+      if (page) stroopObserver.observe(page, { attributes: true, attributeFilter: ['class'] });
 
-      function startStroopGame() {
-        console.log('🎨 Starting Stroop test game');
+      function startGame() {
+        const input = document.getElementById('stroop-input');
+        const display = document.getElementById('stroop-word-display');
+        const status = document.getElementById('stroop-status');
+        const counter = document.getElementById('stroop-correct');
+        
+        if (!input || !display) return;
+        
         gameActive = true;
-        correctAnswers = 0;
+        correctCount = 0;
         startTime = Date.now();
-
-        // Get elements once
-        if (!input) input = document.getElementById('stroop-input');
-        if (!wordDisplay) wordDisplay = document.getElementById('stroop-word-display');
-        if (!statusEl) statusEl = document.getElementById('stroop-status');
-        if (!correctEl) correctEl = document.getElementById('stroop-correct');
-
-        if (!input || !wordDisplay) {
-          console.error('Stroop game elements not found!');
-          return;
-        }
-
-        // Clear any existing listener
-        const oldInput = input;
-        if (oldInput && oldInput._stroopHandler) {
-          oldInput.removeEventListener('input', oldInput._stroopHandler);
-        }
-
         input.value = '';
         input.disabled = false;
-        correctEl.textContent = '0';
-
-        // Start timer countdown
-        updateTimer();
+        counter.textContent = '0';
+        
+        showWord();
+        
         if (timerInterval) clearInterval(timerInterval);
-        timerInterval = setInterval(updateTimer, 100);
-
-        // Show first word
-        showNextWord();
-
-        // Handle typing - STRICT MODE
-        // Store handler reference for proper cleanup
-        input._stroopHandler = handleInput;
-        input.addEventListener('input', handleInput);
+        timerInterval = setInterval(checkTime, 100);
+        
+        input.onkeyup = (e) => {
+          if (!gameActive) return;
+          const typed = input.value.toLowerCase().trim();
+          if (typed === currentPair.answer) {
+            correctCount++;
+            counter.textContent = correctCount;
+            status.textContent = '✓ Richtig!';
+            status.style.color = '#00aa00';
+            input.value = '';
+            if (correctCount >= NEEDED) {
+              winGame();
+            } else {
+              setTimeout(() => {
+                status.textContent = '';
+                showWord();
+              }, 600);
+            }
+          } else if (typed.length > 0 && !currentPair.answer.startsWith(typed)) {
+            failGame();
+          }
+        };
       }
 
-      function updateTimer() {
-        if (!startTime) return;
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        const remaining = timeLimit - elapsed;
-
-        if (remaining <= 0) {
-          // TIME'S UP!
-          clearInterval(timerInterval);
-          timerInterval = null;
-          gameActive = false;
-          statusEl.textContent = `⏰ Zeit abgelaufen! Du hast ${correctAnswers} von ${neededAnswers} geschafft!`;
-          statusEl.style.color = '#ff4444';
-          input.disabled = true;
-          if (input._stroopHandler) {
-            input.removeEventListener('input', input._stroopHandler);
-          }
-
-          // Auto-restart after 3 seconds
-          setTimeout(() => {
-            startStroopGame();
-          }, 3000);
-        } else {
-          // Update timer display in status
-          if (!statusEl.textContent.includes('✓') && !statusEl.textContent.includes('❌')) {
-            statusEl.textContent = `⏱️ Zeit: ${remaining}s`;
-            statusEl.style.color = remaining <= 5 ? '#ff6600' : '#666';
-          }
+      function showWord() {
+        currentPair = stroopPairs[Math.floor(Math.random() * stroopPairs.length)];
+        const display = document.getElementById('stroop-word-display');
+        if (display) {
+          display.textContent = currentPair.word.toUpperCase();
+          display.style.color = currentPair.color;
         }
-      }
-
-      function handleInput(e) {
-        if (!gameActive) return;
-
-        const typed = input.value.toLowerCase().trim();
-        const expected = currentWord.answer;
-
-        // Check if current input matches the beginning of the answer
-        if (typed.length > 0 && !expected.startsWith(typed)) {
-          // WRONG LETTER - GAME OVER
-          gameActive = false;
-          clearInterval(timerInterval);
-          timerInterval = null;
-          statusEl.textContent = '❌ Falsch! Du bist raus!';
-          statusEl.style.color = '#ff0000';
-          if (input._stroopHandler) {
-            input.removeEventListener('input', input._stroopHandler);
-          }
-          input.disabled = true;
-
-          setTimeout(() => {
-            startStroopGame();
-          }, 2000);
-          return;
-        }
-
-        // Check if complete and correct
-        if (typed === expected) {
-          correctAnswers++;
-          correctEl.textContent = correctAnswers;
-          statusEl.textContent = '✓ Richtig!';
-          statusEl.style.color = '#00aa00';
-          input.value = '';
-
-          if (correctAnswers >= neededAnswers) {
-            winGame();
-          } else {
-            setTimeout(() => {
-              statusEl.textContent = '';
-              showNextWord();
-            }, 800);
-          }
-        }
-      }
-
-      function showNextWord() {
-        // Random word
-        currentWord = stroopPairs[Math.floor(Math.random() * stroopPairs.length)];
-        if (!wordDisplay) wordDisplay = document.getElementById('stroop-word-display');
-        wordDisplay.textContent = currentWord.word.toUpperCase();
-        wordDisplay.style.color = currentWord.color;
+        const input = document.getElementById('stroop-input');
         if (input) input.focus();
       }
-
-      function winGame() {
+      
+      function checkTime() {
+        if (!startTime || !gameActive) return;
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const remaining = TIME_LIMIT - elapsed;
+        const status = document.getElementById('stroop-status');
+        
+        if (remaining <= 0) {
+          failGame();
+        } else if (status && !status.textContent.includes('✓') && !status.textContent.includes('❌')) {
+          status.textContent = `⏱️ Zeit: ${remaining}s`;
+          status.style.color = remaining <= 5 ? '#ff6600' : '#666';
+        }
+      }
+      
+      function failGame() {
+        stopGame();
+        const status = document.getElementById('stroop-status');
+        const input = document.getElementById('stroop-input');
+        if (status) {
+          status.textContent = `❌ Zeit abgelaufen! ${correctCount}/${NEEDED}`;
+          status.style.color = '#ff4444';
+        }
+        if (input) input.disabled = true;
+        setTimeout(startGame, 3000);
+      }
+      
+      function stopGame() {
         gameActive = false;
-        gameWon = true;
-
-        // Stop timer
         if (timerInterval) {
           clearInterval(timerInterval);
+          timerInterval = null;
         }
-
-        const statusEl = document.getElementById('stroop-status');
-        statusEl.textContent = '🎉 Geschafft! Die gelben Shorts sind dein!';
-        statusEl.style.color = '#00aa00';
-
-        setTimeout(() => {
-          if (typeof gameManager !== 'undefined') {
-            gameManager.markWon('oma-opa-morg');
-          }
-
-          setTimeout(() => {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            const landingPage = document.getElementById('landing-page');
-            if (landingPage) {
-              landingPage.classList.add('active');
-              setTimeout(() => {
-                window.dispatchEvent(new CustomEvent('gameWon', {
-                  detail: { gameId: 'oma-opa-morg' }
-                }));
-              }, 100);
-            }
-          }, 1500);
-        }, 2000);
       }
-
-      // CHEAT: Press K to skip
-      setInterval(() => {
-        const omaMorgPage = document.getElementById('oma-opa-morg');
-        if (keys['KeyK'] && !gameWon && omaMorgPage && omaMorgPage.classList.contains('active')) {
-          gameWon = true;
-          gameActive = false;
-
-          if (typeof gameManager !== 'undefined') {
-            gameManager.markWon('oma-opa-morg');
-          }
-
+      
+      function winGame() {
+        stopGame();
+        gameWon = true;
+        const status = document.getElementById('stroop-status');
+        if (status) {
+          status.textContent = '🎉 Geschafft! Die gelben Shorts sind dein!';
+          status.style.color = '#00aa00';
+        }
+        
+        if (typeof gameManager !== 'undefined') {
+          gameManager.markWon('oma-opa-morg');
+        }
+        
+        setTimeout(() => {
           document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
           const landingPage = document.getElementById('landing-page');
           if (landingPage) {
@@ -1847,6 +1770,14 @@
               }));
             }, 100);
           }
+        }, 2000);
+      }
+
+      // K-cheat
+      setInterval(() => {
+        const page = document.getElementById('oma-opa-morg');
+        if (keys['KeyK'] && !gameWon && page && page.classList.contains('active')) {
+          winGame();
         }
       }, 100);
     })();
@@ -2648,6 +2579,17 @@
     // ===== SHELYA DIALOGUE ENCOUNTER =====
     (function() {
       let hasTriggered = false;
+      const keys = {};
+      document.addEventListener('keydown', (e) => { keys[e.code] = true; });
+      document.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+      // K-cheat to skip dialogue
+      setInterval(() => {
+        const shelyaPage = document.getElementById('oma-shelya');
+        if (shelyaPage && shelyaPage.classList.contains('active') && keys['KeyK'] && hasTriggered) {
+          completeShelyaEncounter();
+        }
+      }, 100);
 
       const observer = new MutationObserver(() => {
         const shelyaPage = document.getElementById('oma-shelya');
@@ -2844,17 +2786,17 @@
           <img src="/assets/sprites/places/bunker.png" alt="Bunker" class="location-image" onerror="this.style.display='none'" />
         </div>
         <div class="game-container">
-          <div style="text-align:center;padding:40px;">
-            <p style="font-size:1.4rem;color:var(--terracotta);margin-bottom:30px;">
-              Der Bunker wartet auf sein Spiel...
-            </p>
-            <button class="play-btn" onclick="alert('Spiel noch nicht implementiert!')">▶ Play</button>
+          <div id="bunker-game" style="text-align:center;padding:40px;">
+            <div style="font-size:5rem;margin-bottom:20px;">🦎</div>
+            <p id="bunker-question" style="font-size:1.2rem;color:var(--terracotta);margin-bottom:20px;">Wie alt bist du?</p>
+            <input type="text" id="bunker-input" style="padding:12px;font-size:1.1rem;border:3px solid #b8a898;border-radius:8px;width:300px;text-align:center;font-family:'Nineteen Ninety Seven',monospace;" />
+            <div id="bunker-response" style="margin-top:20px;font-size:1.1rem;color:#666;min-height:60px;"></div>
           </div>
         </div>
       </div>
       <div class="location-message-row">
         <div class="riddle-note location-message-box">
-          Im Bunker ist es dunkel und kühl. Hier spielten wir manchmal Verstecken.
+          Im Bunker wartet ein weiser Salamander auf dich.
         </div>
         <div class="location-sprites">
           <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
@@ -2863,6 +2805,78 @@
       </div>
     </div>
   </div>
+  <script>
+    (function() {
+      let step = 1;
+      let age = '';
+      const keys = {};
+      document.addEventListener('keydown', (e) => { keys[e.code] = true; });
+      document.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+      const observer = new MutationObserver(() => {
+        const bunkerPage = document.getElementById('bunker');
+        if (bunkerPage && bunkerPage.classList.contains('active')) {
+          setupBunker();
+        }
+      });
+      observer.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
+
+      function setupBunker() {
+        const input = document.getElementById('bunker-input');
+        if (!input || input.dataset.setup) return;
+        input.dataset.setup = 'true';
+        
+        input.onkeydown = (e) => {
+          if (e.key === 'Enter') {
+            const val = input.value.trim();
+            if (!val) return;
+            
+            if (step === 1) {
+              age = val;
+              input.value = '';
+              document.getElementById('bunker-question').textContent = 'Was würdest du gerne in diesen Bunker reinschmeißen?';
+              document.getElementById('bunker-response').textContent = '🦎 *nickt*';
+              step = 2;
+            } else if (step === 2) {
+              document.getElementById('bunker-response').innerHTML = '🦎 <em>"Sehr gute Wahl, viel Erfolg weiterhin beim Leben."</em>';
+              input.disabled = true;
+              setTimeout(() => {
+                if (typeof gameManager !== 'undefined') {
+                  gameManager.markWon('bunker');
+                }
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                const landingPage = document.getElementById('landing-page');
+                if (landingPage) {
+                  landingPage.classList.add('active');
+                  setTimeout(() => {
+                    window.dispatchEvent(new CustomEvent('gameWon', { detail: { gameId: 'bunker' } }));
+                  }, 100);
+                }
+              }, 2500);
+            }
+          }
+        };
+      }
+
+      // K-cheat
+      setInterval(() => {
+        const bunkerPage = document.getElementById('bunker');
+        if (bunkerPage && bunkerPage.classList.contains('active') && keys['KeyK']) {
+          if (typeof gameManager !== 'undefined') {
+            gameManager.markWon('bunker');
+          }
+          document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+          const landingPage = document.getElementById('landing-page');
+          if (landingPage) {
+            landingPage.classList.add('active');
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('gameWon', { detail: { gameId: 'bunker' } }));
+            }, 100);
+          }
+        }
+      }, 100);
+    })();
+  </script>
 
   <!-- School Page -->
   <div id="school" class="page" style="align-items: flex-start; justify-content: flex-start;">
@@ -2895,6 +2909,29 @@
       </div>
     </div>
   </div>
+  <script>
+    (function() {
+      const keys = {};
+      document.addEventListener('keydown', (e) => { keys[e.code] = true; });
+      document.addEventListener('keyup', (e) => { keys[e.code] = false; });
+      setInterval(() => {
+        const schoolPage = document.getElementById('school');
+        if (schoolPage && schoolPage.classList.contains('active') && keys['KeyK']) {
+          if (typeof gameManager !== 'undefined') {
+            gameManager.markWon('school');
+          }
+          document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+          const landingPage = document.getElementById('landing-page');
+          if (landingPage) {
+            landingPage.classList.add('active');
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('gameWon', { detail: { gameId: 'school' } }));
+            }, 100);
+          }
+        }
+      }, 100);
+    })();
+  </script>
 
   <!-- Tanke Page -->
   <div id="tanke" class="page" style="align-items: flex-start; justify-content: flex-start;">
@@ -2927,6 +2964,29 @@
       </div>
     </div>
   </div>
+  <script>
+    (function() {
+      const keys = {};
+      document.addEventListener('keydown', (e) => { keys[e.code] = true; });
+      document.addEventListener('keyup', (e) => { keys[e.code] = false; });
+      setInterval(() => {
+        const tankePage = document.getElementById('tanke');
+        if (tankePage && tankePage.classList.contains('active') && keys['KeyK']) {
+          if (typeof gameManager !== 'undefined') {
+            gameManager.markWon('tanke');
+          }
+          document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+          const landingPage = document.getElementById('landing-page');
+          if (landingPage) {
+            landingPage.classList.add('active');
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('gameWon', { detail: { gameId: 'tanke' } }));
+            }, 100);
+          }
+        }
+      }, 100);
+    })();
+  </script>
 
   <!-- Polaroid Camera Button (left side) -->
   <button id="polaroid-camera-btn" style="

@@ -168,22 +168,29 @@ class InventoryManager {
       const itemName = i18n.t(`collectibles.${itemId}`);
       itemEl.title = itemName; // Full name on hover
       
-      // Use sprite images for specific items
+      // All items as sprites (no emojis)
       const spriteMap = {
         'magnifying-glass': '/assets/sprites/objects/lupe.png',
-        'yellow-shorts': '/assets/sprites/objects/boxers.png'
+        'yellow-shorts': '/assets/sprites/objects/boxers.png',
+        'camera': '/assets/sprites/objects/cam.png',
+        'nudeCalendar': '/assets/sprites/objects/nudeCalendar.png',
+        'snail': '/assets/sprites/objects/schnecke.png',
+        'nesquik': '/assets/sprites/objects/nesquikOma.png',
       };
 
-      if (spriteMap[itemId]) {
-        const img = document.createElement('img');
-        img.src = spriteMap[itemId];
-        img.alt = itemName;
-        img.style.cssText = 'width:100%;height:100%;object-fit:contain;image-rendering:pixelated;';
-        itemEl.appendChild(img);
-      } else {
-        // Fallback to emoji for other items
-        itemEl.textContent = itemName.split(' ')[0]; // Just the emoji
-      }
+      // Use sprite if available, otherwise try PNG with itemId name
+      const spriteSrc = spriteMap[itemId] || `/assets/sprites/objects/${itemId}.png`;
+      
+      const img = document.createElement('img');
+      img.src = spriteSrc;
+      img.alt = itemName;
+      img.style.cssText = 'width:32px;height:32px;max-width:32px;max-height:32px;object-fit:contain;image-rendering:pixelated;display:block;';
+      img.onerror = () => {
+        // Fallback to emoji if sprite not found
+        itemEl.innerHTML = '';
+        itemEl.textContent = itemName.split(' ')[0];
+      };
+      itemEl.appendChild(img);
       
       // Click to select
       itemEl.addEventListener('click', () => this.selectItem(itemId, itemEl));
