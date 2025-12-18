@@ -100,16 +100,16 @@
     </div>
 
     <!-- Map GPS COORDINATES Hotspots -->
-    <button class="map-hotspot locked" data-target="fountain" style="left:58%;top:4%"></button>
-    <button class="map-hotspot locked" data-target="oma-opa-shnol" style="left:57%;top:82%"></button>
+    <button class="map-hotspot" data-target="fountain" style="left:58%;top:4%"></button>
+    <button class="map-hotspot" data-target="oma-opa-shnol" style="left:57%;top:82%"></button>
     <button class="map-hotspot" data-target="snails" style="left:64%;top:80%"></button>
-    <button class="map-hotspot locked" data-target="krivaya" style="left:41%;top:47%"></button>
+    <button class="map-hotspot" data-target="krivaya" style="left:41%;top:47%"></button>
     <!-- ADJUST THESE COORDINATES: left:X%;top:Y% where X is horizontal (0-100) and Y is vertical (0-100) -->
-    <button class="map-hotspot locked" data-target="oma-opa-morg" style="left:52%;top:11%"></button>
-    <button class="map-hotspot locked" data-target="oma-shelya" style="left:37%;top:27%"></button>
+    <button class="map-hotspot" data-target="oma-opa-morg" style="left:52%;top:11%"></button>
+    <button class="map-hotspot" data-target="oma-shelya" style="left:37%;top:27%"></button>
     <button class="map-hotspot" data-target="bunker" style="left:32%;top:20%"></button>
     <button class="map-hotspot" data-target="school" style="left:27%;top:20%"></button>
-    <button class="map-hotspot locked" data-target="tanke" style="left:28%;top:22%"></button>
+    <button class="map-hotspot" data-target="tanke" style="left:28%;top:22%"></button>
     <button class="map-hotspot locked" data-target="home" style="left:27%;top:15%"></button>
 
     <!-- Hot/Cold Tracker -->
@@ -778,39 +778,17 @@
               bubble.innerHTML = `
                 <div style="
                   position: relative;
-                  background: white;
-                  padding: 18px 24px;
-                  border-radius: 20px;
-                  border: 3px solid #667eea;
-                  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+                  background: var(--terracotta);
+                  color: #fff;
+                  padding: 15px 25px;
+                  border: 3px solid #000;
                   font-family: 'Nineteen Ninety Seven', monospace;
                   font-size: 1rem;
-                  max-width: 380px;
+                  max-width: 400px;
                   text-align: left;
+                  box-shadow: 4px 4px 0px #000;
                 ">
                   Komm, hör auf bei den Steinen zu springen, Mama holt uns in 15 min bei Oma und Opa ab und Oma wollte am Uni-Center noch was erledigen!
-                  <div style="
-                    position: absolute;
-                    left: -18px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    width: 0;
-                    height: 0;
-                    border-top: 15px solid transparent;
-                    border-bottom: 15px solid transparent;
-                    border-right: 18px solid #667eea;
-                  "></div>
-                  <div style="
-                    position: absolute;
-                    left: -14px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    width: 0;
-                    height: 0;
-                    border-top: 12px solid transparent;
-                    border-bottom: 12px solid transparent;
-                    border-right: 15px solid white;
-                  "></div>
                 </div>
               `;
               bubble.style.cssText = `
@@ -928,39 +906,17 @@
               bubble.innerHTML = `
                 <div style="
                   position: relative;
-                  background: white;
-                  padding: 18px 24px;
-                  border-radius: 20px;
-                  border: 3px solid #667eea;
-                  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+                  background: var(--terracotta);
+                  color: #fff;
+                  padding: 15px 25px;
+                  border: 3px solid #000;
                   font-family: 'Nineteen Ninety Seven', monospace;
                   font-size: 1rem;
-                  max-width: 380px;
+                  max-width: 400px;
                   text-align: left;
+                  box-shadow: 4px 4px 0px #000;
                 ">
                   Komm, hör auf bei den Steinen zu springen, Mama holt uns in 15 min bei Oma und Opa ab und Oma wollte am Uni-Center noch was erledigen!
-                  <div style="
-                    position: absolute;
-                    left: -18px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    width: 0;
-                    height: 0;
-                    border-top: 15px solid transparent;
-                    border-bottom: 15px solid transparent;
-                    border-right: 18px solid #667eea;
-                  "></div>
-                  <div style="
-                    position: absolute;
-                    left: -14px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    width: 0;
-                    height: 0;
-                    border-top: 12px solid transparent;
-                    border-bottom: 12px solid transparent;
-                    border-right: 15px solid white;
-                  "></div>
                 </div>
               `;
               bubble.style.cssText = `
@@ -1703,20 +1659,24 @@
           const typed = input.value.toLowerCase().trim();
           if (typed === currentPair.answer) {
             correctCount++;
+            console.log(`✅ Stroop correct! Count: ${correctCount}/${NEEDED}`);
             counter.textContent = correctCount;
             status.textContent = '✓ Richtig!';
             status.style.color = '#00aa00';
             input.value = '';
-            // Wechsle Wort nach jedem richtigen
-            setTimeout(() => {
-              status.textContent = '';
-              showWord();
-            }, 400);
-            // Gewinn nur bei genau 13 richtigen
+
+            // Check if won BEFORE showing next word
             if (correctCount >= NEEDED) {
+              console.log(`🎉 Stroop test WON with ${correctCount} correct answers!`);
               setTimeout(() => {
                 winGame();
               }, 500);
+            } else {
+              // Only show next word if not won yet
+              setTimeout(() => {
+                status.textContent = '';
+                showWord();
+              }, 400);
             }
           } else if (typed.length > 0 && !currentPair.answer.startsWith(typed)) {
             failGame();
@@ -2701,13 +2661,13 @@
           // PART 1: Shelya asks how they're doing
           setTimeout(() => {
             showShelyaDialogue_Part("Wie geht es euch, Kinder?", () => {
-              // After 3 seconds, show Steve's response
+              // After 1.5 seconds, show Steve's response
               setTimeout(() => {
                 showKidsResponse("Ach, ganz gut, po starikovski!", () => {
-                  // After 2.5 seconds, show Shelya's second dialogue
+                  // After 1.5 seconds, show Shelya's second dialogue
                   setTimeout(() => {
                     showShelyaDialogue_Part("Nur habe ich meine Lupe jemandem geliehen, und finde sie nicht mehr...", () => {
-                      // After 3.5 seconds, show kids giving the magnifying glass
+                      // After 2 seconds, show kids giving the magnifying glass
                       setTimeout(() => {
                         showKidsResponse("Hier, Oma! Wir haben sie gefunden!", () => {
                           // Remove magnifying glass from inventory
@@ -2716,21 +2676,21 @@
                             console.log('🔍 Magnifying glass removed from inventory');
                           }
 
-                          // After 2.5 seconds, show Shelya's thanks
+                          // After 1.5 seconds, show Shelya's thanks
                           setTimeout(() => {
                             showShelyaDialogue_Part("Danke, meine Lieben! Das bedeutet mir sehr viel!", () => {
                               // Finish and navigate back
                               setTimeout(() => {
                                 completeShelyaEncounter();
-                              }, 2000);
+                              }, 1000);
                             });
-                          }, 2500);
+                          }, 1500);
                         });
-                      }, 3500);
+                      }, 2000);
                     });
-                  }, 2500);
+                  }, 1500);
                 });
-              }, 3000);
+              }, 1500);
             });
           }, 1000);
         }, 100);
@@ -2741,10 +2701,8 @@
         const bubble = document.createElement('div');
         bubble.className = 'character-animation-element';
         bubble.innerHTML = `
-          <div style="position:relative;background:white;padding:18px 24px;border-radius:20px;border:3px solid #f59e0b;box-shadow:0 6px 20px rgba(0,0,0,0.3);font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;max-width:380px;text-align:left;">
+          <div style="background:var(--terracotta);color:#fff;padding:15px 25px;border:3px solid #000;font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;max-width:400px;text-align:left;box-shadow:4px 4px 0px #000;">
             ${text}
-            <div style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;border-bottom:18px solid #f59e0b;"></div>
-            <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-bottom:15px solid white;"></div>
           </div>
         `;
         bubble.style.cssText = 'position:fixed;bottom:60px;right:380px;z-index:9999;opacity:0;transition:opacity 0.5s;';
@@ -2758,7 +2716,7 @@
             bubble.remove();
             onComplete();
           }, 500);
-        }, 3000);
+        }, 1500);
       }
 
       function showKidsResponse(text, onComplete) {
@@ -2771,10 +2729,8 @@
         const bubble = document.createElement('div');
         bubble.className = 'character-animation-element';
         bubble.innerHTML = `
-          <div style="position:relative;background:white;padding:18px 24px;border-radius:20px;border:3px solid #667eea;box-shadow:0 6px 20px rgba(0,0,0,0.3);font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;max-width:380px;text-align:left;">
+          <div style="background:var(--terracotta);color:#fff;padding:15px 25px;border:3px solid #000;font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;max-width:400px;text-align:left;box-shadow:4px 4px 0px #000;">
             ${text}
-            <div style="position:absolute;left:-18px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:15px solid transparent;border-bottom:15px solid transparent;border-right:18px solid #667eea;"></div>
-            <div style="position:absolute;left:-14px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:12px solid transparent;border-bottom:12px solid transparent;border-right:15px solid white;"></div>
           </div>
         `;
         bubble.style.cssText = 'position:fixed;bottom:60px;right:530px;z-index:9999;opacity:0;transition:opacity 0.5s;';
@@ -2790,7 +2746,7 @@
             if (steveSprite) steveSprite.style.animation = '';
             onComplete();
           }, 500);
-        }, 2500);
+        }, 1500);
       }
 
       function completeShelyaEncounter() {
@@ -2848,7 +2804,7 @@
           <div id="bunker-game" style="text-align:center;padding:40px;">
             <div style="position:relative;display:inline-block;margin-bottom:20px;">
               <img id="salamander-body" src="/assets/sprites/people/salamander.png" alt="Salamander" style="width:200px;height:200px;object-fit:contain;image-rendering:pixelated;" />
-              <img id="salamander-head" src="/assets/sprites/objects/salamanderKopf.png" alt="Salamander Head" style="position:absolute;top:33px;left:calc(50% - 10px);transform:translateX(-50%);width:80px;height:80px;object-fit:contain;image-rendering:pixelated;transition:transform 0.2s;" />
+              <img id="salamander-head" src="/assets/sprites/objects/salamanderKopf.png" alt="Salamander Head" style="position:absolute;top:33px;left:calc(50% - 20px);transform:translateX(-50%);width:80px;height:80px;object-fit:contain;image-rendering:pixelated;transition:transform 0.2s;" />
             </div>
             <p id="bunker-question" style="font-size:1.2rem;color:var(--terracotta);margin-bottom:20px;">Wie alt bist du?</p>
             <input type="text" id="bunker-input" style="padding:12px;font-size:1.1rem;border:3px solid #b8a898;border-radius:8px;width:300px;text-align:center;font-family:'Nineteen Ninety Seven',monospace;" />
@@ -2888,6 +2844,37 @@
         }
       });
       observer.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
+
+      function showSalamanderBubble(text, duration = 2500) {
+        const bubble = document.createElement('div');
+        bubble.className = 'salamander-bubble';
+        bubble.textContent = text;
+        bubble.style.cssText = `
+          position: fixed;
+          bottom: 250px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: var(--terracotta);
+          color: #fff;
+          border: 3px solid #000;
+          padding: 15px 25px;
+          font-size: 1rem;
+          font-family: 'Nineteen Ninety Seven', monospace;
+          box-shadow: 4px 4px 0px #000;
+          z-index: 9999;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+          max-width: 400px;
+          text-align: center;
+        `;
+        document.body.appendChild(bubble);
+
+        setTimeout(() => { bubble.style.opacity = '1'; }, 10);
+        setTimeout(() => {
+          bubble.style.opacity = '0';
+          setTimeout(() => bubble.remove(), 300);
+        }, duration);
+      }
 
       function nodHead() {
         const head = document.getElementById('salamander-head');
@@ -2930,13 +2917,15 @@
               input.value = '';
               document.getElementById('bunker-question').textContent = 'Was würdest du gerne in diesen Bunker reinschmeißen?';
               nodHead();
-              document.getElementById('bunker-response').textContent = '*nickt*';
+              showSalamanderBubble('*nickt weise*');
+              document.getElementById('bunker-response').textContent = '';
               step = 2;
             } else if (step === 2) {
               entries.push({ age: age, item: val });
               updateHistory();
               nodHead();
-              document.getElementById('bunker-response').innerHTML = '<em>"Sehr gute Wahl, viel Erfolg weiterhin beim Leben."</em>';
+              showSalamanderBubble('Sehr gute Wahl, viel Erfolg weiterhin beim Leben.', 3000);
+              document.getElementById('bunker-response').textContent = '';
               input.disabled = true;
               setTimeout(() => {
                 if (typeof gameManager !== 'undefined') {
@@ -3131,8 +3120,12 @@
 
     // Open polaroid interface
     window.openPolaroid = function() {
-      if (window.DiasitePolaroid) {
-        window.DiasitePolaroid.open();
+      console.log('📷 Opening polaroid camera...');
+      if (window.PolaroidFountain) {
+        window.PolaroidFountain.openCamera();
+      } else {
+        console.error('❌ PolaroidFountain not available');
+        window.flashMessage && window.flashMessage('Camera system not loaded!', 2000);
       }
     };
 
