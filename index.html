@@ -108,7 +108,7 @@
     <button class="map-hotspot locked" data-target="oma-opa-morg" style="left:52%;top:11%"></button>
     <button class="map-hotspot locked" data-target="oma-shelya" style="left:37%;top:27%"></button>
     <button class="map-hotspot" data-target="bunker" style="left:32%;top:20%"></button>
-    <button class="map-hotspot locked" data-target="school" style="left:27%;top:20%"></button>
+    <button class="map-hotspot" data-target="school" style="left:27%;top:20%"></button>
     <button class="map-hotspot locked" data-target="tanke" style="left:28%;top:22%"></button>
     <button class="map-hotspot locked" data-target="home" style="left:27%;top:15%"></button>
 
@@ -446,7 +446,7 @@
           <img src="/assets/sprites/places/fountain.jpeg" alt="Fountain" class="location-image" onerror="this.style.display='none'" />
         </div>
 
-        <div class="game-container" id="fountain-fishing-game" style="min-height:550px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;margin-top:-150px;">
+        <div class="game-container" id="fountain-fishing-game" style="min-height:550px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;margin-top:-50px;">
           <canvas id="fishing-canvas" width="600" height="450" style="background:#4A90E2;border:4px solid #8b5a3c;border-radius:8px;cursor:crosshair;display:block;"></canvas>
           <div id="fishing-instructions" style="text-align:center;padding:10px 20px;">
             <h3 style="font-size:1.5rem;color:var(--forest);margin-bottom:10px;">🎣 Finde die Kamera!</h3>
@@ -816,7 +816,7 @@
               bubble.style.cssText = `
                 position: fixed;
                 bottom: 60px;
-                right: 530px;
+                right: 350px;
                 z-index: 9999;
                 opacity: 0;
                 transition: opacity 0.5s ease-out;
@@ -966,7 +966,7 @@
               bubble.style.cssText = `
                 position: fixed;
                 bottom: 60px;
-                right: 530px;
+                right: 350px;
                 z-index: 9999;
                 opacity: 0;
                 transition: opacity 0.5s ease-out;
@@ -2848,7 +2848,7 @@
           <div id="bunker-game" style="text-align:center;padding:40px;">
             <div style="position:relative;display:inline-block;margin-bottom:20px;">
               <img id="salamander-body" src="/assets/sprites/people/salamander.png" alt="Salamander" style="width:200px;height:200px;object-fit:contain;image-rendering:pixelated;" />
-              <img id="salamander-head" src="/assets/sprites/objects/salamanderKopf.png" alt="Salamander Head" style="position:absolute;top:30px;left:calc(50% - 20px);transform:translateX(-50%);width:80px;height:80px;object-fit:contain;image-rendering:pixelated;transition:transform 0.2s;" />
+              <img id="salamander-head" src="/assets/sprites/objects/salamanderKopf.png" alt="Salamander Head" style="position:absolute;top:33px;left:calc(50% - 10px);transform:translateX(-50%);width:80px;height:80px;object-fit:contain;image-rendering:pixelated;transition:transform 0.2s;" />
             </div>
             <p id="bunker-question" style="font-size:1.2rem;color:var(--terracotta);margin-bottom:20px;">Wie alt bist du?</p>
             <input type="text" id="bunker-input" style="padding:12px;font-size:1.1rem;border:3px solid #b8a898;border-radius:8px;width:300px;text-align:center;font-family:'Nineteen Ninety Seven',monospace;" />

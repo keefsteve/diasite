@@ -674,7 +674,7 @@ body.app-ready .page {
 .location-top-row {
   display: flex;
   gap: 40px;
-  height: calc(100vh - 400px);
+  max-height: 57vh;
   padding: 80px 40px 0 40px;
   flex: 1;
 }

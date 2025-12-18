@@ -15,7 +15,7 @@ class InventoryManager {
     
     this.allCollectibles = [
       'key', 'salamander', 'blanket', 'pasxa',
-      'wet-clothes', 'yellow-shorts', 'snail', 'sheep', 'nudeCalendar', 'magnifying-glass'
+      'wet-clothes', 'yellow-shorts', 'snail', 'sheep', 'nudeCalendar', 'magnifying-glass', 'nesquik'
     ];
   }
   
