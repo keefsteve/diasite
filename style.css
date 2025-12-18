@@ -290,12 +290,12 @@ body.app-ready .page {
 
 .item {
   padding: 8px;
-  background: linear-gradient(135deg, var(--sage-green), var(--sky-blue));
+  background: transparent;
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
-  border: 2px solid var(--forest-green);
-  box-shadow: 2px 2px 0px rgba(74, 103, 65, 0.3);
+  border: none;
+  box-shadow: none;
   transition: all 0.15s;
   font-weight: 600;
   color: var(--paper-white);
@@ -1038,31 +1038,7 @@ body.app-ready .page {
   }
 }
 
-/* Pixel-style corner decorations */
-.collectible-box::before,
-.collectible-box::after {
-  content: '★';
-  position: absolute;
-  font-size: 2rem;
-  color: var(--terracotta);
-  animation: starTwinkle 1s ease-in-out infinite alternate;
-}
-
-.collectible-box::before {
-  top: 10px;
-  left: 15px;
-}
-
-.collectible-box::after {
-  bottom: 10px;
-  right: 15px;
-  animation-delay: 0.5s;
-}
-
-@keyframes starTwinkle {
-  0% { opacity: 0.5; transform: scale(0.8) rotate(0deg); }
-  100% { opacity: 1; transform: scale(1.2) rotate(180deg); }
-}
+/* Minimalist collectible animation - no stars */
 
 /* ============================================
    90s VIDEO GAME COLLECTIBLE ANIMATION - FIXED

@@ -145,12 +145,26 @@ class InventoryManager {
     document.body.appendChild(container);
     console.log('✅ Animation container added to body');
 
-    // Remove after animation and show Steve dialogue if nudeCalendar
-    setTimeout(() => {
-      container.remove();
-      console.log('🗑️ Animation removed');
+    // nudeCalendar gets longer animation (3s), other items shorter (0.8s for snail/nesquik, none for rest)
+    let animDuration = 1500;
+    if (itemId === 'nudeCalendar') {
+      animDuration = 3000;
+    } else if (itemId === 'snail' || itemId === 'nesquik') {
+      animDuration = 800;
+    } else {
+      animDuration = 0; // No animation for other items
+    }
 
-    }, 1500);
+    // Remove after animation
+    if (animDuration > 0) {
+      setTimeout(() => {
+        container.remove();
+        console.log('🗑️ Animation removed');
+      }, animDuration);
+    } else {
+      container.remove();
+      console.log('🗑️ Animation skipped');
+    }
   }
   
   // Render inventory UI
@@ -176,6 +190,8 @@ class InventoryManager {
         'nudeCalendar': '/assets/sprites/objects/nudeCalendar.png',
         'snail': '/assets/sprites/objects/schnecke.png',
         'nesquik': '/assets/sprites/objects/nesquikOma.png',
+        'sheep': '/assets/sprites/objects/sheep.png',
+        'blanket': '/assets/sprites/objects/blanket.png',
       };
 
       // Use sprite if available, otherwise try PNG with itemId name

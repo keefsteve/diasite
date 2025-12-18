@@ -423,6 +423,9 @@
       </div>
 
       <div class="location-message-row">
+        <div class="riddle-note location-message-box">
+          Willkommen im botanischen Garten! Hier könnt ihr bei den Steinen etwas springen, aber vorsichtig!
+        </div>
         <div class="location-sprites">
           <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
           <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
@@ -443,10 +446,10 @@
           <img src="/assets/sprites/places/fountain.jpeg" alt="Fountain" class="location-image" onerror="this.style.display='none'" />
         </div>
 
-        <div class="game-container" id="fountain-fishing-game" style="min-height:550px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;">
-          <div id="fishing-instructions" style="text-align:center;padding:20px;">
-            <h3 style="font-size:1.5rem;color:var(--forest);margin-bottom:15px;">🎣 Finde die Kamera!</h3>
-            <p style="font-size:1rem;color:#666;margin-bottom:20px;">Eine Kamera liegt im Brunnen. Bewege den Haken mit der Maus!</p>
+        <div class="game-container" id="fountain-fishing-game" style="min-height:550px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;margin-top:-180px;">
+          <div id="fishing-instructions" style="text-align:center;padding:10px 20px;">
+            <h3 style="font-size:1.5rem;color:var(--forest);margin-bottom:10px;">🎣 Finde die Kamera!</h3>
+            <p style="font-size:1rem;color:#666;margin-bottom:15px;">Eine Kamera liegt im Brunnen. Bewege den Haken mit der Maus!</p>
           </div>
           <canvas id="fishing-canvas" width="600" height="450" style="background:#4A90E2;border:4px solid #8b5a3c;border-radius:8px;cursor:crosshair;display:block;"></canvas>
         </div>
@@ -1124,9 +1127,9 @@
             <div id="belt-status" style="font-size:1.5rem;font-weight:700;margin:20px 0;min-height:50px;color:var(--terracotta)">
               Pick which cheek to show!
             </div>
-            <div style="width:600px;height:450px;margin:10px auto 0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:10px;">
+            <div style="width:600px;height:450px;margin:-20px auto 0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:10px;">
               <!-- Background cheeks image (centered, top) -->
-              <img src="assets/sprites/objects/cheeks.png" alt="Cheeks" style="width:350px;height:280px;object-fit:contain;pointer-events:none;margin-top:20px;" onerror="this.style.display='none';console.error('Cheeks image not found')" />
+              <img src="assets/sprites/objects/cheeks.png" alt="Cheeks" style="width:350px;height:280px;object-fit:contain;pointer-events:none;margin-top:0px;" onerror="this.style.display='none';console.error('Cheeks image not found')" />
 
               <!-- Clickable cheeks row (centered, bottom) -->
               <div style="display:flex;align-items:center;justify-content:center;gap:0px;margin-top:-245px;margin-left:-10px;">
@@ -1282,8 +1285,22 @@
         statusEl.textContent = `Oma is counting: ${countdown}...`;
         statusEl.style.color = 'var(--muted-red)';
 
-        // Don't show walking Opa sprite - it interferes with the cheeks layout
-        let walkInterval = null;
+        // Show walking Opa sprite during countdown
+        const walkingEmoji = document.createElement('img');
+        walkingEmoji.src = '/assets/sprites/people/opaSprite.png';
+        walkingEmoji.className = 'walking-opa';
+        walkingEmoji.style.cssText = 'position:absolute;width:200px;height:200px;object-fit:contain;z-index:50;bottom:120px;';
+        const beltArea = document.getElementById('belt-game-area');
+        if (beltArea) beltArea.appendChild(walkingEmoji);
+        
+        let walkPos = -200;
+        const walkInterval = setInterval(() => {
+          walkPos += 25;
+          if (walkingEmoji) walkingEmoji.style.left = walkPos + 'px';
+          if (walkPos > 650) {
+            walkPos = -200;
+          }
+        }, 100);
 
         const countInterval = setInterval(() => {
           countdown--;
@@ -1291,6 +1308,8 @@
             statusEl.textContent = `Oma is counting: ${countdown}...`;
           } else {
             clearInterval(countInterval);
+            clearInterval(walkInterval);
+            if (walkingEmoji) walkingEmoji.remove();
 
             // Show belt swing
             animEl.textContent = beltSwing === 'left' ? '💥⬅️' : '➡️💥';
@@ -1366,6 +1385,7 @@
                     setTimeout(() => {
                       if(window.CharacterDialogue) {
                         window.CharacterDialogue.showDialogue('steve', 'Danke für den Besuch, Oma und Opa!', {
+                          position: 'right',
                           duration: 3000,
                           onComplete: () => {
                             // Navigate to landing page
@@ -1585,10 +1605,10 @@
           <img src="/assets/sprites/places/omaopamorg.png" alt="Oma & Opa Morg" class="location-image" onerror="this.style.display='none'" />
         </div>
 
-        <div class="game-container" style="min-height:500px;">
+        <div class="game-container" style="min-height:500px;margin-top:-40px;">
           <!-- Stroop Test Game -->
-          <div id="stroop-game" style="text-align:center;padding:30px;">
-            <h3 style="margin-bottom:15px;font-size:1.5rem;">Versuche Oma zu erklären, was du meinst!</h3>
+          <div id="stroop-game" style="text-align:center;padding:20px 30px;">
+            <h3 style="margin-bottom:12px;font-size:1.5rem;">Versuche Oma zu erklären, was du meinst!</h3>
             <p id="stroop-instructions" style="font-size:1rem;margin:15px 0;color:#666;">Schreibe die <strong>FARBE</strong> vom Wort, nicht das Wort selbst!</p>
 
             <div id="stroop-word-display" style="font-size:6rem;margin:30px 0;font-weight:bold;min-height:120px;display:flex;align-items:center;justify-content:center;">
@@ -1731,11 +1751,10 @@
         const status = document.getElementById('stroop-status');
         const input = document.getElementById('stroop-input');
         if (status) {
-          status.textContent = `❌ Zeit abgelaufen! ${correctCount}/${NEEDED}`;
+          status.innerHTML = `❌ Zeit abgelaufen! ${correctCount}/${NEEDED}<br><button onclick="location.reload()" style="margin-top:15px;padding:10px 20px;font-size:1rem;background:#FFD700;border:3px solid #b8a898;border-radius:8px;cursor:pointer;font-family:'Nineteen Ninety Seven',monospace;color:#333;font-weight:bold;box-shadow:4px 4px 0 #8b7355;">↻ Nochmal versuchen</button>`;
           status.style.color = '#ff4444';
         }
         if (input) input.disabled = true;
-        setTimeout(startGame, 3000);
       }
       
       function stopGame() {
@@ -2255,6 +2274,9 @@
                 setTimeout(() => {
                   window.DiasiteInventory.addItem('nesquik');
                 }, 1500);
+                setTimeout(() => {
+                  window.DiasiteInventory.addItem('snail');
+                }, 1700);
               }
 
               window.gameManager && window.gameManager.markWon('snails');
@@ -2285,6 +2307,10 @@
           if(keys['KeyK']){
             gameRunning = false;
             clearInterval(gameInterval);
+
+            // Add items when using cheat
+            window.DiasiteInventory.addItem('nesquik');
+            window.DiasiteInventory.addItem('snail');
 
             window.gameManager && window.gameManager.markWon('snails');
 
@@ -2787,10 +2813,18 @@
         </div>
         <div class="game-container">
           <div id="bunker-game" style="text-align:center;padding:40px;">
-            <div style="font-size:5rem;margin-bottom:20px;">🦎</div>
+            <div style="position:relative;display:inline-block;margin-bottom:20px;">
+              <img id="salamander-body" src="/assets/sprites/people/salamander.png" alt="Salamander" style="width:200px;height:200px;object-fit:contain;image-rendering:pixelated;" />
+              <img id="salamander-head" src="/assets/sprites/objects/salamanderKopf.png" alt="Salamander Head" style="position:absolute;top:20px;left:50%;transform:translateX(-50%);width:80px;height:80px;object-fit:contain;image-rendering:pixelated;transition:transform 0.2s;" />
+            </div>
             <p id="bunker-question" style="font-size:1.2rem;color:var(--terracotta);margin-bottom:20px;">Wie alt bist du?</p>
             <input type="text" id="bunker-input" style="padding:12px;font-size:1.1rem;border:3px solid #b8a898;border-radius:8px;width:300px;text-align:center;font-family:'Nineteen Ninety Seven',monospace;" />
             <div id="bunker-response" style="margin-top:20px;font-size:1.1rem;color:#666;min-height:60px;"></div>
+            <div id="bunker-history" style="margin-top:30px;padding:20px;background:rgba(232,223,208,0.5);border-radius:8px;text-align:left;max-height:200px;overflow-y:auto;display:none;">
+              <h4 style="font-size:1rem;color:var(--terracotta);margin-bottom:10px;">Einträge dieser Session:</h4>
+              <ul id="bunker-entries" style="list-style:none;padding:0;font-size:0.9rem;color:#666;">
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -2809,6 +2843,7 @@
     (function() {
       let step = 1;
       let age = '';
+      let entries = [];
       const keys = {};
       document.addEventListener('keydown', (e) => { keys[e.code] = true; });
       document.addEventListener('keyup', (e) => { keys[e.code] = false; });
@@ -2820,6 +2855,32 @@
         }
       });
       observer.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
+
+      function nodHead() {
+        const head = document.getElementById('salamander-head');
+        if (head) {
+          head.style.transform = 'translateX(-50%) rotate(15deg)';
+          setTimeout(() => {
+            head.style.transform = 'translateX(-50%) rotate(-15deg)';
+            setTimeout(() => {
+              head.style.transform = 'translateX(-50%) rotate(0deg)';
+            }, 150);
+          }, 150);
+        }
+      }
+
+      function updateHistory() {
+        const historyDiv = document.getElementById('bunker-history');
+        const entriesList = document.getElementById('bunker-entries');
+        if (entries.length > 0) {
+          historyDiv.style.display = 'block';
+          entriesList.innerHTML = entries.map((e, i) => 
+            `<li style="margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.7);border-radius:4px;">
+              <strong>#${i+1}:</strong> Alter ${e.age}, möchte "${e.item}" reinwerfen
+            </li>`
+          ).join('');
+        }
+      }
 
       function setupBunker() {
         const input = document.getElementById('bunker-input');
@@ -2835,10 +2896,14 @@
               age = val;
               input.value = '';
               document.getElementById('bunker-question').textContent = 'Was würdest du gerne in diesen Bunker reinschmeißen?';
-              document.getElementById('bunker-response').textContent = '🦎 *nickt*';
+              nodHead();
+              document.getElementById('bunker-response').textContent = '*nickt*';
               step = 2;
             } else if (step === 2) {
-              document.getElementById('bunker-response').innerHTML = '🦎 <em>"Sehr gute Wahl, viel Erfolg weiterhin beim Leben."</em>';
+              entries.push({ age: age, item: val });
+              updateHistory();
+              nodHead();
+              document.getElementById('bunker-response').innerHTML = '<em>"Sehr gute Wahl, viel Erfolg weiterhin beim Leben."</em>';
               input.disabled = true;
               setTimeout(() => {
                 if (typeof gameManager !== 'undefined') {
@@ -2994,18 +3059,17 @@
     left: 20px;
     top: 50%;
     transform: translateY(-50%);
-    width: 70px;
-    height: 70px;
-    background: #f0ebe5;
-    border: 4px solid #b8a898;
-    border-radius: 12px;
+    width: 64px;
+    height: 64px;
+    background: transparent;
+    border: none;
     cursor: pointer;
     z-index: 500;
     display: none;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+    padding: 8px;
     transition: all 0.2s;
-  " onclick="openPolaroid()" onmouseover="this.style.transform='translateY(-50%) scale(1.1)'" onmouseout="this.style.transform='translateY(-50%) scale(1)'">
-    <img src="/assets/sprites/objects/cam.png" alt="Camera" style="width:100%;height:100%;object-fit:contain;image-rendering:pixelated;" />
+  " onclick="openPolaroid()" onmouseover="this.style.transform='translateY(-50%) scale(1.15)'" onmouseout="this.style.transform='translateY(-50%) scale(1)'">
+    <img src="/assets/sprites/objects/cam.png" alt="Camera" style="width:48px;height:48px;object-fit:contain;image-rendering:pixelated;" />
   </button>
 
   <!-- Inventory Bar -->
