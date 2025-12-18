@@ -1754,8 +1754,20 @@
         const status = document.getElementById('stroop-status');
         const input = document.getElementById('stroop-input');
         if (status) {
-          status.innerHTML = `❌ Zeit abgelaufen! ${correctCount}/${NEEDED}<br><button onclick="location.reload()" style="margin-top:15px;padding:10px 20px;font-size:1rem;background:#FFD700;border:3px solid #b8a898;border-radius:8px;cursor:pointer;font-family:'Nineteen Ninety Seven',monospace;color:#333;font-weight:bold;box-shadow:4px 4px 0 #8b7355;">↻ Nochmal versuchen</button>`;
+          status.innerHTML = `❌ Zeit abgelaufen! ${correctCount}/${NEEDED}<br><button id="stroop-restart-btn" style="margin-top:15px;padding:10px 20px;font-size:1rem;background:#FFD700;border:3px solid #b8a898;border-radius:8px;cursor:pointer;font-family:'Nineteen Ninety Seven',monospace;color:#333;font-weight:bold;box-shadow:4px 4px 0 #8b7355;">↻ Nochmal versuchen</button>`;
           status.style.color = '#ff4444';
+          
+          // Add restart button handler
+          setTimeout(() => {
+            const restartBtn = document.getElementById('stroop-restart-btn');
+            if (restartBtn) {
+              restartBtn.onclick = () => {
+                gameWon = false;
+                status.textContent = '';
+                startGame();
+              };
+            }
+          }, 100);
         }
         if (input) input.disabled = true;
       }
@@ -2836,7 +2848,7 @@
           <div id="bunker-game" style="text-align:center;padding:40px;">
             <div style="position:relative;display:inline-block;margin-bottom:20px;">
               <img id="salamander-body" src="/assets/sprites/people/salamander.png" alt="Salamander" style="width:200px;height:200px;object-fit:contain;image-rendering:pixelated;" />
-              <img id="salamander-head" src="/assets/sprites/objects/salamanderKopf.png" alt="Salamander Head" style="position:absolute;top:30px;left:calc(50% - 10px);transform:translateX(-50%);width:80px;height:80px;object-fit:contain;image-rendering:pixelated;transition:transform 0.2s;" />
+              <img id="salamander-head" src="/assets/sprites/objects/salamanderKopf.png" alt="Salamander Head" style="position:absolute;top:30px;left:calc(50% - 20px);transform:translateX(-50%);width:80px;height:80px;object-fit:contain;image-rendering:pixelated;transition:transform 0.2s;" />
             </div>
             <p id="bunker-question" style="font-size:1.2rem;color:var(--terracotta);margin-bottom:20px;">Wie alt bist du?</p>
             <input type="text" id="bunker-input" style="padding:12px;font-size:1.1rem;border:3px solid #b8a898;border-radius:8px;width:300px;text-align:center;font-family:'Nineteen Ninety Seven',monospace;" />
@@ -3078,7 +3090,7 @@
   <button id="polaroid-camera-btn" style="
     position: fixed;
     left: 20px;
-    top: 50%;
+    top: 65%;
     transform: translateY(-50%);
     width: 64px;
     height: 64px;
