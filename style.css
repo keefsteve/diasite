@@ -715,7 +715,7 @@ body.app-ready .page {
   display: flex;
   gap: 30px;
   align-items: flex-end;
-  height: 200px;
+  height: 50px;
   box-sizing: border-box;
   padding: 0 40px 30px 40px;
   background: rgba(232, 223, 208, 0.95);

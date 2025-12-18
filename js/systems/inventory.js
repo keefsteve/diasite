@@ -145,26 +145,21 @@ class InventoryManager {
     document.body.appendChild(container);
     console.log('✅ Animation container added to body');
 
-    // nudeCalendar gets longer animation (3s), other items shorter (0.8s for snail/nesquik, none for rest)
+    // Animation durations: nudeCalendar longer (3s), snail/nesquik should use flash messages (not this), others normal (1.5s)
     let animDuration = 1500;
     if (itemId === 'nudeCalendar') {
       animDuration = 3000;
     } else if (itemId === 'snail' || itemId === 'nesquik') {
+      // These should be added via flash messages, not collectible animation
+      // But if they do get here, show for 0.8s
       animDuration = 800;
-    } else {
-      animDuration = 0; // No animation for other items
     }
 
     // Remove after animation
-    if (animDuration > 0) {
-      setTimeout(() => {
-        container.remove();
-        console.log('🗑️ Animation removed');
-      }, animDuration);
-    } else {
+    setTimeout(() => {
       container.remove();
-      console.log('🗑️ Animation skipped');
-    }
+      console.log('🗑️ Animation removed');
+    }, animDuration);
   }
   
   // Render inventory UI
@@ -189,7 +184,7 @@ class InventoryManager {
         'camera': '/assets/sprites/objects/cam.png',
         'nudeCalendar': '/assets/sprites/objects/nudeCalendar.png',
         'snail': '/assets/sprites/objects/schnecke.png',
-        'nesquik': '/assets/sprites/objects/nesquikOma.png',
+        'nesquik': '/assets/sprites/objects/nesquik.png',
         'sheep': '/assets/sprites/objects/sheep.png',
         'blanket': '/assets/sprites/objects/blanket.png',
       };

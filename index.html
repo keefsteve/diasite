@@ -446,12 +446,12 @@
           <img src="/assets/sprites/places/fountain.jpeg" alt="Fountain" class="location-image" onerror="this.style.display='none'" />
         </div>
 
-        <div class="game-container" id="fountain-fishing-game" style="min-height:550px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;margin-top:-180px;">
+        <div class="game-container" id="fountain-fishing-game" style="min-height:550px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;margin-top:-150px;">
+          <canvas id="fishing-canvas" width="600" height="450" style="background:#4A90E2;border:4px solid #8b5a3c;border-radius:8px;cursor:crosshair;display:block;"></canvas>
           <div id="fishing-instructions" style="text-align:center;padding:10px 20px;">
             <h3 style="font-size:1.5rem;color:var(--forest);margin-bottom:10px;">🎣 Finde die Kamera!</h3>
             <p style="font-size:1rem;color:#666;margin-bottom:15px;">Eine Kamera liegt im Brunnen. Bewege den Haken mit der Maus!</p>
           </div>
-          <canvas id="fishing-canvas" width="600" height="450" style="background:#4A90E2;border:4px solid #8b5a3c;border-radius:8px;cursor:crosshair;display:block;"></canvas>
         </div>
       </div>
 
@@ -1707,13 +1707,16 @@
             status.textContent = '✓ Richtig!';
             status.style.color = '#00aa00';
             input.value = '';
+            // Wechsle Wort nach jedem richtigen
+            setTimeout(() => {
+              status.textContent = '';
+              showWord();
+            }, 400);
+            // Gewinn nur bei genau 13 richtigen
             if (correctCount >= NEEDED) {
-              winGame();
-            } else {
               setTimeout(() => {
-                status.textContent = '';
-                showWord();
-              }, 600);
+                winGame();
+              }, 500);
             }
           } else if (typed.length > 0 && !currentPair.answer.startsWith(typed)) {
             failGame();
@@ -1766,9 +1769,17 @@
       }
       
       function winGame() {
+        // Nur gewinnen wenn wirklich 13 richtige erreicht wurden
+        if (correctCount < NEEDED) {
+          console.warn('⚠️ winGame called but not enough correct answers:', correctCount);
+          return;
+        }
+        
         stopGame();
         gameWon = true;
         const status = document.getElementById('stroop-status');
+        const input = document.getElementById('stroop-input');
+        if (input) input.disabled = true;
         if (status) {
           status.textContent = '🎉 Geschafft! Die gelben Shorts sind dein!';
           status.style.color = '#00aa00';
@@ -1796,6 +1807,7 @@
       setInterval(() => {
         const page = document.getElementById('oma-opa-morg');
         if (keys['KeyK'] && !gameWon && page && page.classList.contains('active')) {
+          correctCount = NEEDED; // Set to required amount for K-cheat
           winGame();
         }
       }, 100);
@@ -2308,9 +2320,18 @@
             gameRunning = false;
             clearInterval(gameInterval);
 
-            // Add items when using cheat
-            window.DiasiteInventory.addItem('nesquik');
-            window.DiasiteInventory.addItem('snail');
+            // Add items as flash messages sequentially
+            if (window.flashMessage) {
+              window.flashMessage('Schnecke erhalten!', 1200);
+            }
+            window.DiasiteState.player.inventory.push('snail');
+            setTimeout(() => {
+              if (window.flashMessage) {
+                window.flashMessage('Nesquik erhalten!', 1200);
+              }
+              window.DiasiteState.player.inventory.push('nesquik');
+              window.dispatchEvent(new CustomEvent('inventoryUpdated'));
+            }, 1300);
 
             window.gameManager && window.gameManager.markWon('snails');
 
@@ -2815,7 +2836,7 @@
           <div id="bunker-game" style="text-align:center;padding:40px;">
             <div style="position:relative;display:inline-block;margin-bottom:20px;">
               <img id="salamander-body" src="/assets/sprites/people/salamander.png" alt="Salamander" style="width:200px;height:200px;object-fit:contain;image-rendering:pixelated;" />
-              <img id="salamander-head" src="/assets/sprites/objects/salamanderKopf.png" alt="Salamander Head" style="position:absolute;top:20px;left:50%;transform:translateX(-50%);width:80px;height:80px;object-fit:contain;image-rendering:pixelated;transition:transform 0.2s;" />
+              <img id="salamander-head" src="/assets/sprites/objects/salamanderKopf.png" alt="Salamander Head" style="position:absolute;top:30px;left:calc(50% - 10px);transform:translateX(-50%);width:80px;height:80px;object-fit:contain;image-rendering:pixelated;transition:transform 0.2s;" />
             </div>
             <p id="bunker-question" style="font-size:1.2rem;color:var(--terracotta);margin-bottom:20px;">Wie alt bist du?</p>
             <input type="text" id="bunker-input" style="padding:12px;font-size:1.1rem;border:3px solid #b8a898;border-radius:8px;width:300px;text-align:center;font-family:'Nineteen Ninety Seven',monospace;" />
@@ -2859,11 +2880,11 @@
       function nodHead() {
         const head = document.getElementById('salamander-head');
         if (head) {
-          head.style.transform = 'translateX(-50%) rotate(15deg)';
+          head.style.transform = 'translateX(-50%) scaleY(1.3)';
           setTimeout(() => {
-            head.style.transform = 'translateX(-50%) rotate(-15deg)';
+            head.style.transform = 'translateX(-50%) scaleY(0.8)';
             setTimeout(() => {
-              head.style.transform = 'translateX(-50%) rotate(0deg)';
+              head.style.transform = 'translateX(-50%) scaleY(1)';
             }, 150);
           }, 150);
         }
