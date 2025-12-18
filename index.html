@@ -1798,11 +1798,67 @@
           <img src="/assets/sprites/places/home.png" alt="Home" class="location-image" onerror="this.style.display='none'" />
         </div>
 
-        <div class="game-container">
-          <div style="text-align:center;padding:40px;">
-            <h3 style="font-size:2rem;color:var(--forest);margin-bottom:20px;">🏠 Welcome Home!</h3>
-            <p style="font-size:1.2rem;color:#666;">Your Polaroid memories will develop here.</p>
-            <p style="font-size:1rem;color:#888;margin-top:20px;">Take photos at the fountain to see them appear!</p>
+        <div class="game-container" style="overflow-y:auto;">
+          <!-- 90s Vintage Home Menu -->
+          <div id="home-menu-system" style="padding:20px;">
+
+            <!-- Menu Header -->
+            <div style="background:var(--warm-brown);border:3px solid #000;padding:15px;margin-bottom:20px;box-shadow:4px 4px 0 #000;">
+              <h3 style="margin:0;font-family:'Nineteen Ninety Seven',monospace;font-size:1.5rem;color:#fff;text-align:center;">
+                🏠 HOME SYSTEM v1.0
+              </h3>
+              <div style="text-align:center;font-size:0.8rem;color:#f0f0f0;margin-top:5px;">
+                <span id="home-current-time"></span>
+              </div>
+            </div>
+
+            <!-- Main Menu Tabs -->
+            <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+              <button onclick="showHomeSection('polaroids')" class="home-menu-btn" style="flex:1;min-width:150px;background:var(--terracotta);color:#333;border:3px solid #000;padding:12px;font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;cursor:pointer;box-shadow:4px 4px 0 #000;transition:all 0.1s;" onmouseover="this.style.transform='translate(2px,2px)';this.style.boxShadow='2px 2px 0 #000'" onmouseout="this.style.transform='';this.style.boxShadow='4px 4px 0 #000'">
+                📷 POLAROIDS
+              </button>
+              <button onclick="showHomeSection('messages')" class="home-menu-btn" style="flex:1;min-width:150px;background:var(--sky-blue);color:#333;border:3px solid #000;padding:12px;font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;cursor:pointer;box-shadow:4px 4px 0 #000;transition:all 0.1s;" onmouseover="this.style.transform='translate(2px,2px)';this.style.boxShadow='2px 2px 0 #000'" onmouseout="this.style.transform='';this.style.boxShadow='4px 4px 0 #000'">
+                🎙️ MESSAGES
+              </button>
+              <button onclick="showHomeSection('stats')" class="home-menu-btn" style="flex:1;min-width:150px;background:var(--soft-orange);color:#333;border:3px solid #000;padding:12px;font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;cursor:pointer;box-shadow:4px 4px 0 #000;transition:all 0.1s;" onmouseover="this.style.transform='translate(2px,2px)';this.style.boxShadow='2px 2px 0 #000'" onmouseout="this.style.transform='';this.style.boxShadow='4px 4px 0 #000'">
+                📊 STATS
+              </button>
+            </div>
+
+            <!-- Polaroids Section -->
+            <div id="home-section-polaroids" class="home-section" style="display:block;">
+              <div style="background:var(--paper-white);border:3px solid #000;padding:20px;box-shadow:4px 4px 0 #000;">
+                <h4 style="margin:0 0 15px 0;font-family:'Nineteen Ninety Seven',monospace;color:#333;">📷 Photo Gallery</h4>
+                <div id="home-polaroid-timeline" style="max-height:400px;overflow-y:auto;"></div>
+              </div>
+            </div>
+
+            <!-- Voice Messages Section -->
+            <div id="home-section-messages" class="home-section" style="display:none;">
+              <div style="background:var(--paper-white);border:3px solid #000;padding:20px;box-shadow:4px 4px 0 #000;">
+                <h4 style="margin:0 0 15px 0;font-family:'Nineteen Ninety Seven',monospace;color:#333;">🎙️ Voice Messages</h4>
+
+                <!-- Record Button -->
+                <div style="text-align:center;margin-bottom:20px;">
+                  <button id="record-voice-btn" onclick="toggleVoiceRecording()" style="background:#ff4444;color:#fff;border:3px solid #000;padding:15px 30px;font-family:'Nineteen Ninety Seven',monospace;font-size:1.1rem;cursor:pointer;box-shadow:4px 4px 0 #000;">
+                    🔴 RECORD MESSAGE
+                  </button>
+                  <div id="recording-status" style="margin-top:10px;font-family:'Nineteen Ninety Seven',monospace;color:#666;"></div>
+                </div>
+
+                <!-- Message List -->
+                <div id="voice-messages-list" style="max-height:300px;overflow-y:auto;"></div>
+              </div>
+            </div>
+
+            <!-- Stats Section -->
+            <div id="home-section-stats" class="home-section" style="display:none;">
+              <div style="background:var(--paper-white);border:3px solid #000;padding:20px;box-shadow:4px 4px 0 #000;">
+                <h4 style="margin:0 0 15px 0;font-family:'Nineteen Ninety Seven',monospace;color:#333;">📊 Game Statistics</h4>
+                <div id="home-stats-content"></div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -1818,6 +1874,243 @@
       </div>
     </div>
   </div>
+
+  <script>
+    // ===== HOME MENU SYSTEM =====
+    (function() {
+      let mediaRecorder = null;
+      let audioChunks = [];
+      let isRecording = false;
+
+      // Section switching
+      window.showHomeSection = function(section) {
+        document.querySelectorAll('.home-section').forEach(s => s.style.display = 'none');
+        document.getElementById(`home-section-${section}`).style.display = 'block';
+
+        if (section === 'polaroids') loadPolaroidTimeline();
+        if (section === 'messages') loadVoiceMessages();
+        if (section === 'stats') loadStats();
+      };
+
+      // Update clock
+      function updateClock() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const dateStr = now.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const clockEl = document.getElementById('home-current-time');
+        if (clockEl) clockEl.textContent = `${dateStr} • ${timeStr}`;
+      }
+      setInterval(updateClock, 1000);
+      updateClock();
+
+      // Load Polaroid Timeline
+      function loadPolaroidTimeline() {
+        const timeline = document.getElementById('home-polaroid-timeline');
+        if (!timeline) return;
+
+        const photos = window.DiasiteState?.gameProgress?.photos || [];
+
+        if (photos.length === 0) {
+          timeline.innerHTML = '<p style="text-align:center;color:#888;padding:40px;font-family:\'Nineteen Ninety Seven\',monospace;">Noch keine Fotos aufgenommen.<br>Besuche den Fountain!</p>';
+          return;
+        }
+
+        // Group by time periods
+        const today = [];
+        const thisWeek = [];
+        const older = [];
+        const now = Date.now();
+        const dayMs = 24 * 60 * 60 * 1000;
+
+        photos.forEach(photo => {
+          const age = now - photo.timestamp;
+          if (age < dayMs) today.push(photo);
+          else if (age < 7 * dayMs) thisWeek.push(photo);
+          else older.push(photo);
+        });
+
+        let html = '';
+
+        if (today.length > 0) {
+          html += '<div style="margin-bottom:20px;"><h5 style="font-family:\'Nineteen Ninety Seven\',monospace;color:#333;border-bottom:2px solid #000;padding-bottom:5px;">📅 HEUTE</h5>';
+          html += renderPhotoGrid(today);
+          html += '</div>';
+        }
+
+        if (thisWeek.length > 0) {
+          html += '<div style="margin-bottom:20px;"><h5 style="font-family:\'Nineteen Ninety Seven\',monospace;color:#333;border-bottom:2px solid #000;padding-bottom:5px;">📅 DIESE WOCHE</h5>';
+          html += renderPhotoGrid(thisWeek);
+          html += '</div>';
+        }
+
+        if (older.length > 0) {
+          html += '<div style="margin-bottom:20px;"><h5 style="font-family:\'Nineteen Ninety Seven\',monospace;color:#333;border-bottom:2px solid #000;padding-bottom:5px;">📅 ÄLTER</h5>';
+          html += renderPhotoGrid(older);
+          html += '</div>';
+        }
+
+        timeline.innerHTML = html;
+      }
+
+      function renderPhotoGrid(photos) {
+        return '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:15px;margin-top:10px;">' +
+          photos.map(photo => {
+            const date = new Date(photo.timestamp).toLocaleDateString('de-DE');
+            const time = new Date(photo.timestamp).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+            return `<div style="background:#fff;padding:10px;border:2px solid #666;box-shadow:2px 2px 4px rgba(0,0,0,0.3);">
+              <img src="${photo.imageData}" style="width:100%;height:auto;display:block;border:1px solid #ccc;" />
+              <div style="margin-top:8px;font-family:'Courier New',monospace;font-size:0.75rem;color:#666;text-align:center;">${time}<br>${date}</div>
+            </div>`;
+          }).join('') +
+        '</div>';
+      }
+
+      // Voice Recording
+      window.toggleVoiceRecording = async function() {
+        if (isRecording) {
+          stopRecording();
+        } else {
+          startRecording();
+        }
+      };
+
+      async function startRecording() {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(stream);
+          audioChunks = [];
+
+          mediaRecorder.ondataavailable = (e) => {
+            audioChunks.push(e.data);
+          };
+
+          mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            saveVoiceMessage(audioUrl);
+            stream.getTracks().forEach(track => track.stop());
+          };
+
+          mediaRecorder.start();
+          isRecording = true;
+
+          document.getElementById('record-voice-btn').innerHTML = '⏹️ STOP';
+          document.getElementById('record-voice-btn').style.background = '#666';
+          document.getElementById('recording-status').innerHTML = '🔴 Aufnahme läuft...';
+        } catch (err) {
+          console.error('Microphone access denied:', err);
+          document.getElementById('recording-status').innerHTML = '❌ Mikrofon-Zugriff verweigert';
+        }
+      }
+
+      function stopRecording() {
+        if (mediaRecorder && isRecording) {
+          mediaRecorder.stop();
+          isRecording = false;
+          document.getElementById('record-voice-btn').innerHTML = '🔴 RECORD MESSAGE';
+          document.getElementById('record-voice-btn').style.background = '#ff4444';
+          document.getElementById('recording-status').innerHTML = '✅ Nachricht gespeichert!';
+          setTimeout(() => {
+            document.getElementById('recording-status').innerHTML = '';
+          }, 2000);
+        }
+      }
+
+      function saveVoiceMessage(audioUrl) {
+        const messages = JSON.parse(localStorage.getItem('diasite_voice_messages') || '[]');
+        messages.push({
+          id: Date.now(),
+          audioUrl: audioUrl,
+          timestamp: Date.now()
+        });
+        localStorage.setItem('diasite_voice_messages', JSON.stringify(messages));
+        loadVoiceMessages();
+      }
+
+      function loadVoiceMessages() {
+        const list = document.getElementById('voice-messages-list');
+        if (!list) return;
+
+        const messages = JSON.parse(localStorage.getItem('diasite_voice_messages') || '[]');
+
+        if (messages.length === 0) {
+          list.innerHTML = '<p style="text-align:center;color:#888;padding:20px;font-family:\'Nineteen Ninety Seven\',monospace;">Keine Nachrichten vorhanden.</p>';
+          return;
+        }
+
+        list.innerHTML = messages.reverse().map((msg, i) => {
+          const date = new Date(msg.timestamp).toLocaleDateString('de-DE');
+          const time = new Date(msg.timestamp).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+          return `<div style="background:var(--cream);border:2px solid #000;padding:15px;margin-bottom:10px;box-shadow:2px 2px 0 #000;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <strong style="font-family:'Nineteen Ninety Seven',monospace;">Nachricht #${messages.length - i}</strong>
+              <span style="font-size:0.85rem;color:#666;">${time} • ${date}</span>
+            </div>
+            <audio controls src="${msg.audioUrl}" style="width:100%;"></audio>
+            <button onclick="deleteVoiceMessage(${msg.id})" style="margin-top:10px;padding:5px 10px;background:#ff4444;color:#fff;border:2px solid #000;font-family:'Nineteen Ninety Seven',monospace;font-size:0.8rem;cursor:pointer;">🗑️ Löschen</button>
+          </div>`;
+        }).join('');
+      }
+
+      window.deleteVoiceMessage = function(id) {
+        let messages = JSON.parse(localStorage.getItem('diasite_voice_messages') || '[]');
+        messages = messages.filter(m => m.id !== id);
+        localStorage.setItem('diasite_voice_messages', JSON.stringify(messages));
+        loadVoiceMessages();
+      };
+
+      // Stats
+      function loadStats() {
+        const statsDiv = document.getElementById('home-stats-content');
+        if (!statsDiv) return;
+
+        const state = window.DiasiteState || {};
+        const gamesWon = Object.keys(state.gameProgress?.gamesWon || {}).length;
+        const gamesPlayed = Object.keys(state.gameProgress?.gamesPlayed || {}).length;
+        const inventory = state.player?.inventory?.length || 0;
+        const photos = state.gameProgress?.photos?.length || 0;
+        const voiceMessages = JSON.parse(localStorage.getItem('diasite_voice_messages') || '[]').length;
+
+        statsDiv.innerHTML = `
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;">
+            <div style="background:var(--terracotta);border:3px solid #000;padding:15px;text-align:center;box-shadow:3px 3px 0 #000;">
+              <div style="font-size:2.5rem;font-weight:bold;color:#fff;">${gamesWon}</div>
+              <div style="font-family:'Nineteen Ninety Seven',monospace;color:#333;margin-top:5px;">Spiele gewonnen</div>
+            </div>
+            <div style="background:var(--sky-blue);border:3px solid #000;padding:15px;text-align:center;box-shadow:3px 3px 0 #000;">
+              <div style="font-size:2.5rem;font-weight:bold;color:#fff;">${gamesPlayed}</div>
+              <div style="font-family:'Nineteen Ninety Seven',monospace;color:#333;margin-top:5px;">Spiele gespielt</div>
+            </div>
+            <div style="background:var(--soft-orange);border:3px solid #000;padding:15px;text-align:center;box-shadow:3px 3px 0 #000;">
+              <div style="font-size:2.5rem;font-weight:bold;color:#fff;">${inventory}</div>
+              <div style="font-family:'Nineteen Ninety Seven',monospace;color:#333;margin-top:5px;">Items gesammelt</div>
+            </div>
+            <div style="background:var(--sage-green);border:3px solid #000;padding:15px;text-align:center;box-shadow:3px 3px 0 #000;">
+              <div style="font-size:2.5rem;font-weight:bold;color:#fff;">${photos}</div>
+              <div style="font-family:'Nineteen Ninety Seven',monospace;color:#333;margin-top:5px;">Polaroids</div>
+            </div>
+            <div style="background:var(--muted-red);border:3px solid #000;padding:15px;text-align:center;box-shadow:3px 3px 0 #000;">
+              <div style="font-size:2.5rem;font-weight:bold;color:#fff;">${voiceMessages}</div>
+              <div style="font-family:'Nineteen Ninety Seven',monospace;color:#333;margin-top:5px;">Sprachnachrichten</div>
+            </div>
+          </div>
+        `;
+      }
+
+      // Initialize when home page becomes active
+      const homeObserver = new MutationObserver(() => {
+        const homePage = document.getElementById('home');
+        if (homePage && homePage.classList.contains('active')) {
+          loadPolaroidTimeline();
+        }
+      });
+
+      const homePage = document.getElementById('home');
+      if (homePage) {
+        homeObserver.observe(homePage, { attributes: true, attributeFilter: ['class'] });
+      }
+    })();
+  </script>
 
   <!-- Snails/Uni-Center Page -->
   <div id="snails" class="page" style="align-items: flex-start; justify-content: flex-start;">
@@ -2701,7 +2994,7 @@
         const bubble = document.createElement('div');
         bubble.className = 'character-animation-element';
         bubble.innerHTML = `
-          <div style="background:var(--terracotta);color:#fff;padding:15px 25px;border:3px solid #000;font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;max-width:400px;text-align:left;box-shadow:4px 4px 0px #000;">
+          <div style="background:var(--sky-blue);color:#333;padding:15px 25px;border:3px solid #000;font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;max-width:400px;text-align:left;box-shadow:4px 4px 0px #000;">
             ${text}
           </div>
         `;
@@ -2804,7 +3097,7 @@
           <div id="bunker-game" style="text-align:center;padding:40px;">
             <div style="position:relative;display:inline-block;margin-bottom:20px;">
               <img id="salamander-body" src="/assets/sprites/people/salamander.png" alt="Salamander" style="width:200px;height:200px;object-fit:contain;image-rendering:pixelated;" />
-              <img id="salamander-head" src="/assets/sprites/objects/salamanderKopf.png" alt="Salamander Head" style="position:absolute;top:33px;left:calc(50% - 20px);transform:translateX(-50%);width:80px;height:80px;object-fit:contain;image-rendering:pixelated;transition:transform 0.2s;" />
+              <img id="salamander-head" src="/assets/sprites/objects/salamanderKopf.png" alt="Salamander Head" style="position:absolute;top:33px;left:calc(50% - 25px);transform:translateX(-50%);width:80px;height:80px;object-fit:contain;image-rendering:pixelated;transition:transform 0.2s;" />
             </div>
             <p id="bunker-question" style="font-size:1.2rem;color:var(--terracotta);margin-bottom:20px;">Wie alt bist du?</p>
             <input type="text" id="bunker-input" style="padding:12px;font-size:1.1rem;border:3px solid #b8a898;border-radius:8px;width:300px;text-align:center;font-family:'Nineteen Ninety Seven',monospace;" />
@@ -2852,10 +3145,9 @@
         bubble.style.cssText = `
           position: fixed;
           bottom: 250px;
-          left: 50%;
-          transform: translateX(-50%);
-          background: var(--terracotta);
-          color: #fff;
+          right: 100px;
+          background: var(--sky-blue);
+          color: #333;
           border: 3px solid #000;
           padding: 15px 25px;
           font-size: 1rem;
