@@ -70,13 +70,22 @@
     </style>
 
     <!-- Mission box on the right side -->
-    <div id="mission-box" class="riddle-note landing-riddle-note" style="position:absolute;bottom:150px;right:40px;left:auto;max-width:380px;text-align:left;">
+    <div id="mission-box" class="location-message-box" style="position:absolute;bottom:150px;right:40px;left:auto;max-width:380px;text-align:left;">
       Finde den nächsten Ort.
     </div>
 
     <!-- Permanent Steve and Jen sprites in lower left, overlapping -->
     <div style="position:absolute;bottom:-30px;left:-80px;z-index:150;">
+      <!-- Jen label -->
+      <div style="position:absolute;left:150px;bottom:400px;font-family:'Nineteen Ninety Seven',monospace;font-size:1.5rem;font-weight:bold;color:#b8a898;letter-spacing:0.6rem;text-shadow:2px 2px 4px rgba(184,168,152,0.5);z-index:153;animation:characterBounce 2s ease-in-out 1.5s infinite;">
+        j e n
+      </div>
       <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="landing-jen-sprite" style="position:absolute;left:0;bottom:0;width:420px;height:420px;object-fit:contain;filter:drop-shadow(0 8px 20px rgba(0,0,0,0.4));z-index:151;" />
+
+      <!-- Steve label -->
+      <div style="position:absolute;left:300px;bottom:400px;font-family:'Nineteen Ninety Seven',monospace;font-size:1.5rem;font-weight:bold;color:#b8a898;letter-spacing:0.6rem;text-shadow:2px 2px 4px rgba(184,168,152,0.5);z-index:154;animation:characterBounce 2s ease-in-out 1.5s infinite;">
+        s t e v e
+      </div>
       <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="landing-steve-sprite" style="position:absolute;left:200px;bottom:0;width:420px;height:420px;object-fit:contain;filter:drop-shadow(0 8px 20px rgba(0,0,0,0.4));z-index:152;" />
     </div>
 
@@ -107,9 +116,9 @@
     <button class="map-hotspot" data-target="oma-opa-morg" style="left:53%;top:11%"></button>
     <button class="map-hotspot" data-target="oma-shelya" style="left:37%;top:27%"></button>
     <button class="map-hotspot" data-target="bunker" style="left:25%;top:20%"></button>
-    <button class="map-hotspot" data-target="school" style="left:19%;top:20%"></button>
-    <button class="map-hotspot" data-target="tanke" style="left:16%;top:15%"></button>
-    <button class="map-hotspot locked" data-target="home" style="left:24%;top:18%"></button>
+    <button class="map-hotspot" data-target="school" style="left:19%;top:19%"></button>
+    <button class="map-hotspot" data-target="tanke" style="left:14%;top:15%"></button>
+    <button class="map-hotspot locked" data-target="home" style="left:20%;top:24%"></button>
 
     <!-- Hot/Cold Tracker -->
     <div id="hotcold-tracker"></div>
@@ -489,7 +498,7 @@
         x: 100 + Math.random() * 400,
         y: 150 + Math.random() * 200,  // Full vertical range in pool
         size: 40,
-        emoji: '📷',
+        sprite: '/assets/sprites/objects/cam.png',
         dx: (Math.random() - 0.5) * 6,  // Equal speed on both axes
         dy: (Math.random() - 0.5) * 6   // Equal speed on both axes for free movement
       };
@@ -584,7 +593,9 @@
         ctx.font = '40px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(cameraObj.emoji, cameraObj.x, cameraObj.y);
+        const img = new Image();
+        img.src = cameraObj.sprite;
+        ctx.drawImage(img, cameraObj.x - 15, cameraObj.y - 15, 30, 30);
         
         // Draw fishing line
         ctx.strokeStyle = '#333';
@@ -632,7 +643,9 @@
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.font = '60px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('📷', canvas.width / 2, canvas.height / 2);
+        const successImg = new Image();
+        successImg.src = '/assets/sprites/objects/cam.png';
+        ctx.drawImage(successImg, canvas.width / 2 - 30, canvas.height / 2 - 30, 60, 60);
         ctx.font = '20px Arial';
         ctx.fillStyle = '#fff';
         ctx.fillText('Kamera gefunden!', canvas.width / 2, canvas.height / 2 + 60);
@@ -734,6 +747,7 @@
       const gravity = 0.5;
       const jumpPower = 6.5; // Weaker individual jumps
       let time = 0;
+      let windForce = 0; // Wind that affects player movement
 
       document.addEventListener('keydown', e => {
         keys[e.code] = true;
@@ -838,10 +852,15 @@
 
         time++;
 
-        // Movement
-        if (keys['ArrowLeft'] || keys['KeyA']) player.dx = -4;
-        else if (keys['ArrowRight'] || keys['KeyD']) player.dx = 4;
-        else player.dx = 0;
+        // Wind mechanic: changes direction every 3 seconds
+        if (time % 180 === 0) {
+          windForce = (Math.random() - 0.5) * 3; // Random wind between -1.5 and 1.5
+        }
+
+        // Movement with wind
+        if (keys['ArrowLeft'] || keys['KeyA']) player.dx = -4 + windForce;
+        else if (keys['ArrowRight'] || keys['KeyD']) player.dx = 4 + windForce;
+        else player.dx = windForce; // Wind affects idle player
 
         // Gravity
         player.dy += gravity;
@@ -1664,19 +1683,16 @@
             status.style.color = '#00aa00';
             input.value = '';
 
-            // Check if won BEFORE showing next word
-            if (correctCount >= NEEDED) {
-              console.log(`🎉 Stroop test WON with ${correctCount} correct answers!`);
-              setTimeout(() => {
+            // Only show next word and check win condition
+            setTimeout(() => {
+              status.textContent = '';
+              if (correctCount >= NEEDED) {
+                console.log(`🎉 Stroop test WON with ${correctCount} correct answers!`);
                 winGame();
-              }, 500);
-            } else {
-              // Only show next word if not won yet
-              setTimeout(() => {
-                status.textContent = '';
+              } else {
                 showWord();
-              }, 400);
-            }
+              }
+            }, 400);
           } else if (typed.length > 0 && !currentPair.answer.startsWith(typed)) {
             failGame();
           }
@@ -2555,9 +2571,6 @@
                 setTimeout(() => {
                   window.DiasiteInventory.addItem('nesquik');
                 }, 1500);
-                setTimeout(() => {
-                  window.DiasiteInventory.addItem('snail');
-                }, 1700);
               }
 
               window.gameManager && window.gameManager.markWon('snails');
@@ -3330,9 +3343,10 @@
         <div class="game-container">
           <div style="text-align:center;padding:40px;">
             <p style="font-size:1.4rem;color:var(--terracotta);margin-bottom:30px;">
-              Die Tankstelle wartet auf ihr Spiel...
+              An der Tankstelle lief immer unser Lieblingssong...
             </p>
-            <button class="play-btn" onclick="alert('Spiel noch nicht implementiert!')">▶ Play</button>
+            <button id="tanke-song-btn" class="play-btn" onclick="playTankeSong()">♪ Song abspielen</button>
+            <div id="tanke-song-status" style="margin-top:20px;font-size:1.1rem;color:#666;"></div>
           </div>
         </div>
       </div>
@@ -3348,6 +3362,54 @@
     </div>
   </div>
   <script>
+    // Tanke Song System
+    let tankeSongPlaying = false;
+    let tankeSong = null;
+
+    window.playTankeSong = function() {
+      const btn = document.getElementById('tanke-song-btn');
+      const status = document.getElementById('tanke-song-status');
+
+      if (!tankeSong) {
+        tankeSong = new Audio('/assets/audio/nuPogodi.mp3'); // Placeholder song
+        tankeSong.volume = 0.5;
+        tankeSong.addEventListener('ended', () => {
+          tankeSongPlaying = false;
+          status.textContent = 'Song zu Ende! Du hast die Erinnerung bewahrt.';
+          btn.textContent = '♪ Nochmal abspielen';
+          
+          // Auto-complete after song ends
+          setTimeout(() => {
+            if (typeof gameManager !== 'undefined') {
+              gameManager.markWon('tanke');
+            }
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const landingPage = document.getElementById('landing-page');
+            if (landingPage) {
+              landingPage.classList.add('active');
+              setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('gameWon', { detail: { gameId: 'tanke' } }));
+              }, 100);
+            }
+          }, 2000);
+        });
+      }
+
+      if (!tankeSongPlaying) {
+        tankeSong.currentTime = 0;
+        tankeSong.play();
+        tankeSongPlaying = true;
+        btn.textContent = '■ Song stoppen';
+        status.textContent = 'Song läuft...';
+      } else {
+        tankeSong.pause();
+        tankeSongPlaying = false;
+        btn.textContent = '♪ Song abspielen';
+        status.textContent = 'Song pausiert';
+      }
+    };
+
+    // Tanke K-cheat
     (function() {
       const keys = {};
       document.addEventListener('keydown', (e) => { keys[e.code] = true; });
@@ -3534,13 +3596,7 @@
       let musicStarted = false;
       let krikGoriHasPlayed = false;
 
-      // Configure audio tracks
-      Object.values(audioTracks).forEach(audio => {
-        audio.volume = 0.5; // 50% volume
-        audio.preload = 'auto';
-      });
-
-      // krikGori: replay only if still at krivaya when it ends
+      // krikGori gets special ended handler FIRST (before general config)
       audioTracks.krikGori.addEventListener('ended', () => {
         const krivayaPage = document.getElementById('krivaya');
         if (krivayaPage && krivayaPage.classList.contains('active')) {
@@ -3548,8 +3604,20 @@
           audioTracks.krikGori.play();
         } else {
           console.log('✅ krikGori ended, not at krivaya - stopping');
+          audioTracks.krikGori.currentTime = 0; // Reset for next time
         }
       });
+
+      // Configure other audio tracks (nuPogodi only)
+      audioTracks.nuPogodi.volume = 0.5;
+      audioTracks.nuPogodi.preload = 'auto';
+      audioTracks.nuPogodi.addEventListener('ended', () => {
+        audioTracks.nuPogodi.currentTime = 0;
+      });
+
+      // Set krikGori config (volume/preload) without additional ended handler
+      audioTracks.krikGori.volume = 0.5;
+      audioTracks.krikGori.preload = 'auto';
 
       function playTrack(trackName) {
         const track = audioTracks[trackName];

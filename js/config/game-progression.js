@@ -163,18 +163,18 @@ export const PROGRESSION = {
     todo: 'Spiel noch zu überlegen'
   },
 
-  // Level 11: Home (Finale)
+  // Level 11: Home
   'home': {
     level: 11,
     displayName: 'Home',
     game: 'final-game',
     collectible: 'key',
-    missionAfter: '✓ Alle Orte erforscht! Du hast alle Erinnerungen gesammelt.',
-    unlocks: [],
+    missionAfter: 'Gehe nun zur Tanke. Beeil dich!',
+    unlocks: ['tanke'],
     character: null,
-    dialogue: 'Du hast es geschafft!',
+    dialogue: null,
     buttonVisible: true,
-    isFinal: true
+    isFinal: false
   }
 };
 

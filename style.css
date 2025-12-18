@@ -402,7 +402,8 @@ body.app-ready .page {
 }
 
 /* Mission box on landing page - absolute positioning with animation */
-#landing-page .riddle-note {
+#landing-page .riddle-note,
+#landing-page .location-message-box {
   position: absolute;
   bottom: 100px;
   left: 20px;
