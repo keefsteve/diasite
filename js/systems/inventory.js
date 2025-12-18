@@ -144,14 +144,10 @@ class InventoryManager {
     document.body.appendChild(container);
     console.log('✅ Animation container added to body');
 
-    // Animation durations: nudeCalendar longer (3s), snail/nesquik should use flash messages (not this), others normal (1.5s)
+    // Animation durations: all items get collectible-box animation
     let animDuration = 1500;
     if (itemId === 'nudeCalendar') {
-      animDuration = 3000;
-    } else if (itemId === 'snail' || itemId === 'nesquik') {
-      // These should be added via flash messages, not collectible animation
-      // But if they do get here, show for 0.8s
-      animDuration = 800;
+      animDuration = 3000; // Longer for nudeCalendar
     }
 
     // Remove after animation

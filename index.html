@@ -1820,7 +1820,7 @@
             <!-- Menu Header -->
             <div style="background:var(--warm-brown);border:3px solid #000;padding:15px;margin-bottom:20px;box-shadow:4px 4px 0 #000;">
               <h3 style="margin:0;font-family:'Nineteen Ninety Seven',monospace;font-size:1.5rem;color:#fff;text-align:center;">
-                🏠 HOME SYSTEM v1.0
+                HOME SYSTEM v1.0
               </h3>
               <div style="text-align:center;font-size:0.8rem;color:#f0f0f0;margin-top:5px;">
                 <span id="home-current-time"></span>
@@ -1829,21 +1829,24 @@
 
             <!-- Main Menu Tabs -->
             <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
-              <button onclick="showHomeSection('polaroids')" class="home-menu-btn" style="flex:1;min-width:150px;background:var(--terracotta);color:#333;border:3px solid #000;padding:12px;font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;cursor:pointer;box-shadow:4px 4px 0 #000;transition:all 0.1s;" onmouseover="this.style.transform='translate(2px,2px)';this.style.boxShadow='2px 2px 0 #000'" onmouseout="this.style.transform='';this.style.boxShadow='4px 4px 0 #000'">
-                📷 POLAROIDS
+              <button onclick="showHomeSection('polaroids')" class="home-menu-btn" style="flex:1;min-width:120px;background:var(--terracotta);color:#333;border:3px solid #000;padding:12px;font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;cursor:pointer;box-shadow:4px 4px 0 #000;transition:all 0.1s;" onmouseover="this.style.transform='translate(2px,2px)';this.style.boxShadow='2px 2px 0 #000'" onmouseout="this.style.transform='';this.style.boxShadow='4px 4px 0 #000'">
+                POLAROIDS
               </button>
-              <button onclick="showHomeSection('messages')" class="home-menu-btn" style="flex:1;min-width:150px;background:var(--sky-blue);color:#333;border:3px solid #000;padding:12px;font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;cursor:pointer;box-shadow:4px 4px 0 #000;transition:all 0.1s;" onmouseover="this.style.transform='translate(2px,2px)';this.style.boxShadow='2px 2px 0 #000'" onmouseout="this.style.transform='';this.style.boxShadow='4px 4px 0 #000'">
-                🎙️ MESSAGES
+              <button onclick="showHomeSection('messages')" class="home-menu-btn" style="flex:1;min-width:120px;background:var(--sky-blue);color:#333;border:3px solid #000;padding:12px;font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;cursor:pointer;box-shadow:4px 4px 0 #000;transition:all 0.1s;" onmouseover="this.style.transform='translate(2px,2px)';this.style.boxShadow='2px 2px 0 #000'" onmouseout="this.style.transform='';this.style.boxShadow='4px 4px 0 #000'">
+                MESSAGES
               </button>
-              <button onclick="showHomeSection('stats')" class="home-menu-btn" style="flex:1;min-width:150px;background:var(--soft-orange);color:#333;border:3px solid #000;padding:12px;font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;cursor:pointer;box-shadow:4px 4px 0 #000;transition:all 0.1s;" onmouseover="this.style.transform='translate(2px,2px)';this.style.boxShadow='2px 2px 0 #000'" onmouseout="this.style.transform='';this.style.boxShadow='4px 4px 0 #000'">
-                📊 STATS
+              <button onclick="showHomeSection('souvenirs')" class="home-menu-btn" style="flex:1;min-width:120px;background:var(--forest);color:#fff;border:3px solid #000;padding:12px;font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;cursor:pointer;box-shadow:4px 4px 0 #000;transition:all 0.1s;" onmouseover="this.style.transform='translate(2px,2px)';this.style.boxShadow='2px 2px 0 #000'" onmouseout="this.style.transform='';this.style.boxShadow='4px 4px 0 #000'">
+                SOUVENIRS
+              </button>
+              <button onclick="showHomeSection('stats')" class="home-menu-btn" style="flex:1;min-width:120px;background:var(--soft-orange);color:#333;border:3px solid #000;padding:12px;font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;cursor:pointer;box-shadow:4px 4px 0 #000;transition:all 0.1s;" onmouseover="this.style.transform='translate(2px,2px)';this.style.boxShadow='2px 2px 0 #000'" onmouseout="this.style.transform='';this.style.boxShadow='4px 4px 0 #000'">
+                STATS
               </button>
             </div>
 
             <!-- Polaroids Section -->
             <div id="home-section-polaroids" class="home-section" style="display:block;">
               <div style="background:var(--paper-white);border:3px solid #000;padding:20px;box-shadow:4px 4px 0 #000;">
-                <h4 style="margin:0 0 15px 0;font-family:'Nineteen Ninety Seven',monospace;color:#333;">📷 Photo Gallery</h4>
+                <h4 style="margin:0 0 15px 0;font-family:'Nineteen Ninety Seven',monospace;color:#333;">Photo Gallery</h4>
                 <div id="home-polaroid-timeline" style="max-height:400px;overflow-y:auto;"></div>
               </div>
             </div>
@@ -1851,12 +1854,12 @@
             <!-- Voice Messages Section -->
             <div id="home-section-messages" class="home-section" style="display:none;">
               <div style="background:var(--paper-white);border:3px solid #000;padding:20px;box-shadow:4px 4px 0 #000;">
-                <h4 style="margin:0 0 15px 0;font-family:'Nineteen Ninety Seven',monospace;color:#333;">🎙️ Voice Messages</h4>
+                <h4 style="margin:0 0 15px 0;font-family:'Nineteen Ninety Seven',monospace;color:#333;">Voice Messages</h4>
 
                 <!-- Record Button -->
                 <div style="text-align:center;margin-bottom:20px;">
                   <button id="record-voice-btn" onclick="toggleVoiceRecording()" style="background:#ff4444;color:#fff;border:3px solid #000;padding:15px 30px;font-family:'Nineteen Ninety Seven',monospace;font-size:1.1rem;cursor:pointer;box-shadow:4px 4px 0 #000;">
-                    🔴 RECORD MESSAGE
+                    RECORD MESSAGE
                   </button>
                   <div id="recording-status" style="margin-top:10px;font-family:'Nineteen Ninety Seven',monospace;color:#666;"></div>
                 </div>
@@ -1869,8 +1872,19 @@
             <!-- Stats Section -->
             <div id="home-section-stats" class="home-section" style="display:none;">
               <div style="background:var(--paper-white);border:3px solid #000;padding:20px;box-shadow:4px 4px 0 #000;">
-                <h4 style="margin:0 0 15px 0;font-family:'Nineteen Ninety Seven',monospace;color:#333;">📊 Game Statistics</h4>
+                <h4 style="margin:0 0 15px 0;font-family:'Nineteen Ninety Seven',monospace;color:#333;">Game Statistics</h4>
                 <div id="home-stats-content"></div>
+              </div>
+            </div>
+
+            <!-- Souvenirs Section -->
+            <div id="home-section-souvenirs" class="home-section" style="display:none;">
+              <div style="background:var(--paper-white);border:3px solid #000;padding:20px;box-shadow:4px 4px 0 #000;">
+                <h4 style="margin:0 0 15px 0;font-family:'Nineteen Ninety Seven',monospace;color:#333;">Souvenir Schublade</h4>
+                <p style="font-size:0.9rem;color:#666;margin-bottom:15px;">Klicke auf ein Item im Inventar um es hier abzulegen.</p>
+                <div id="home-souvenirs-display" style="display:flex;flex-wrap:wrap;gap:15px;min-height:200px;background:rgba(232,223,208,0.3);padding:15px;border-radius:8px;">
+                  <!-- Souvenirs werden hier angezeigt -->
+                </div>
               </div>
             </div>
 
@@ -1904,6 +1918,7 @@
 
         if (section === 'polaroids') loadPolaroidTimeline();
         if (section === 'messages') loadVoiceMessages();
+        if (section === 'souvenirs') loadSouvenirs();
         if (section === 'stats') loadStats();
       };
 
@@ -2115,6 +2130,98 @@
             </div>
           </div>
         `;
+      }
+
+      function loadSouvenirs() {
+        const souvenirs = window.DiasiteState.home?.souvenirs || [];
+        const container = document.getElementById('home-souvenirs-display');
+        
+        if (souvenirs.length === 0) {
+          container.innerHTML = '<p style="color:#999;font-style:italic;text-align:center;width:100%;">Noch keine Souvenirs abgelegt.</p>';
+          return;
+        }
+
+        container.innerHTML = souvenirs.map(item => {
+          const spriteMap = {
+            'magnifying-glass': '/assets/sprites/objects/lupe.png',
+            'camera': '/assets/sprites/objects/cam.png',
+            'nudeCalendar': '/assets/sprites/objects/nudeCalendar.png',
+            'snail': '/assets/sprites/objects/schnecke.png',
+            'nesquik': '/assets/sprites/objects/nesquik.png',
+            'salamander': '/assets/sprites/objects/salamanderKopf.png',
+            'yellow-shorts': '/assets/sprites/objects/boxers.png',
+          };
+          
+          const sprite = spriteMap[item] || '/assets/sprites/objects/default.png';
+          
+          return `
+            <div style="
+              width:80px;
+              height:80px;
+              background:white;
+              border:2px solid #000;
+              box-shadow:2px 2px 0 #000;
+              display:flex;
+              align-items:center;
+              justify-content:center;
+              padding:5px;
+            ">
+              <img src="${sprite}" alt="${item}" style="max-width:100%;max-height:100%;image-rendering:pixelated;">
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Enable souvenir placement when on home location
+      window.addEventListener('inventoryUpdated', () => {
+        const currentLocation = window.DiasiteState?.currentLocation;
+        if (currentLocation === 'home') {
+          enableSouvenirPlacement();
+        }
+      });
+
+      function enableSouvenirPlacement() {
+        setTimeout(() => {
+          const inventoryItems = document.querySelectorAll('.inventory-item');
+          inventoryItems.forEach(item => {
+            if (item.dataset.souvenirHandlerAdded) return;
+            item.dataset.souvenirHandlerAdded = 'true';
+            
+            item.style.cursor = 'pointer';
+            item.title = 'Klicke um als Souvenir abzulegen';
+            
+            item.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const itemId = item.dataset.item;
+              if (itemId && window.DiasiteState.currentLocation === 'home') {
+                placeSouvenir(itemId);
+              }
+            });
+          });
+        }, 100);
+      }
+
+      function placeSouvenir(itemId) {
+        if (!window.DiasiteState.home) window.DiasiteState.home = {};
+        if (!window.DiasiteState.home.souvenirs) window.DiasiteState.home.souvenirs = [];
+        
+        if (window.DiasiteState.home.souvenirs.includes(itemId)) {
+          window.flashMessage('Souvenir bereits abgelegt!', 1500);
+          return;
+        }
+        
+        const removed = window.DiasiteInventory.removeItem(itemId);
+        if (removed) {
+          window.DiasiteState.home.souvenirs.push(itemId);
+          window.DiasiteStorage.saveState();
+          
+          window.flashMessage(`${itemId} als Souvenir abgelegt!`, 1500);
+          
+          const souvenirSection = document.getElementById('home-section-souvenirs');
+          if (souvenirSection && souvenirSection.style.display !== 'none') {
+            loadSouvenirs();
+          }
+        }
       }
 
       // Initialize when home page becomes active
@@ -2563,14 +2670,14 @@
               gameRunning = false;
               clearInterval(gameInterval);
 
-              // Add collectibles to inventory with flash messages
+              // Add collectibles to inventory with collectible-box animation
               if (window.DiasiteInventory) {
                 setTimeout(() => {
                   window.DiasiteInventory.addItem('snail');
                 }, 500);
                 setTimeout(() => {
                   window.DiasiteInventory.addItem('nesquik');
-                }, 1500);
+                }, 2500); // After snail animation ends
               }
 
               window.gameManager && window.gameManager.markWon('snails');
@@ -2602,18 +2709,13 @@
             gameRunning = false;
             clearInterval(gameInterval);
 
-            // Add items as flash messages sequentially
-            if (window.flashMessage) {
-              window.flashMessage('Schnecke erhalten!', 1200);
+            // Add items with collectible-box animation
+            if (window.DiasiteInventory) {
+              window.DiasiteInventory.addItem('snail');
+              setTimeout(() => {
+                window.DiasiteInventory.addItem('nesquik');
+              }, 1700);
             }
-            window.DiasiteState.player.inventory.push('snail');
-            setTimeout(() => {
-              if (window.flashMessage) {
-                window.flashMessage('Nesquik erhalten!', 1200);
-              }
-              window.DiasiteState.player.inventory.push('nesquik');
-              window.dispatchEvent(new CustomEvent('inventoryUpdated'));
-            }, 1300);
 
             window.gameManager && window.gameManager.markWon('snails');
 
