@@ -739,7 +739,7 @@ body.app-ready .page {
   white-space: normal;
 }
 /* CHANGE POSITION SPRITE JEN STEVE*/
-.location-sprites { 
+.location-sprites {
   display: flex;
   gap: 10px;
   flex-shrink: 0;
@@ -748,6 +748,11 @@ body.app-ready .page {
   width: 400px;
   position: relative;
   margin-bottom: -200px;
+}
+
+/* Home page: limit sprites container to left 65% */
+#home .location-sprites {
+  max-width: 65%;
 }
 
 .location-sprites .jen-sprite {

@@ -13,9 +13,9 @@ class InventoryManager {
     this.uncollectedList = null;
     this.selectedItem = null;
     
+    // Only accept items with image files (no emoji-only items)
     this.allCollectibles = [
-      'key', 'salamander', 'blanket', 'pasxa',
-      'wet-clothes', 'yellow-shorts', 'snail', 'sheep', 'nudeCalendar', 'magnifying-glass', 'nesquik'
+      'nudeCalendar', 'salamander', 'magnifying-glass', 'nesquik', 'snail'
     ];
   }
   
@@ -37,6 +37,12 @@ class InventoryManager {
   
   // Add item to inventory
   addItem(itemId) {
+    // Only accept items with images (no emoji-only items)
+    if (!this.allCollectibles.includes(itemId)) {
+      console.log(`⚠️ Item ${itemId} rejected - not in allCollectibles (emoji-only)`);
+      return false;
+    }
+
     const added = state.addToInventory(itemId);
 
     if (added) {
@@ -111,25 +117,17 @@ class InventoryManager {
       itemName = itemId;
     }
 
-    // Check if image exists for this item
-    const imagePath = `/assets/sprites/objects/${itemId}.png`;
+    // Map item IDs to image filenames
+    const imageMap = {
+      'nudeCalendar': 'nudeCalendar.png',
+      'salamander': 'salamanderKopf.png',
+      'magnifying-glass': 'lupe.png',
+      'nesquik': 'nesquik.png',
+      'snail': 'schnecke.png'
+    };
 
-    // Use image if available, fallback to emoji
-    if (itemId === 'nudeCalendar' || itemId === 'salamander' || itemId === 'key') {
-      displayContent = `<img src="${imagePath}" alt="${itemName}" class="collectible-image" />`;
-    } else {
-      // Fallback emojis
-      const emojiMap = {
-        'blanket': '🛏️',
-        'pasxa': '🍰',
-        'wet-clothes': '👔💧',
-        'yellow-shorts': '🩳🇧🇷',
-        'snail': '🐌',
-        'sheep': '🐑'
-      };
-      const emoji = emojiMap[itemId] || '📦';
-      displayContent = `<div class="collectible-emoji">${emoji}</div>`;
-    }
+    const imagePath = `/assets/sprites/objects/${imageMap[itemId] || itemId + '.png'}`;
+    displayContent = `<img src="${imagePath}" alt="${itemName}" class="collectible-image" />`;
 
     // Create animation container
     const container = document.createElement('div');
@@ -162,50 +160,62 @@ class InventoryManager {
     }, animDuration);
   }
   
-  // Render inventory UI
+  // Render inventory UI - always show all slots
   render() {
     if (!this.itemsContainer) return;
-    
-    this.itemsContainer.innerHTML = '';
-    
-    state.player.inventory.forEach(itemId => {
-      const itemEl = document.createElement('div');
-      itemEl.className = 'item';
-      itemEl.dataset.id = itemId;
-      
-      // Get translated name
-      const itemName = i18n.t(`collectibles.${itemId}`);
-      itemEl.title = itemName; // Full name on hover
-      
-      // All items as sprites (no emojis)
-      const spriteMap = {
-        'magnifying-glass': '/assets/sprites/objects/lupe.png',
-        'yellow-shorts': '/assets/sprites/objects/boxers.png',
-        'camera': '/assets/sprites/objects/cam.png',
-        'nudeCalendar': '/assets/sprites/objects/nudeCalendar.png',
-        'snail': '/assets/sprites/objects/schnecke.png',
-        'nesquik': '/assets/sprites/objects/nesquik.png',
-        'sheep': '/assets/sprites/objects/sheep.png',
-        'blanket': '/assets/sprites/objects/blanket.png',
-      };
 
-      // Use sprite if available, otherwise try PNG with itemId name
-      const spriteSrc = spriteMap[itemId] || `/assets/sprites/objects/${itemId}.png`;
-      
-      const img = document.createElement('img');
-      img.src = spriteSrc;
-      img.alt = itemName;
-      img.style.cssText = 'width:32px;height:32px;max-width:32px;max-height:32px;object-fit:contain;image-rendering:pixelated;display:block;';
-      img.onerror = () => {
-        // Fallback to emoji if sprite not found
-        itemEl.innerHTML = '';
-        itemEl.textContent = itemName.split(' ')[0];
-      };
-      itemEl.appendChild(img);
-      
-      // Click to select
-      itemEl.addEventListener('click', () => this.selectItem(itemId, itemEl));
-      
+    this.itemsContainer.innerHTML = '';
+
+    // Map item IDs to image filenames
+    const spriteMap = {
+      'magnifying-glass': '/assets/sprites/objects/lupe.png',
+      'nudeCalendar': '/assets/sprites/objects/nudeCalendar.png',
+      'snail': '/assets/sprites/objects/schnecke.png',
+      'nesquik': '/assets/sprites/objects/nesquik.png',
+      'salamander': '/assets/sprites/objects/salamanderKopf.png',
+    };
+
+    // Show ALL collectible slots (collected + uncollected)
+    this.allCollectibles.forEach(itemId => {
+      const isCollected = state.player.inventory.includes(itemId);
+
+      const itemEl = document.createElement('div');
+      itemEl.className = isCollected ? 'item' : 'item empty';
+      itemEl.dataset.id = itemId;
+
+      // Get translated name
+      let itemName = itemId;
+      try {
+        itemName = i18n.t(`collectibles.${itemId}`);
+      } catch (e) {
+        // Fallback to ID
+      }
+      itemEl.title = isCollected ? itemName : `??? (${itemName})`; // Full name on hover
+
+      if (isCollected) {
+        // Show actual item sprite
+        const spriteSrc = spriteMap[itemId] || `/assets/sprites/objects/${itemId}.png`;
+
+        const img = document.createElement('img');
+        img.src = spriteSrc;
+        img.alt = itemName;
+        img.style.cssText = 'width:32px;height:32px;max-width:32px;max-height:32px;object-fit:contain;image-rendering:pixelated;display:block;';
+        img.onerror = () => {
+          // Fallback if sprite not found
+          itemEl.innerHTML = '';
+          itemEl.textContent = '?';
+        };
+        itemEl.appendChild(img);
+
+        // Click to select
+        itemEl.addEventListener('click', () => this.selectItem(itemId, itemEl));
+      } else {
+        // Show empty slot placeholder
+        itemEl.textContent = '?';
+        itemEl.style.opacity = '0.3';
+        itemEl.style.cursor = 'default';
+      }
+
       this.itemsContainer.appendChild(itemEl);
     });
   }

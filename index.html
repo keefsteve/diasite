@@ -83,7 +83,6 @@
     <div class="center-text">
       <h1 class="parent-title"></h1>
     </div>
-    <div class="object" data-id="key" data-page="landing" style="left:50%;top:60%">🔑</div>
     <div class="object" data-id="salamander" data-page="landing" style="left:23%;top:12%;display:none;">🦎</div>
     <div class="object" data-id="blanket" data-page="landing" style="left:68%;top:25%;display:none;">🛏️</div>
     <div class="object" data-id="pasxa" data-page="landing" style="left:35%;top:82%;display:none;">🍰</div>
@@ -100,17 +99,17 @@
     </div>
 
     <!-- Map GPS COORDINATES Hotspots -->
-    <button class="map-hotspot" data-target="fountain" style="left:58%;top:4%"></button>
+    <button class="map-hotspot" data-target="fountain" style="left:57%;top:4%"></button>
     <button class="map-hotspot" data-target="oma-opa-shnol" style="left:57%;top:82%"></button>
     <button class="map-hotspot" data-target="snails" style="left:64%;top:80%"></button>
     <button class="map-hotspot" data-target="krivaya" style="left:41%;top:47%"></button>
     <!-- ADJUST THESE COORDINATES: left:X%;top:Y% where X is horizontal (0-100) and Y is vertical (0-100) -->
-    <button class="map-hotspot" data-target="oma-opa-morg" style="left:52%;top:11%"></button>
+    <button class="map-hotspot" data-target="oma-opa-morg" style="left:53%;top:11%"></button>
     <button class="map-hotspot" data-target="oma-shelya" style="left:37%;top:27%"></button>
-    <button class="map-hotspot" data-target="bunker" style="left:32%;top:20%"></button>
-    <button class="map-hotspot" data-target="school" style="left:27%;top:20%"></button>
-    <button class="map-hotspot" data-target="tanke" style="left:28%;top:22%"></button>
-    <button class="map-hotspot locked" data-target="home" style="left:27%;top:15%"></button>
+    <button class="map-hotspot" data-target="bunker" style="left:25%;top:20%"></button>
+    <button class="map-hotspot" data-target="school" style="left:19%;top:20%"></button>
+    <button class="map-hotspot" data-target="tanke" style="left:16%;top:15%"></button>
+    <button class="map-hotspot locked" data-target="home" style="left:24%;top:18%"></button>
 
     <!-- Hot/Cold Tracker -->
     <div id="hotcold-tracker"></div>
@@ -1603,7 +1602,7 @@
       let gameActive = false;
       let correctCount = 0;
       const NEEDED = 13;
-      const TIME_LIMIT = 20;
+      const TIME_LIMIT = 22;
       let startTime = null;
       let timerInterval = null;
       let currentPair = null;
@@ -1986,9 +1985,14 @@
 
           mediaRecorder.onstop = () => {
             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-            const audioUrl = URL.createObjectURL(audioBlob);
-            saveVoiceMessage(audioUrl);
-            stream.getTracks().forEach(track => track.stop());
+
+            // Convert blob to base64 for persistent storage
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              saveVoiceMessage(reader.result); // Save as base64 data URL
+              stream.getTracks().forEach(track => track.stop());
+            };
+            reader.readAsDataURL(audioBlob);
           };
 
           mediaRecorder.start();
@@ -3516,6 +3520,110 @@
     });
 
     observer.observe(document.body, { childList: true, subtree: false });
+  </script>
+
+  <script>
+    // ===== GLOBAL MUSIC SYSTEM =====
+    (function() {
+      const audioTracks = {
+        nuPogodi: new Audio('/assets/audio/nuPogodi.mp3'),
+        krikGori: new Audio('/assets/audio/krikGori.mp3')
+      };
+
+      let currentTrack = null;
+      let musicStarted = false;
+      let krikGoriHasPlayed = false;
+
+      // Configure audio tracks
+      Object.values(audioTracks).forEach(audio => {
+        audio.volume = 0.5; // 50% volume
+        audio.preload = 'auto';
+      });
+
+      // krikGori: replay only if still at krivaya when it ends
+      audioTracks.krikGori.addEventListener('ended', () => {
+        const krivayaPage = document.getElementById('krivaya');
+        if (krivayaPage && krivayaPage.classList.contains('active')) {
+          console.log('🔁 krikGori ended, still at krivaya - replaying');
+          audioTracks.krikGori.play();
+        } else {
+          console.log('✅ krikGori ended, not at krivaya - stopping');
+        }
+      });
+
+      function playTrack(trackName) {
+        const track = audioTracks[trackName];
+        if (!track) return;
+
+        // krikGori: only play once (unless replayed by 'ended' listener)
+        if (trackName === 'krikGori' && krikGoriHasPlayed && !track.paused) {
+          console.log(`🎵 krikGori already played once`);
+          return;
+        }
+
+        // If same track is already playing, do nothing
+        if (currentTrack === trackName && !track.paused) {
+          console.log(`🎵 ${trackName} already playing`);
+          return;
+        }
+
+        // Stop current track if different
+        if (currentTrack && currentTrack !== trackName) {
+          const oldTrack = audioTracks[currentTrack];
+          oldTrack.pause();
+          oldTrack.currentTime = 0;
+          console.log(`🛑 Stopped ${currentTrack}`);
+        }
+
+        // Play new track
+        currentTrack = trackName;
+        track.currentTime = 0;
+        track.play().catch(err => {
+          console.warn(`Could not play ${trackName}:`, err);
+        });
+
+        if (trackName === 'krikGori') {
+          krikGoriHasPlayed = true;
+        }
+
+        console.log(`▶️ Playing ${trackName}`);
+      }
+
+      // Start nuPogodi when entering from welcome.html or on first interaction
+      function startBackgroundMusic() {
+        if (!musicStarted) {
+          musicStarted = true;
+          playTrack('nuPogodi');
+        }
+      }
+
+      // Watch for page changes
+      const observer = new MutationObserver(() => {
+        const krivayaPage = document.getElementById('krivaya');
+        const landingPage = document.getElementById('landing-page');
+
+        // Start music when landing page becomes active (from welcome.html)
+        if (landingPage && landingPage.classList.contains('active') && !musicStarted) {
+          startBackgroundMusic();
+        }
+
+        // Switch to krikGori when krivaya becomes active
+        if (krivayaPage && krivayaPage.classList.contains('active')) {
+          playTrack('krikGori');
+        }
+      });
+
+      observer.observe(document.body, {
+        attributes: true,
+        subtree: true,
+        attributeFilter: ['class']
+      });
+
+      // Start music on any user interaction (fallback for autoplay policy)
+      document.addEventListener('click', startBackgroundMusic, { once: true });
+
+      console.log('✅ Music system initialized');
+    })();
   </script>
 </body>
 </html>

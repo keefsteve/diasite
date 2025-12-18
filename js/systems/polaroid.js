@@ -16,7 +16,8 @@ class PolaroidSystem {
   }
   
   init() {
-    this.setupHomeGallery();
+    // Disabled: duplicate of home menu system Polaroids tab
+    // this.setupHomeGallery();
     console.log('✅ Polaroid system initialized');
   }
   
