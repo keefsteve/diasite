@@ -80,45 +80,25 @@ class CharacterDialogue {
   }
 
   createBubble(character, text) {
-    const color = character === 'jen' ? '#ff69b4' : '#667eea';
+    // Player characters use terracotta, NPCs use sky-blue
+    const isPlayer = ['steve', 'jen'].includes(character);
+    const bgColor = isPlayer ? 'var(--terracotta)' : 'var(--sky-blue)';
+    const textColor = isPlayer ? '#fff' : '#333';
 
     const bubble = document.createElement('div');
     bubble.innerHTML = `
       <div style="
-        position: relative;
-        background: white;
-        padding: 18px 24px;
-        border-radius: 20px;
-        border: 3px solid ${color};
-        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        background: ${bgColor};
+        color: ${textColor};
+        padding: 15px 25px;
+        border: 3px solid #000;
         font-family: 'Nineteen Ninety Seven', monospace;
         font-size: 1rem;
-        max-width: 380px;
+        max-width: 400px;
         text-align: left;
+        box-shadow: 4px 4px 0px #000;
       ">
         ${text}
-        <div style="
-          position: absolute;
-          left: -18px;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 0;
-          height: 0;
-          border-top: 15px solid transparent;
-          border-bottom: 15px solid transparent;
-          border-right: 18px solid ${color};
-        "></div>
-        <div style="
-          position: absolute;
-          left: -14px;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 0;
-          height: 0;
-          border-top: 12px solid transparent;
-          border-bottom: 12px solid transparent;
-          border-right: 15px solid white;
-        "></div>
       </div>
     `;
 
