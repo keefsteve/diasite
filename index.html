@@ -71,7 +71,7 @@
 
     <!-- Mission box on the right side -->
     <div id="mission-box" class="location-message-box" style="position:absolute;bottom:150px;right:40px;left:auto;max-width:380px;text-align:left;">
-      Finde den nächsten Ort.
+      Gehe nun zum Uni-Center! Versuch' Dich so zu orientieren, aber wenn das zu schwierig ist, benutze gerne die Lupe von Babushka Shelya mit -L.
     </div>
 
     <!-- Permanent Steve and Jen sprites in lower left, overlapping -->
@@ -95,10 +95,8 @@
     <div class="object" data-id="salamander" data-page="landing" style="left:23%;top:12%;display:none;">🦎</div>
     <div class="object" data-id="blanket" data-page="landing" style="left:68%;top:25%;display:none;">🛏️</div>
     <div class="object" data-id="pasxa" data-page="landing" style="left:35%;top:82%;display:none;">🍰</div>
-    <div class="object" data-id="wet-clothes" data-page="landing" style="left:80%;top:55%;display:none;">👔💧</div>
     <div class="object" data-id="yellow-shorts" data-page="landing" style="left:12%;top:45%;display:none;">🩳🇧🇷</div>
     <div class="object" data-id="snail" data-page="landing" style="left:58%;top:72%;display:none;">🐌</div>
-    <div class="object" data-id="sheep" data-page="landing" style="left:45%;top:35%;display:none;">🐑</div>
 
     <!-- Instructions Panel -->
     <div id="instructions-panel">
@@ -190,8 +188,30 @@
             'tanke': 'home'
           };
 
+          const locationNames = {
+            'snails': 'Uni-Center',
+            'oma-opa-shnol': 'Oma und Opa Shnol',
+            'krivaya': 'Krivaya Gorka',
+            'fountain': 'Fountain',
+            'oma-opa-morg': 'Oma und Opa Morg',
+            'oma-shelya': 'Oma Shelya',
+            'bunker': 'Bunker',
+            'school': 'School',
+            'home': 'Home',
+            'tanke': 'Tanke'
+          };
+
           const nextLocation = progression[e.detail.gameId];
           if (nextLocation) {
+            // Update mission box
+            const missionBox = document.getElementById('mission-box');
+            if (missionBox) {
+              const locationName = locationNames[nextLocation] || nextLocation;
+              missionBox.textContent = `Gehe nun zu: ${locationName}!`;
+              console.log(`📍 Mission updated: Go to ${locationName}`);
+            }
+
+            // Activate hot-cold tracker
             targetHotspot = document.querySelector(`[data-target="${nextLocation}"]`);
             if (targetHotspot) {
               isActive = true;
@@ -393,6 +413,25 @@
               if (!hasVisitedBotanicalGarden) {
                 console.log('🌱 First time - spawning at Botanical Garden');
 
+                // Add magnifying glass silently to inventory on first load
+                if (window.DiasiteInventory && window.DiasiteState.player && !window.DiasiteState.player.inventory.includes('magnifying-glass')) {
+                  console.log('🔍 Adding magnifying glass to inventory (silent)');
+                  window.DiasiteState.player.inventory.push('magnifying-glass');
+                  window.DiasiteInventory.render();
+                  
+                  // Save state if storage is available
+                  if (window.DiasiteStorage && typeof window.DiasiteStorage.saveState === 'function') {
+                    window.DiasiteStorage.saveState();
+                  } else {
+                    // Fallback to localStorage directly
+                    try {
+                      localStorage.setItem('diasite_state', JSON.stringify(window.DiasiteState));
+                    } catch(e) {
+                      console.warn('Could not save state:', e);
+                    }
+                  }
+                }
+
                 // Wait a bit for everything to load
                 setTimeout(() => {
                   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -457,8 +496,8 @@
         <div class="game-container" id="fountain-fishing-game" style="min-height:550px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;margin-top:-50px;">
           <canvas id="fishing-canvas" width="600" height="450" style="background:#4A90E2;border:4px solid #8b5a3c;border-radius:8px;cursor:crosshair;display:block;"></canvas>
           <div id="fishing-instructions" style="text-align:center;padding:10px 20px;">
-            <h3 style="font-size:1.5rem;color:var(--forest);margin-bottom:10px;">🎣 Finde die Kamera!</h3>
-            <p style="font-size:1rem;color:#666;margin-bottom:15px;">Eine Kamera liegt im Brunnen. Bewege den Haken mit der Maus!</p>
+            <h3 style="font-size:1.5rem;color:var(--forest);margin-bottom:10px;">Fisch das mal raus!</h3>
+            <p style="font-size:1rem;color:#666;margin-bottom:15px;">Steuere die Angel mit W - A - S - D aber Obacht, eure Hände sind tollpatschig wie Kinderhände halt so sind!</p>
           </div>
         </div>
       </div>
@@ -648,7 +687,7 @@
         ctx.drawImage(successImg, canvas.width / 2 - 30, canvas.height / 2 - 30, 60, 60);
         ctx.font = '20px Arial';
         ctx.fillStyle = '#fff';
-        ctx.fillText('Kamera gefunden!', canvas.width / 2, canvas.height / 2 + 60);
+        ctx.fillText('', canvas.width / 2, canvas.height / 2 + 60);
 
         // Add camera to inventory
         if (window.DiasiteInventory) {
@@ -854,7 +893,7 @@
 
         // Wind mechanic: changes direction every 3 seconds
         if (time % 180 === 0) {
-          windForce = (Math.random() - 0.5) * 3; // Random wind between -1.5 and 1.5
+          windForce = (Math.random() - 0.5) * 6; // Random wind between -3 and 3 (stronger!)
         }
 
         // Movement with wind
@@ -1054,7 +1093,7 @@
         </div>
 
         <div class="game-container" style="position:relative;min-height:600px;">
-          <p class="game-instructions">Dodge the belt! Dodged: <span id="belt-dodged">0</span> / 13 | Hits: <span id="belt-hits">0</span> / 9</p>
+          <p class="game-instructions" style="visibility:hidden;height:0;margin:0;padding:0;">.</p>
 
           <!-- Inventory Item Usage - Positioned absolutely to not affect layout -->
           <div id="calendar-use-button" style="
@@ -1127,8 +1166,7 @@
 
       <div class="location-message-row">
         <div class="riddle-note location-message-box">
-          Избежать ремня — вот было искусство. Каждый раз, когда бабушка считала до трёх, мы знали: надо быстро выбрать, какую половину подставить судьбе.
-        </div>
+          Ох, мы опять помогли бабушке украсть... Нас хорошенько отшлёпают! Где мама? Давайте уберёмся отсюда, не дожидаясь её!!  </div>
         <div class="location-sprites">
           <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
           <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
@@ -1195,6 +1233,13 @@
               if (landingPage) {
                 landingPage.classList.add('active');
 
+                // RADIKALER FIX: Direkt message box updaten!
+                const missionBox = document.getElementById('mission-box');
+                if (missionBox) {
+                  missionBox.textContent = 'Gehe nun zu: Krivaya Gorka!';
+                  console.log('📝 DIRECT UPDATE: Mission box set to Krivaya Gorka');
+                }
+
                 setTimeout(() => {
                   window.dispatchEvent(new CustomEvent('gameWon', {
                     detail: { gameId: 'oma-opa-shnol' }
@@ -1218,6 +1263,27 @@
     const omaPage = document.getElementById('oma-opa-shnol');
     if (omaPage) {
       calendarObserver.observe(omaPage, { attributes: true, attributeFilter: ['class'] });
+      
+      // Background music for Oma & Opa Shnol
+      let shnolAudio = null;
+      const shnolMusicObserver = new MutationObserver(() => {
+        if (omaPage.classList.contains('active')) {
+          // Start music when page becomes active
+          if (!shnolAudio) {
+            shnolAudio = new Audio('/assets/audios/nasnedagonyat.mp3');
+            shnolAudio.volume = 0.4;
+            shnolAudio.loop = true;
+          }
+          shnolAudio.play().catch(e => console.warn('Audio play failed:', e));
+        } else {
+          // Stop music when page is not active
+          if (shnolAudio) {
+            shnolAudio.pause();
+            shnolAudio.currentTime = 0;
+          }
+        }
+      });
+      shnolMusicObserver.observe(omaPage, { attributes: true, attributeFilter: ['class'] });
     }
 
     // Initial check
@@ -1312,7 +1378,7 @@
 
                 hits++;
                 currentHits = hits; // Update global counter
-                hitsEl.textContent = hits;
+                if (hitsEl) hitsEl.textContent = hits;
                 statusEl.textContent = `💥 OUCH! The belt hit your ${playerChoice} cheek!`;
                 statusEl.style.color = '#ff4444';
 
@@ -1339,7 +1405,7 @@
               } else {
                 // DODGED!
                 dodged++;
-                dodgedEl.textContent = dodged;
+                if (dodgedEl) dodgedEl.textContent = dodged;
                 statusEl.textContent = `✨ Nice dodge! The belt swung ${beltSwing}, you showed ${playerChoice}!`;
                 statusEl.style.color = 'green';
 
@@ -1358,7 +1424,7 @@
                     // Show character dialogue and navigate
                     setTimeout(() => {
                       if(window.CharacterDialogue) {
-                        window.CharacterDialogue.showDialogue('steve', 'Danke für den Besuch, Oma und Opa!', {
+                        window.CharacterDialogue.showDialogue('steve', 'Спасибо за ваше время, бабушка и дедушка! Дедушка, мы хотели кое-что вам подарить... ах, я забыл, может быть, в следующий раз!', {
                           position: 'right',
                           duration: 3000,
                           onComplete: () => {
@@ -1367,6 +1433,13 @@
                             const landingPage = document.getElementById('landing-page');
                             if (landingPage) {
                               landingPage.classList.add('active');
+
+                              // RADIKALER FIX: Direkt message box updaten!
+                              const missionBox = document.getElementById('mission-box');
+                              if (missionBox) {
+                                missionBox.textContent = 'Gehe nun zu: Krivaya Gorka!';
+                                console.log('📝 DIRECT UPDATE: Mission box set to Krivaya Gorka');
+                              }
 
                               // Dispatch gameWon
                               setTimeout(() => {
@@ -1415,7 +1488,7 @@
         if (e.code === 'KeyK' && gameActive && omaPage && omaPage.classList.contains('active')) {
           gameActive = false;
           dodged = 7;
-          dodgedEl.textContent = dodged;
+          if (dodgedEl) dodgedEl.textContent = dodged;
           statusEl.textContent = '🎉 YOU WIN! Belt-dodging master!';
           statusEl.style.color = 'green';
 
@@ -1433,7 +1506,7 @@
           // Show character dialogue and navigate
           setTimeout(() => {
             if(window.CharacterDialogue) {
-              window.CharacterDialogue.showDialogue('steve', 'Danke für den Besuch, Oma und Opa!', {
+              window.CharacterDialogue.showDialogue('steve', 'Спасибо за ваше время, бабушка и дедушка! Дедушка, мы хотели кое-что вам подарить... ах, я забыла, может быть, в следующий раз!', {
                 duration: 3000,
                 onComplete: () => {
                   // Navigate to landing page
@@ -1441,6 +1514,13 @@
                   const landingPage = document.getElementById('landing-page');
                   if (landingPage) {
                     landingPage.classList.add('active');
+
+                    // RADIKALER FIX: Direkt message box updaten!
+                    const missionBox = document.getElementById('mission-box');
+                    if (missionBox) {
+                      missionBox.textContent = 'Gehe nun zu: Krivaya Gorka!';
+                      console.log('📝 DIRECT UPDATE: Mission box set to Krivaya Gorka');
+                    }
 
                     // Dispatch gameWon
                     setTimeout(() => {
@@ -1619,12 +1699,25 @@
       const keys = {};
       let gameWon = false;
       let gameActive = false;
-      let correctCount = 0;
+      let correctCount = 0; // MUST start at 0!
       const NEEDED = 13;
       const TIME_LIMIT = 22;
       let startTime = null;
       let timerInterval = null;
       let currentPair = null;
+      
+      // RADIKALER FIX: Force reset function
+      function hardResetGame() {
+        gameWon = false;
+        gameActive = false;
+        correctCount = 0;
+        startTime = null;
+        if (timerInterval) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+        }
+        console.log('⚡ HARD RESET: All game variables cleared');
+      }
 
       const stroopPairs = [
         { word: 'grün', color: '#FFD700', answer: 'gelb' },
@@ -1642,9 +1735,16 @@
 
       const stroopObserver = new MutationObserver(() => {
         const page = document.getElementById('oma-opa-morg');
-        if (page && page.classList.contains('active') && !gameActive && !gameWon) {
-          startGame();
+        // Remove gameWon check - allow starting game even if previously won
+        if (page && page.classList.contains('active')) {
+          // RADIKALER FIX: IMMER hard reset wenn Seite aktiv wird!
+          if (!gameActive) {
+            hardResetGame();
+            console.log('🎮 Starting Stroop game FRESH with correctCount=' + correctCount);
+            startGame();
+          }
         } else if (!page || !page.classList.contains('active')) {
+          hardResetGame(); // Reset auch wenn Seite verlassen wird!
           stopGame();
         }
       });
@@ -1660,8 +1760,10 @@
         
         if (!input || !display) return;
         
+        console.log('🎮 startGame() called - correctCount BEFORE reset:', correctCount);
         gameActive = true;
         correctCount = 0;
+        console.log('🎮 startGame() - correctCount AFTER reset:', correctCount);
         startTime = Date.now();
         input.value = '';
         input.disabled = false;
@@ -1737,7 +1839,7 @@
             const restartBtn = document.getElementById('stroop-restart-btn');
             if (restartBtn) {
               restartBtn.onclick = () => {
-                gameWon = false;
+                hardResetGame(); // WICHTIG: Hard reset vor startGame!
                 status.textContent = '';
                 startGame();
               };
@@ -1781,6 +1883,14 @@
           const landingPage = document.getElementById('landing-page');
           if (landingPage) {
             landingPage.classList.add('active');
+            
+            // RADIKALER FIX: Direkt message box updaten!
+            const missionBox = document.getElementById('mission-box');
+            if (missionBox) {
+              missionBox.textContent = 'Gehe nun zu: Oma Shelya!';
+              console.log('📝 DIRECT UPDATE: Mission box set to Oma Shelya');
+            }
+            
             setTimeout(() => {
               window.dispatchEvent(new CustomEvent('gameWon', {
                 detail: { gameId: 'oma-opa-morg' }
@@ -1901,6 +2011,25 @@
           <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
         </div>
       </div>
+
+      <!-- Gästebuch Section -->
+      <div style="margin-top:30px;padding:20px;background:rgba(255,255,255,0.9);border:3px solid #000;box-shadow:4px 4px 0 #000;max-width:800px;margin-left:auto;margin-right:auto;">
+        <h3 style="margin:0 0 20px 0;font-family:'Nineteen Ninety Seven',monospace;text-align:center;color:#333;border-bottom:3px solid #000;padding-bottom:10px;">
+          📖 GÄSTEBUCH
+        </h3>
+        
+        <!-- Gästebuch Entry Form -->
+        <div style="background:var(--paper-white);border:2px solid #666;padding:15px;margin-bottom:20px;">
+          <input type="text" id="guestbook-name" placeholder="Dein Name..." style="width:100%;padding:10px;margin-bottom:10px;font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;border:2px solid #666;border-radius:4px;" />
+          <textarea id="guestbook-message" placeholder="Schreibe eine Nachricht..." style="width:100%;padding:10px;margin-bottom:10px;font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;border:2px solid #666;border-radius:4px;resize:vertical;min-height:80px;"></textarea>
+          <button onclick="addGuestbookEntry()" style="background:var(--terracotta);color:#fff;border:3px solid #000;padding:12px 30px;font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;cursor:pointer;box-shadow:4px 4px 0 #000;width:100%;">
+            ✍️ EINTRAGEN
+          </button>
+        </div>
+
+        <!-- Gästebuch Entries -->
+        <div id="guestbook-entries" style="max-height:400px;overflow-y:auto;"></div>
+      </div>
     </div>
   </div>
 
@@ -1962,19 +2091,19 @@
         let html = '';
 
         if (today.length > 0) {
-          html += '<div style="margin-bottom:20px;"><h5 style="font-family:\'Nineteen Ninety Seven\',monospace;color:#333;border-bottom:2px solid #000;padding-bottom:5px;">📅 HEUTE</h5>';
+          html += '<div style="margin-bottom:20px;"><h5 style="font-family:\'Nineteen Ninety Seven\',monospace;color:#333;border-bottom:2px solid #000;padding-bottom:5px;">HEUTE</h5>';
           html += renderPhotoGrid(today);
           html += '</div>';
         }
 
         if (thisWeek.length > 0) {
-          html += '<div style="margin-bottom:20px;"><h5 style="font-family:\'Nineteen Ninety Seven\',monospace;color:#333;border-bottom:2px solid #000;padding-bottom:5px;">📅 DIESE WOCHE</h5>';
+          html += '<div style="margin-bottom:20px;"><h5 style="font-family:\'Nineteen Ninety Seven\',monospace;color:#333;border-bottom:2px solid #000;padding-bottom:5px;">DIESE WOCHE</h5>';
           html += renderPhotoGrid(thisWeek);
           html += '</div>';
         }
 
         if (older.length > 0) {
-          html += '<div style="margin-bottom:20px;"><h5 style="font-family:\'Nineteen Ninety Seven\',monospace;color:#333;border-bottom:2px solid #000;padding-bottom:5px;">📅 ÄLTER</h5>';
+          html += '<div style="margin-bottom:20px;"><h5 style="font-family:\'Nineteen Ninety Seven\',monospace;color:#333;border-bottom:2px solid #000;padding-bottom:5px;">ÄLTER</h5>';
           html += renderPhotoGrid(older);
           html += '</div>';
         }
@@ -2229,12 +2358,111 @@
         const homePage = document.getElementById('home');
         if (homePage && homePage.classList.contains('active')) {
           loadPolaroidTimeline();
+          loadGuestbook(); // Load guestbook entries
         }
       });
 
       const homePage = document.getElementById('home');
       if (homePage) {
         homeObserver.observe(homePage, { attributes: true, attributeFilter: ['class'] });
+      }
+    })();
+
+    // ===== GÄSTEBUCH SYSTEM =====
+    (function() {
+      window.addGuestbookEntry = function() {
+        const nameInput = document.getElementById('guestbook-name');
+        const messageInput = document.getElementById('guestbook-message');
+        
+        const name = nameInput.value.trim();
+        const message = messageInput.value.trim();
+        
+        if (!name || !message) {
+          window.flashMessage('Bitte Name und Nachricht eingeben!', 1500);
+          return;
+        }
+        
+        // Create entry
+        const entry = {
+          id: Date.now(),
+          name: name,
+          message: message,
+          timestamp: new Date().toISOString()
+        };
+        
+        // Load existing entries
+        const entries = JSON.parse(localStorage.getItem('diasite_guestbook') || '[]');
+        entries.unshift(entry); // Add to beginning
+        
+        // Save
+        localStorage.setItem('diasite_guestbook', JSON.stringify(entries));
+        
+        // Clear inputs
+        nameInput.value = '';
+        messageInput.value = '';
+        
+        // Reload display
+        loadGuestbook();
+        
+        window.flashMessage('✅ Eintrag gespeichert!', 1500);
+      };
+      
+      window.loadGuestbook = function() {
+        const container = document.getElementById('guestbook-entries');
+        if (!container) return;
+        
+        const entries = JSON.parse(localStorage.getItem('diasite_guestbook') || '[]');
+        
+        if (entries.length === 0) {
+          container.innerHTML = '<p style="text-align:center;color:#999;font-style:italic;padding:20px;">Noch keine Einträge. Sei der Erste!</p>';
+          return;
+        }
+        
+        container.innerHTML = entries.map(entry => {
+          const date = new Date(entry.timestamp);
+          const dateStr = date.toLocaleDateString('de-DE', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          
+          return `
+            <div style="
+              background:var(--paper-white);
+              border:2px solid #666;
+              padding:15px;
+              margin-bottom:15px;
+              box-shadow:3px 3px 0 rgba(0,0,0,0.1);
+              position:relative;
+            ">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;border-bottom:1px solid #ddd;padding-bottom:5px;">
+                <strong style="font-family:'Nineteen Ninety Seven',monospace;color:#333;font-size:1.1rem;">${escapeHtml(entry.name)}</strong>
+                <span style="font-family:'Nineteen Ninety Seven',monospace;color:#999;font-size:0.85rem;">${dateStr}</span>
+              </div>
+              <p style="margin:0;font-family:'Nineteen Ninety Seven',monospace;color:#555;line-height:1.5;white-space:pre-wrap;">${escapeHtml(entry.message)}</p>
+              <button onclick="deleteGuestbookEntry(${entry.id})" style="position:absolute;top:10px;right:10px;background:#ff4444;color:#fff;border:2px solid #cc0000;padding:5px 10px;font-family:'Nineteen Ninety Seven',monospace;font-size:0.8rem;cursor:pointer;border-radius:3px;">🗑️</button>
+            </div>
+          `;
+        }).join('');
+      };
+      
+      window.deleteGuestbookEntry = function(id) {
+        if (!confirm('Eintrag wirklich löschen?')) return;
+        
+        let entries = JSON.parse(localStorage.getItem('diasite_guestbook') || '[]');
+        entries = entries.filter(e => e.id !== id);
+        localStorage.setItem('diasite_guestbook', JSON.stringify(entries));
+        
+        loadGuestbook();
+        window.flashMessage('🗑️ Eintrag gelöscht', 1500);
+      };
+      
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
       }
     })();
   </script>
@@ -3070,18 +3298,18 @@
           shelyaSpriteElement.style.right = '250px';
           shelyaSpriteElement.style.animation = 'characterBounce 2s ease-in-out infinite';
 
-          // PART 1: Shelya asks how they're doing
+          // PART 1: Shelya greeting
           setTimeout(() => {
-            showShelyaDialogue_Part("Wie geht es euch, Kinder?", () => {
-              // After 1.5 seconds, show Steve's response
+            showShelyaDialogue_Part("Привет дети! Как дела? Что вы сегодня делаете?", () => {
+              // After 1.5 seconds, show kids response
               setTimeout(() => {
-                showKidsResponse("Ach, ganz gut, po starikovski!", () => {
+                showKidsResponse("О, всё в порядке, по-стариковски...", () => {
                   // After 1.5 seconds, show Shelya's second dialogue
                   setTimeout(() => {
-                    showShelyaDialogue_Part("Nur habe ich meine Lupe jemandem geliehen, und finde sie nicht mehr...", () => {
+                    showShelyaDialogue_Part("Я лишь одолжил кому-то увеличительное стекло, и я не помню кому.", () => {
                       // After 2 seconds, show kids giving the magnifying glass
                       setTimeout(() => {
-                        showKidsResponse("Hier, Oma! Wir haben sie gefunden!", () => {
+                        showKidsResponse("Бабушка, ты одолжила нам увеличительное стекло! Оно нам сегодня очень пригодилось, но теперь можешь забрать его обратно!", () => {
                           // Remove magnifying glass from inventory
                           if (window.DiasiteInventory) {
                             window.DiasiteInventory.removeItem('magnifying-glass');
@@ -3090,15 +3318,22 @@
 
                           // After 1.5 seconds, show Shelya's thanks
                           setTimeout(() => {
-                            showShelyaDialogue_Part("Danke, meine Lieben! Das bedeutet mir sehr viel!", () => {
-                              // Finish and navigate back
+                            showShelyaDialogue_Part("Спасибо всем, хотите что-нибудь еще поесть?", () => {
                               setTimeout(() => {
-                                completeShelyaEncounter();
-                              }, 1000);
+                                showShelyaDialogue_Part("рыба сегодня", () => {
+                                  setTimeout(() => {
+                                    showKidsResponse("Нет, спасибо, мы уже поели. Пока, бабушка!", () => {
+                                      setTimeout(() => {
+                                        completeShelyaEncounter();
+                                      }, 1000);
+                                    });
+                                  }, 1500);
+                                });
+                              }, 2000);
                             });
                           }, 1500);
                         });
-                      }, 2000);
+                      }, 1500);
                     });
                   }, 1500);
                 });
@@ -3410,20 +3645,52 @@
   <script>
     (function() {
       const keys = {};
+      let schoolCheatUsed = false;
       document.addEventListener('keydown', (e) => { keys[e.code] = true; });
       document.addEventListener('keyup', (e) => { keys[e.code] = false; });
       setInterval(() => {
         const schoolPage = document.getElementById('school');
-        if (schoolPage && schoolPage.classList.contains('active') && keys['KeyK']) {
-          if (typeof gameManager !== 'undefined') {
-            gameManager.markWon('school');
+        if (schoolPage && schoolPage.classList.contains('active') && keys['KeyK'] && !schoolCheatUsed) {
+          schoolCheatUsed = true;
+          
+          console.log('🎮 School K-cheat activated!');
+          
+          // Use window.gameManager if available
+          if (window.gameManager) {
+            window.gameManager.markWon('school');
+            console.log('✅ School marked as won via gameManager');
+          } else {
+            // Fallback: mark directly in state
+            if (window.DiasiteState) {
+              window.DiasiteState.gamesWon = window.DiasiteState.gamesWon || {};
+              window.DiasiteState.gamesWon['school'] = true;
+              window.DiasiteStorage && window.DiasiteStorage.saveState();
+              console.log('✅ School marked as won via state fallback');
+            }
           }
+          
+          // Return to landing page
           document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
           const landingPage = document.getElementById('landing-page');
           if (landingPage) {
             landingPage.classList.add('active');
+            
+            // RADIKALER FIX: Direkt message box updaten!
+            const missionBox = document.getElementById('mission-box');
+            if (missionBox) {
+              missionBox.textContent = 'Gehe nun zu: Tanke!';
+              console.log('📝 DIRECT UPDATE: Mission box set to Tanke');
+            }
+            
+            // Dispatch gameWon event
             setTimeout(() => {
+              console.log('📡 Dispatching gameWon event for school');
               window.dispatchEvent(new CustomEvent('gameWon', { detail: { gameId: 'school' } }));
+              
+              // Reset cheat flag after use
+              setTimeout(() => {
+                schoolCheatUsed = false;
+              }, 1000);
             }, 100);
           }
         }
@@ -3473,7 +3740,7 @@
       const status = document.getElementById('tanke-song-status');
 
       if (!tankeSong) {
-        tankeSong = new Audio('/assets/audio/nuPogodi.mp3'); // Placeholder song
+        tankeSong = new Audio('/assets/audios/cherryLady.mp3');
         tankeSong.volume = 0.5;
         tankeSong.addEventListener('ended', () => {
           tankeSongPlaying = false;

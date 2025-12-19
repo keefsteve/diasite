@@ -10,7 +10,7 @@ export const PROGRESSION = {
     displayName: 'Botanischer Garten',
     game: 'fountain-jump',
     collectible: 'nudeCalendar',
-    missionAfter: 'Gehe nun zum Uni-Center. Versuche es so zu finden, aber wenn das zu schwierig ist, kannst du den Mauszeiger benutzen!',
+    missionAfter: 'Gehe nun zum Uni-Center! Versuch\' Dich so zu orientieren, aber wenn das zu schwierig ist, benutze gerne die Lupe von Babushka Shelya mit -L.',
     unlocks: ['snails'],
     character: 'steve',
     dialogue: 'Ну хватит прыгать по камням, мама нас заберёт через 15 минут у бабушки и дедушки, а бабушка хотела ещё что-то в Юни-Центре сделать!',
@@ -51,7 +51,7 @@ export const PROGRESSION = {
     level: 3,
     displayName: 'Oma & Opa Shnol',
     game: 'cheek-slapping',
-    collectible: 'sheep',
+
     missionAfter: 'Gehe nun zur Krivaya Gorka. Beeil dich!',
     unlocks: ['krivaya'],
     character: 'oma-opa',
@@ -69,7 +69,7 @@ export const PROGRESSION = {
     level: 4,
     displayName: 'Krivaya Gorka',
     game: null, // Noch zu implementieren
-    collectible: 'wet-clothes',
+
     missionAfter: 'Gehe nun zum Fountain. Beeil dich!',
     unlocks: ['fountain'],
     character: null,

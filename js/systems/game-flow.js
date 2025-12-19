@@ -59,7 +59,7 @@ class GameFlow {
         <img src="/assets/sprites/objects/${collectibleName}.png" alt="${collectibleName}" 
              class="collectible-image" 
              style="width: 150px; height: 150px; object-fit: contain; margin-bottom: 15px;" />
-        <div class="collectible-text">ITEM GET!</div>
+        <div class="collectible-text">bekommen:</div>
         <div class="collectible-name">${collectibleName}</div>
       </div>
     `;

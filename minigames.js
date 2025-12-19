@@ -420,7 +420,7 @@ function initTypingGame(){
   
   if(!wordEl || !input) return;
   
-  const words = ['salamander','blanket','pasxa','sheep','snail','fountain','memory','challenge','adventure','explore','discover','journey','treasure','mystery','puzzle','amazing'];
+  const words = ['salamander','blanket','pasxa','snail','fountain','memory','challenge','adventure','explore','discover','journey','treasure','mystery','puzzle','amazing'];
   let score = 0;
   let timeLeft = 30;
   let currentWord = '';

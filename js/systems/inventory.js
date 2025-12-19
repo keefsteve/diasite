@@ -136,8 +136,8 @@ class InventoryManager {
     container.innerHTML = `
       <div class="collectible-box">
         ${displayContent}
-        <div class="collectible-text">ITEM GET!</div>
-        <div class="collectible-name">${itemName}</div>
+        <div class="collectible-text">bekommen:</div>
+        <div class="collectible-name">${itemName.replace(/^[\u{1F000}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]\s*/u, '')}</div>
       </div>
     `;
 

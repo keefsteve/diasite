@@ -141,17 +141,14 @@ body.app-ready .page {
   position: absolute;
   width: 35px;
   height: 35px;
-  border: 3px dashed var(--forest-green);
-  background: radial-gradient(circle, rgba(168, 197, 217, 0.4), rgba(157, 180, 160, 0.2));
+  border: none;
+  background: transparent;
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.3s;
   padding: 0;
-  /* Soft glow */
-  box-shadow: 
-    0 0 15px rgba(168, 197, 217, 0.4),
-    inset 0 0 10px rgba(255, 255, 255, 0.3);
-  animation: pulse 2s ease-in-out infinite;
+  opacity: 0;
+  animation: none;
 }
 
 @keyframes pulse {
@@ -166,9 +163,9 @@ body.app-ready .page {
 }
 
 .map-hotspot:hover {
-  background: radial-gradient(circle, rgba(168, 197, 217, 0.6), rgba(157, 180, 160, 0.4));
-  transform: scale(1.2);
-  border-color: var(--sage-green);
+  background: transparent;
+  transform: none;
+  border: none;
   animation: none;
 }
 

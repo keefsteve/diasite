@@ -16,11 +16,11 @@ class GameManager {
       'home': { collectible: 'key' },
       'snails': { collectible: null }, // Nesquik and snail added directly in game code
       'bunker': { collectible: 'blanket' },
-      'krivaya': { collectible: 'wet-clothes' },
+
       'tanke': { collectible: 'pasxa' },
       'fountain': { collectible: 'camera' },
       'oma-opa-morg': { collectible: 'yellow-shorts' },
-      'oma-opa-shnol': { collectible: 'sheep' },
+
       'oma-shelya': { collectible: null }, // Dialogue encounter, no collectible
       'hustadt-dub': { collectible: null }
     };
