@@ -213,6 +213,10 @@
             .catch(e => {
               console.error('❌ Audio play failed:', e);
               console.error('❌ Path:', audioPath);
+              // CRITICAL: Clear failed audio so Play button can retry
+              currentAudio = null;
+              currentLocation = null;
+              console.log('🔄 Audio state cleared for retry on user interaction');
             });
 
           // Special handling for tanke (win on song end)
@@ -3702,9 +3706,19 @@
 
       function setupBunker() {
         const input = document.getElementById('bunker-input');
-        if (!input || input.dataset.setup) return;
+        if (!input) return;
+
+        // Reset on each setup (allow replaying)
+        if (input.dataset.setup) {
+          input.disabled = false;
+          input.value = '';
+          step = 1;
+          age = '';
+          document.getElementById('bunker-question').textContent = 'Wie alt bist du?';
+          document.getElementById('bunker-response').textContent = '';
+        }
         input.dataset.setup = 'true';
-        
+
         input.onkeydown = (e) => {
           if (e.key === 'Enter') {
             const val = input.value.trim();
