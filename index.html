@@ -150,20 +150,20 @@
         function playForLocation(locationId) {
           console.log('🎵 AudioManager.playForLocation:', locationId, '| Current:', currentLocation);
 
-          // Stop rules based on transition:
-          // nuPogodi (botanical-garden) -> stops at oma-opa-shnol
-          if (locationId === 'oma-opa-shnol' && currentLocation === 'botanical-garden') {
-            console.log('🔇 Stopping nuPogodi at oma-opa-shnol');
+          // Stop rules based on destination (more robust):
+          // nuPogodi stops at oma-opa-shnol
+          if (locationId === 'oma-opa-shnol' && currentAudio) {
+            console.log('🔇 Stopping any audio at oma-opa-shnol (nasnedogonyat will start)');
             stopAll();
           }
-          // nasnedogonyat (oma-opa-shnol) -> stops at krivaya
-          else if (locationId === 'krivaya' && currentLocation === 'oma-opa-shnol') {
-            console.log('🔇 Stopping nasnedogonyat at krivaya');
+          // nasnedogonyat stops at krivaya
+          else if (locationId === 'krivaya' && currentAudio) {
+            console.log('🔇 Stopping any audio at krivaya (krikGori will start)');
             stopAll();
           }
-          // krikGori (krivaya) -> stops at tanke
-          else if (locationId === 'tanke' && currentLocation === 'krivaya') {
-            console.log('🔇 Stopping krikGori at tanke');
+          // krikGori stops at tanke
+          else if (locationId === 'tanke' && currentAudio) {
+            console.log('🔇 Stopping any audio at tanke (cherryLady will start)');
             stopAll();
           }
 
@@ -834,7 +834,7 @@
         ctx.textBaseline = 'middle';
         const img = new Image();
         img.src = cameraObj.sprite;
-        ctx.drawImage(img, cameraObj.x - 15, cameraObj.y - 15, 30, 30);
+        ctx.drawImage(img, cameraObj.x - 15, cameraObj.y - 15, 50, 40);
         
         // Draw fishing line
         ctx.strokeStyle = '#333';
@@ -884,7 +884,7 @@
         ctx.textAlign = 'center';
         const successImg = new Image();
         successImg.src = '/assets/sprites/objects/cam.png';
-        ctx.drawImage(successImg, canvas.width / 2 - 30, canvas.height / 2 - 30, 60, 60);
+        ctx.drawImage(successImg, canvas.width / 2 - 30, canvas.height / 2 - 30, 220, 180);
         ctx.font = '20px Arial';
         ctx.fillStyle = '#fff';
         ctx.fillText('', canvas.width / 2, canvas.height / 2 + 60);
@@ -2107,6 +2107,9 @@
               <button onclick="showHomeSection('stats')" class="home-menu-btn" style="flex:1;min-width:120px;background:var(--soft-orange);color:#333;border:3px solid #000;padding:12px;font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;cursor:pointer;box-shadow:4px 4px 0 #000;transition:all 0.1s;" onmouseover="this.style.transform='translate(2px,2px)';this.style.boxShadow='2px 2px 0 #000'" onmouseout="this.style.transform='';this.style.boxShadow='4px 4px 0 #000'">
                 STATS
               </button>
+              <button onclick="showHomeSection('wallgame')" class="home-menu-btn" style="flex:1;min-width:120px;background:var(--dusty-rose);color:#fff;border:3px solid #000;padding:12px;font-family:'Nineteen Ninety Seven',monospace;font-size:1rem;cursor:pointer;box-shadow:4px 4px 0 #000;transition:all 0.1s;" onmouseover="this.style.transform='translate(2px,2px)';this.style.boxShadow='2px 2px 0 #000'" onmouseout="this.style.transform='';this.style.boxShadow='4px 4px 0 #000'">
+                WAND GAME
+              </button>
             </div>
 
             <!-- Polaroids Section -->
@@ -2150,6 +2153,40 @@
                 <p style="font-size:0.9rem;color:#666;margin-bottom:15px;">Klicke auf ein Item im Inventar um es hier abzulegen.</p>
                 <div id="home-souvenirs-display" style="display:flex;flex-wrap:wrap;gap:15px;min-height:200px;background:rgba(232,223,208,0.3);padding:15px;border-radius:8px;">
                   <!-- Souvenirs werden hier angezeigt -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Wall Game Section -->
+            <div id="home-section-wallgame" class="home-section" style="display:none;">
+              <div style="background:var(--paper-white);border:3px solid #000;padding:20px;box-shadow:4px 4px 0 #000;">
+                <h4 style="margin:0 0 15px 0;font-family:'Nineteen Ninety Seven',monospace;color:#333;">Wand durchbrechen!</h4>
+                <p style="font-size:0.9rem;color:#666;margin-bottom:15px;">
+                  Drücke die LEERTASTE 26 mal, um Jen gegen die Wand zu schmeißen! 💥
+                </p>
+
+                <!-- Game Container -->
+                <div id="wallgame-container" style="position:relative;width:100%;height:400px;background-image:url('/assets/sprites/places/wall.png');background-size:cover;background-position:center;border:3px solid #000;overflow:hidden;">
+                  <!-- Jen Sprite -->
+                  <img id="wallgame-jen" src="/assets/sprites/people/jenSprite.png" alt="Jen" style="position:absolute;top:50%;transform:translateY(-50%);height:120px;width:auto;right:20px;transition:right 0.05s linear;" />
+
+                  <!-- Counter Display -->
+                  <div id="wallgame-counter" style="position:absolute;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:#fff;padding:15px 30px;font-family:'Nineteen Ninety Seven',monospace;font-size:2rem;border:3px solid #fff;box-shadow:0 0 20px rgba(255,255,255,0.5);">
+                    0 / 26
+                  </div>
+
+                  <!-- Victory Message -->
+                  <div id="wallgame-victory" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,215,0,0.95);color:#000;padding:30px 50px;font-family:'Nineteen Ninety Seven',monospace;font-size:1.5rem;border:5px solid #000;box-shadow:0 0 30px rgba(255,215,0,0.8);display:none;text-align:center;">
+                    🎉 GESCHAFFT! 🎉<br>
+                    <span style="font-size:1rem;margin-top:10px;display:block;">Die Wand ist durch!</span>
+                  </div>
+                </div>
+
+                <!-- Instructions -->
+                <div style="margin-top:15px;padding:15px;background:rgba(255,255,0,0.2);border:2px solid #000;">
+                  <p style="margin:0;font-family:'Nineteen Ninety Seven',monospace;font-size:0.9rem;color:#333;">
+                    ⌨️ Drücke die <strong>LEERTASTE</strong> um Jen gegen die Wand zu werfen!
+                  </p>
                 </div>
               </div>
             </div>
@@ -2205,6 +2242,7 @@
         if (section === 'messages') loadVoiceMessages();
         if (section === 'souvenirs') loadSouvenirs();
         if (section === 'stats') loadStats();
+        if (section === 'wallgame') initWallGame();
       };
 
       // Update clock
@@ -2489,25 +2527,133 @@
       function placeSouvenir(itemId) {
         if (!window.DiasiteState.home) window.DiasiteState.home = {};
         if (!window.DiasiteState.home.souvenirs) window.DiasiteState.home.souvenirs = [];
-        
+
         if (window.DiasiteState.home.souvenirs.includes(itemId)) {
           window.flashMessage('Souvenir bereits abgelegt!', 1500);
           return;
         }
-        
+
         const removed = window.DiasiteInventory.removeItem(itemId);
         if (removed) {
           window.DiasiteState.home.souvenirs.push(itemId);
           window.DiasiteStorage.saveState();
-          
+
           window.flashMessage(`${itemId} als Souvenir abgelegt!`, 1500);
-          
+
           const souvenirSection = document.getElementById('home-section-souvenirs');
           if (souvenirSection && souvenirSection.style.display !== 'none') {
             loadSouvenirs();
           }
         }
       }
+
+      // ===== WALL GAME =====
+      let wallGameActive = false;
+      let wallGameCount = 0;
+      let wallGameListener = null;
+
+      function initWallGame() {
+        console.log('🎮 Initializing Wall Game');
+
+        // Reset game state
+        wallGameCount = 0;
+        wallGameActive = true;
+
+        // Reset UI
+        const jen = document.getElementById('wallgame-jen');
+        const counter = document.getElementById('wallgame-counter');
+        const victory = document.getElementById('wallgame-victory');
+
+        if (jen) jen.style.right = '20px';
+        if (counter) counter.textContent = '0 / 26';
+        if (victory) victory.style.display = 'none';
+
+        // Remove old listener if exists
+        if (wallGameListener) {
+          document.removeEventListener('keydown', wallGameListener);
+        }
+
+        // Add spacebar listener
+        wallGameListener = function(e) {
+          if (!wallGameActive) return;
+
+          // Only respond to spacebar
+          if (e.code === 'Space' || e.key === ' ') {
+            e.preventDefault();
+
+            // Check if wallgame is visible
+            const wallgameSection = document.getElementById('home-section-wallgame');
+            if (!wallgameSection || wallgameSection.style.display === 'none') return;
+
+            wallGameCount++;
+            console.log(`💥 Wall smash count: ${wallGameCount}/26`);
+
+            // Update counter
+            if (counter) counter.textContent = `${wallGameCount} / 26`;
+
+            // Move Jen left (rapid movement)
+            if (jen) {
+              const currentRight = parseInt(jen.style.right) || 20;
+              const newRight = Math.max(0, currentRight - 15); // Move 15px left each hit
+              jen.style.right = newRight + 'px';
+
+              // Add shake effect
+              jen.style.filter = 'brightness(1.2)';
+              setTimeout(() => {
+                jen.style.filter = 'brightness(1)';
+              }, 50);
+            }
+
+            // Check win condition
+            if (wallGameCount >= 26) {
+              winWallGame();
+            }
+          }
+        };
+
+        document.addEventListener('keydown', wallGameListener);
+        console.log('✅ Wall Game ready - press SPACE to smash!');
+      }
+
+      function winWallGame() {
+        console.log('🎉 Wall Game WON!');
+        wallGameActive = false;
+
+        // Show victory message
+        const victory = document.getElementById('wallgame-victory');
+        if (victory) {
+          victory.style.display = 'block';
+        }
+
+        // Mark game as won
+        if (typeof gameManager !== 'undefined') {
+          gameManager.markWon('home');
+          console.log('✅ home marked as won');
+        }
+
+        // Dispatch gameWon event and navigate
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('gameWon', {
+            detail: { gameId: 'home' }
+          }));
+
+          setTimeout(() => {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const landingPage = document.getElementById('landing-page');
+            if (landingPage) {
+              landingPage.classList.add('active');
+            }
+          }, 100);
+        }, 2000);
+      }
+
+      // Cleanup listener when leaving home
+      window.addEventListener('pageChange', () => {
+        if (wallGameListener) {
+          document.removeEventListener('keydown', wallGameListener);
+          wallGameActive = false;
+        }
+      });
 
       // Initialize when home page becomes active
       const homeObserver = new MutationObserver(() => {
