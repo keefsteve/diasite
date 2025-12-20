@@ -305,24 +305,26 @@
           return config.next;
         }
 
-        // Watch for landing page activation and update messageBox
-        const observer = new MutationObserver(() => {
-          const landingPage = document.getElementById('landing-page');
-          if (landingPage && landingPage.classList.contains('active')) {
-            console.log('🏠 Landing page became active, re-initializing MessageBox');
-            // Wait a bit for state to be fully updated
-            setTimeout(() => {
-              initialize();
-            }, 150);
-          }
-        });
+        // Don't re-initialize on landing page active!
+        // The gameWon event handles updates, re-initializing causes it to read stale state
+        // and override the correct update from the event.
 
-        const landingPage = document.getElementById('landing-page');
-        if (landingPage) {
-          observer.observe(landingPage, { attributes: true, attributeFilter: ['class'] });
-        }
+        // const observer = new MutationObserver(() => {
+        //   const landingPage = document.getElementById('landing-page');
+        //   if (landingPage && landingPage.classList.contains('active')) {
+        //     console.log('🏠 Landing page became active, re-initializing MessageBox');
+        //     setTimeout(() => {
+        //       initialize();
+        //     }, 150);
+        //   }
+        // });
 
-        // Initialize immediately on load
+        // const landingPage = document.getElementById('landing-page');
+        // if (landingPage) {
+        //   observer.observe(landingPage, { attributes: true, attributeFilter: ['class'] });
+        // }
+
+        // Initialize ONCE on load
         setTimeout(() => {
           console.log('🚀 Initial MessageBox setup');
           initialize();
@@ -498,20 +500,21 @@
         });
       });
 
-      // Mission Box Updater (powered by Messages system)
-      // Note: The actual logic is in js/systems/messages.js
-      // This is just a compatibility shim for now
-      (function() {
-        // Wait for Messages system to load, then set up event listeners
-        function initMissionBox() {
-          if (window.Messages) {
-            window.Messages.setupEventListeners();
-          } else {
-            setTimeout(initMissionBox, 100);
-          }
-        }
-        initMissionBox();
-      })();
+      // Mission Box Updater - NOW DISABLED
+      // MessageBoxManager (defined above) now handles all messageBox updates
+      // The old Messages system was causing conflicts
+      // (function() {
+      //   // Wait for Messages system to load, then set up event listeners
+      //   function initMissionBox() {
+      //     if (window.Messages) {
+      //       window.Messages.setupEventListeners();
+      //     } else {
+      //       setTimeout(initMissionBox, 100);
+      //     }
+      //   }
+      //   initMissionBox();
+      // })();
+      console.log('✅ Old Messages system disabled - MessageBoxManager active');
 
       // ASCII Seagulls flying across the landing page with wing flapping
       (function() {
@@ -3804,38 +3807,33 @@
 
           console.log('🎮 School K-cheat activated!');
 
-          // CRITICAL: Mark as won FIRST and wait for state to save
+          // Mark as won
           if (window.gameManager) {
             window.gameManager.markWon('school');
             console.log('✅ School marked as won');
           }
 
-          // Wait for state to save, THEN navigate
+          // Wait longer for state to save completely
           setTimeout(() => {
             console.log('📡 Dispatching gameWon event for school');
             window.dispatchEvent(new CustomEvent('gameWon', {
               detail: { gameId: 'school' }
             }));
 
-            // THEN navigate using proper Navigation system
+            // Navigate after another delay
             setTimeout(() => {
-              if (window.Navigation) {
-                window.Navigation.navigateTo('landing-page');
-              } else {
-                // Fallback
-                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-                const landingPage = document.getElementById('landing-page');
-                if (landingPage) {
-                  landingPage.classList.add('active');
-                }
+              document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+              const landingPage = document.getElementById('landing-page');
+              if (landingPage) {
+                landingPage.classList.add('active');
               }
 
-              // Reset cheat flag after use
+              // Reset cheat flag
               setTimeout(() => {
                 schoolCheatUsed = false;
-              }, 1000);
-            }, 200);
-          }, 500);
+              }, 500);
+            }, 300);
+          }, 800);
         }
       }, 100);
     })();
