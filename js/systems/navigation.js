@@ -43,6 +43,11 @@ class NavigationManager {
     state.player.currentLocation = pageId;
     this.currentPage = pageId;
     
+    // Manage audio for this location
+    if (window.AudioManager) {
+      window.AudioManager.playForLocation(pageId);
+    }
+    
     // Show Steve greeting on every location (DISABLED)
     if (false && this.isGameLocation(pageId)) {
       setTimeout(() => {

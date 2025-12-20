@@ -16,7 +16,7 @@
       <div id="clock-day" style="font-size:0.95rem;letter-spacing:2px;margin-bottom:6px;"></div>
       <div id="clock-time" style="font-size:1.05rem;letter-spacing:3px;"></div>
     </div>
-    
+     
     <!-- Red Clock Button -->
     <button id="red-clock-btn" style="position:absolute;top:30px;right:260px;width:40px;height:40px;background:#ff0000;border:3px solid #000;border-radius:50%;cursor:pointer;z-index:201;box-shadow:0 4px 8px rgba(0,0,0,0.4);"></button>
 
@@ -122,6 +122,215 @@
     <div id="hotcold-tracker"></div>
 
     <script>
+      // ===== GLOBAL AUDIO MANAGER =====
+      window.AudioManager = (function() {
+        let currentAudio = null;
+        let currentLocation = null;
+
+        // Audio flow:
+        // nuPogodi.mp3: starts at botanischer garten, stops at oma opa shnol
+        // nasnedogonyat.mp3: starts at oma opa shnol, stops at krivaya gorka
+        // krikGori.mp3: plays until tanke, stops there and cherryLady.mp3 starts
+        const audioMap = {
+          'botanical-garden': 'assets/audio/nuPogodi.mp3',
+          'oma-opa-shnol': 'assets/audio/nasnedogonyat.mp3',
+          'krivaya': 'assets/audio/krikGori.mp3',
+          'tanke': 'assets/audio/cherryLady.mp3'
+        };
+
+        function stopAll() {
+          if (currentAudio) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+            currentAudio = null;
+          }
+          console.log('🔇 All audio stopped');
+        }
+
+        function playForLocation(locationId) {
+          console.log('🎵 AudioManager.playForLocation:', locationId, '| Current:', currentLocation);
+
+          // Stop rules based on transition:
+          // nuPogodi (botanical-garden) -> stops at oma-opa-shnol
+          if (locationId === 'oma-opa-shnol' && currentLocation === 'botanical-garden') {
+            console.log('🔇 Stopping nuPogodi at oma-opa-shnol');
+            stopAll();
+          }
+          // nasnedogonyat (oma-opa-shnol) -> stops at krivaya
+          else if (locationId === 'krivaya' && currentLocation === 'oma-opa-shnol') {
+            console.log('🔇 Stopping nasnedogonyat at krivaya');
+            stopAll();
+          }
+          // krikGori (krivaya) -> stops at tanke
+          else if (locationId === 'tanke' && currentLocation === 'krivaya') {
+            console.log('🔇 Stopping krikGori at tanke');
+            stopAll();
+          }
+
+          // Update current location tracker
+          const previousLocation = currentLocation;
+          currentLocation = locationId;
+
+          // Check if this location has audio
+          const audioPath = audioMap[locationId];
+          if (!audioPath) {
+            console.log('📍 No audio for location:', locationId);
+            return;
+          }
+
+          console.log('🎵 Audio path found:', audioPath);
+
+          // Don't restart audio if already playing for this location
+          if (currentAudio && previousLocation === locationId) {
+            console.log('🎵 Audio already playing for:', locationId);
+            return;
+          }
+
+          // Start new audio
+          console.log('🎵 Creating new Audio object for:', locationId);
+          currentAudio = new Audio(audioPath);
+          currentAudio.volume = 0.4;
+          currentAudio.loop = (locationId !== 'tanke'); // Don't loop tanke
+
+          // Add error handling
+          currentAudio.onerror = (e) => {
+            console.error('❌ Audio load error:', e);
+            console.error('❌ Failed to load:', audioPath);
+          };
+
+          currentAudio.onloadstart = () => {
+            console.log('⏳ Audio loading started:', audioPath);
+          };
+
+          currentAudio.oncanplaythrough = () => {
+            console.log('✅ Audio can play through:', audioPath);
+          };
+
+          currentAudio.play()
+            .then(() => {
+              console.log('✅ Audio playing successfully:', locationId);
+            })
+            .catch(e => {
+              console.error('❌ Audio play failed:', e);
+              console.error('❌ Path:', audioPath);
+            });
+
+          // Special handling for tanke (win on song end)
+          if (locationId === 'tanke') {
+            currentAudio.addEventListener('ended', () => {
+              console.log('🎵 Cherry Lady finished!');
+              setTimeout(() => {
+                if (typeof gameManager !== 'undefined') {
+                  gameManager.markWon('tanke');
+                }
+                window.dispatchEvent(new CustomEvent('gameWon', { detail: { gameId: 'tanke' } }));
+              }, 500);
+            });
+          }
+        }
+
+        return { stopAll, playForLocation };
+      })();
+      
+      // ===== GLOBAL MESSAGE BOX MANAGER =====
+      window.MessageBoxManager = (function() {
+        const progression = {
+          'botanical-garden': { next: 'snails', text: 'Gehe nun zum Uni-Center! Versuch\' Dich so zu orientieren, aber wenn das zu schwierig ist, benutze gerne die Lupe von Babushka Shelya mit -L.' },
+          'snails': { next: 'oma-opa-shnol', text: 'Gehe nun zu Oma und Opa Shnol. Mama ist bald da!' },
+          'oma-opa-shnol': { next: 'krivaya', text: 'Gehe nun zur Krivaya Gorka. Beeil dich!' },
+          'krivaya': { next: 'fountain', text: 'Gehe nun zum Fountain. Beeil dich!' },
+          'fountain': { next: 'oma-opa-morg', text: 'Gehe nun zu Oma und Opa Morg. Beeil dich!' },
+          'oma-opa-morg': { next: 'oma-shelya', text: 'Gehe nun zu Oma Shelya. Beeil dich!' },
+          'oma-shelya': { next: 'bunker', text: 'Gehe nun zum Bunker. Beeil dich!' },
+          'bunker': { next: 'school', text: 'Gehe nun zur School. Beeil dich!' },
+          'school': { next: 'home', text: 'Gehe nun nach Hause. Beeil dich!' },
+          'home': { next: 'tanke', text: 'Gehe nun zur Tanke. Beeil dich!' },
+          'tanke': { next: null, text: '🎉 Herzlichen Glückwunsch! Du hast alle Erinnerungen gesammelt!' }
+        };
+
+        function getLastWonGame() {
+          // Get the last won game from DiasiteState
+          if (!window.DiasiteState || !window.DiasiteState.gameProgress || !window.DiasiteState.gameProgress.gamesWon) {
+            console.log('⚠️ No DiasiteState found, defaulting to botanical-garden');
+            return 'botanical-garden'; // Default to start
+          }
+
+          const wonGames = window.DiasiteState.gameProgress.gamesWon;
+          const progressionOrder = ['botanical-garden', 'snails', 'oma-opa-shnol', 'krivaya', 'fountain', 'oma-opa-morg', 'oma-shelya', 'bunker', 'school', 'home', 'tanke'];
+
+          console.log('🔍 Checking won games:', wonGames);
+
+          // Find the last won game in progression order
+          for (let i = progressionOrder.length - 1; i >= 0; i--) {
+            if (wonGames[progressionOrder[i]] === true) {
+              console.log(`✅ Found last won game: ${progressionOrder[i]}`);
+              return progressionOrder[i];
+            }
+          }
+
+          console.log('⚠️ No games won yet, defaulting to botanical-garden');
+          return 'botanical-garden'; // Default to start
+        }
+
+        function initialize() {
+          const lastWonGame = getLastWonGame();
+          console.log('🎯 Initializing MessageBox - Last won game:', lastWonGame);
+          updateForGame(lastWonGame);
+        }
+
+        function updateForGame(gameId) {
+          const missionBox = document.getElementById('mission-box');
+          if (!missionBox) return;
+
+          const config = progression[gameId];
+          if (!config) {
+            console.warn('⚠️ No progression config for:', gameId);
+            return;
+          }
+
+          missionBox.textContent = config.text;
+          console.log(`📝 MessageBox updated: ${gameId} → ${config.next || 'END'}`);
+
+          // Unlock next location hotspot
+          if (config.next) {
+            const hotspot = document.querySelector(`.map-hotspot[data-target="${config.next}"]`);
+            if (hotspot) {
+              hotspot.classList.remove('locked');
+              hotspot.style.pointerEvents = 'auto';
+              hotspot.style.opacity = '1';
+              console.log(`🔓 Unlocked: ${config.next}`);
+            }
+          }
+
+          return config.next;
+        }
+
+        // Watch for landing page activation and update messageBox
+        const observer = new MutationObserver(() => {
+          const landingPage = document.getElementById('landing-page');
+          if (landingPage && landingPage.classList.contains('active')) {
+            console.log('🏠 Landing page became active, re-initializing MessageBox');
+            // Wait a bit for state to be fully updated
+            setTimeout(() => {
+              initialize();
+            }, 150);
+          }
+        });
+
+        const landingPage = document.getElementById('landing-page');
+        if (landingPage) {
+          observer.observe(landingPage, { attributes: true, attributeFilter: ['class'] });
+        }
+
+        // Initialize immediately on load
+        setTimeout(() => {
+          console.log('🚀 Initial MessageBox setup');
+          initialize();
+        }, 1000);
+
+        return { updateForGame, initialize, progression };
+      })();
+
       // Hot/Cold Tracker - Dynamic based on progression
       (function() {
         const tracker = document.getElementById('hotcold-tracker');
@@ -175,53 +384,28 @@
 
         // Activate tracker for next location based on progression
         window.addEventListener('gameWon', (e) => {
-          const progression = {
-            'botanical-garden': 'snails',
-            'snails': 'oma-opa-shnol',
-            'oma-opa-shnol': 'krivaya',
-            'krivaya': 'fountain',
-            'fountain': 'oma-opa-morg',
-            'oma-opa-morg': 'oma-shelya',
-            'oma-shelya': 'bunker',
-            'bunker': 'school',
-            'school': 'tanke',
-            'tanke': 'home'
-          };
+          console.log('🎮 Hot/Cold: gameWon event received:', e.detail.gameId);
 
-          const locationNames = {
-            'snails': 'Uni-Center',
-            'oma-opa-shnol': 'Oma und Opa Shnol',
-            'krivaya': 'Krivaya Gorka',
-            'fountain': 'Fountain',
-            'oma-opa-morg': 'Oma und Opa Morg',
-            'oma-shelya': 'Oma Shelya',
-            'bunker': 'Bunker',
-            'school': 'School',
-            'home': 'Home',
-            'tanke': 'Tanke'
-          };
+          // Update message box using global manager
+          const nextLocation = window.MessageBoxManager.updateForGame(e.detail.gameId);
+          console.log('📍 Next location from MessageBox:', nextLocation);
 
-          const nextLocation = progression[e.detail.gameId];
+          // Activate hot-cold tracker for next location
           if (nextLocation) {
-            // Update mission box
-            const missionBox = document.getElementById('mission-box');
-            if (missionBox) {
-              const locationName = locationNames[nextLocation] || nextLocation;
-              missionBox.textContent = `Gehe nun zu: ${locationName}!`;
-              console.log(`📍 Mission updated: Go to ${locationName}`);
-            }
-
-            // Activate hot-cold tracker
             targetHotspot = document.querySelector(`[data-target="${nextLocation}"]`);
             if (targetHotspot) {
               isActive = true;
               tracker.classList.add('active');
+              console.log('🔥 Hot/cold tracker activated for:', nextLocation);
 
               // Add click handler to deactivate tracker
               targetHotspot.addEventListener('click', () => {
                 isActive = false;
                 tracker.classList.remove('active');
+                console.log('❄️ Hot/cold tracker deactivated');
               }, { once: true });
+            } else {
+              console.warn('⚠️ Hotspot not found for:', nextLocation);
             }
           }
         });
@@ -439,6 +623,15 @@
                   if (botanicalGarden) {
                     botanicalGarden.classList.add('active');
                     console.log('✅ Botanical Garden activated');
+
+                    // CRITICAL: Start audio for botanical garden!
+                    console.log('🎵 Attempting to start audio for botanical-garden...');
+                    if (window.AudioManager) {
+                      console.log('✅ AudioManager found, calling playForLocation...');
+                      window.AudioManager.playForLocation('botanical-garden');
+                    } else {
+                      console.error('❌ AudioManager not found!');
+                    }
                   }
                 }, 500);
               }
@@ -748,6 +941,12 @@
     function startBotanicalGardenGame() {
       const overlay = document.querySelector('#botanical-garden .play-overlay');
       if (overlay) overlay.classList.add('hidden');
+
+      // CRITICAL: Start audio on user interaction (bypasses autoplay policy)
+      console.log('🎵 Starting audio via Play button click...');
+      if (window.AudioManager) {
+        window.AudioManager.playForLocation('botanical-garden');
+      }
 
       const canvas = document.getElementById('botanicalGardenCanvas');
       const ctx = canvas.getContext('2d');
@@ -1233,13 +1432,6 @@
               if (landingPage) {
                 landingPage.classList.add('active');
 
-                // RADIKALER FIX: Direkt message box updaten!
-                const missionBox = document.getElementById('mission-box');
-                if (missionBox) {
-                  missionBox.textContent = 'Gehe nun zu: Krivaya Gorka!';
-                  console.log('📝 DIRECT UPDATE: Mission box set to Krivaya Gorka');
-                }
-
                 setTimeout(() => {
                   window.dispatchEvent(new CustomEvent('gameWon', {
                     detail: { gameId: 'oma-opa-shnol' }
@@ -1264,26 +1456,8 @@
     if (omaPage) {
       calendarObserver.observe(omaPage, { attributes: true, attributeFilter: ['class'] });
       
-      // Background music for Oma & Opa Shnol
-      let shnolAudio = null;
-      const shnolMusicObserver = new MutationObserver(() => {
-        if (omaPage.classList.contains('active')) {
-          // Start music when page becomes active
-          if (!shnolAudio) {
-            shnolAudio = new Audio('/assets/audios/nasnedagonyat.mp3');
-            shnolAudio.volume = 0.4;
-            shnolAudio.loop = true;
-          }
-          shnolAudio.play().catch(e => console.warn('Audio play failed:', e));
-        } else {
-          // Stop music when page is not active
-          if (shnolAudio) {
-            shnolAudio.pause();
-            shnolAudio.currentTime = 0;
-          }
-        }
-      });
-      shnolMusicObserver.observe(omaPage, { attributes: true, attributeFilter: ['class'] });
+      // Audio managed by global AudioManager
+      console.log('🎵 Oma-opa-shnol: Audio managed by global AudioManager');
     }
 
     // Initial check
@@ -1434,13 +1608,6 @@
                             if (landingPage) {
                               landingPage.classList.add('active');
 
-                              // RADIKALER FIX: Direkt message box updaten!
-                              const missionBox = document.getElementById('mission-box');
-                              if (missionBox) {
-                                missionBox.textContent = 'Gehe nun zu: Krivaya Gorka!';
-                                console.log('📝 DIRECT UPDATE: Mission box set to Krivaya Gorka');
-                              }
-
                               // Dispatch gameWon
                               setTimeout(() => {
                                 window.dispatchEvent(new CustomEvent('gameWon', {
@@ -1514,13 +1681,6 @@
                   const landingPage = document.getElementById('landing-page');
                   if (landingPage) {
                     landingPage.classList.add('active');
-
-                    // RADIKALER FIX: Direkt message box updaten!
-                    const missionBox = document.getElementById('mission-box');
-                    if (missionBox) {
-                      missionBox.textContent = 'Gehe nun zu: Krivaya Gorka!';
-                      console.log('📝 DIRECT UPDATE: Mission box set to Krivaya Gorka');
-                    }
 
                     // Dispatch gameWon
                     setTimeout(() => {
@@ -1676,7 +1836,7 @@
               spellcheck="false" />
 
             <p id="stroop-status" style="font-size:1.2rem;margin:20px 0;min-height:30px;"></p>
-            <p id="stroop-score" style="font-size:1.3rem;margin-top:15px;font-weight:bold;">Richtige: <span id="stroop-correct">0</span> / 13 (20 Sekunden)</p>
+            <p id="stroop-score" style="font-size:1.3rem;margin-top:15px;font-weight:bold;">Richtige: <span id="stroop-correct">0</span> / 13 in 22s</p>
             <p style="font-size:0.9rem;color:#999;margin-top:10px;">Drücke K zum Überspringen</p>
           </div>
         </div>
@@ -1694,21 +1854,18 @@
     </div>
   </div>
   <script>
-    // ===== STROOP TEST GAME (Oma & Opa Morg) - SIMPLIFIED =====
+    // ===== STROOP TEST GAME (Oma & Opa Morg) - RADICALLY SIMPLIFIED =====
     (function() {
       const keys = {};
-      let gameWon = false;
       let gameActive = false;
-      let correctCount = 0; // MUST start at 0!
+      let correctCount = 0;
       const NEEDED = 13;
-      const TIME_LIMIT = 22;
+      const TIME_LIMIT = 22; // 22 Sekunden für 13 richtige
       let startTime = null;
       let timerInterval = null;
       let currentPair = null;
       
-      // RADIKALER FIX: Force reset function
-      function hardResetGame() {
-        gameWon = false;
+      function resetGame() {
         gameActive = false;
         correctCount = 0;
         startTime = null;
@@ -1716,7 +1873,7 @@
           clearInterval(timerInterval);
           timerInterval = null;
         }
-        console.log('⚡ HARD RESET: All game variables cleared');
+        console.log('⚡ Game reset: correctCount=0');
       }
 
       const stroopPairs = [
@@ -1728,6 +1885,8 @@
         { word: 'grün', color: '#FF0000', answer: 'rot' },
         { word: 'rot', color: '#FFD700', answer: 'gelb' },
         { word: 'blau', color: '#008000', answer: 'grün' },
+        { word: 'gelb', color: '#FF0000', answer: 'rot' },
+        { word: 'braun', color: '#FFD700', answer: 'gelb' },
       ];
 
       document.addEventListener('keydown', (e) => { keys[e.code] = true; });
@@ -1735,16 +1894,12 @@
 
       const stroopObserver = new MutationObserver(() => {
         const page = document.getElementById('oma-opa-morg');
-        // Remove gameWon check - allow starting game even if previously won
-        if (page && page.classList.contains('active')) {
-          // RADIKALER FIX: IMMER hard reset wenn Seite aktiv wird!
-          if (!gameActive) {
-            hardResetGame();
-            console.log('🎮 Starting Stroop game FRESH with correctCount=' + correctCount);
-            startGame();
-          }
+        if (page && page.classList.contains('active') && !gameActive) {
+          resetGame();
+          console.log('🎮 Starting Stroop game fresh');
+          startGame();
         } else if (!page || !page.classList.contains('active')) {
-          hardResetGame(); // Reset auch wenn Seite verlassen wird!
+          resetGame();
           stopGame();
         }
       });
@@ -1760,14 +1915,13 @@
         
         if (!input || !display) return;
         
-        console.log('🎮 startGame() called - correctCount BEFORE reset:', correctCount);
         gameActive = true;
         correctCount = 0;
-        console.log('🎮 startGame() - correctCount AFTER reset:', correctCount);
         startTime = Date.now();
         input.value = '';
         input.disabled = false;
         counter.textContent = '0';
+        status.textContent = '';
         
         showWord();
         
@@ -1777,26 +1931,28 @@
         input.onkeyup = (e) => {
           if (!gameActive) return;
           const typed = input.value.toLowerCase().trim();
+          
+          // Check if typed exactly matches answer
           if (typed === currentPair.answer) {
             correctCount++;
-            console.log(`✅ Stroop correct! Count: ${correctCount}/${NEEDED}`);
+            console.log(`✅ Correct! ${correctCount}/${NEEDED}`);
             counter.textContent = correctCount;
             status.textContent = '✓ Richtig!';
             status.style.color = '#00aa00';
             input.value = '';
 
-            // Only show next word and check win condition
             setTimeout(() => {
               status.textContent = '';
               if (correctCount >= NEEDED) {
-                console.log(`🎉 Stroop test WON with ${correctCount} correct answers!`);
                 winGame();
               } else {
                 showWord();
               }
-            }, 400);
+            }, 300);
           } else if (typed.length > 0 && !currentPair.answer.startsWith(typed)) {
-            failGame();
+            // Falscher Buchstabe = GAME OVER (nicht Neustart!)
+            console.log('❌ Wrong letter typed! Game over.');
+            failGame('Falscher Buchstabe!');
           }
         };
       }
@@ -1826,21 +1982,20 @@
         }
       }
       
-      function failGame() {
+      function failGame(reason = 'Zeit abgelaufen!') {
         stopGame();
         const status = document.getElementById('stroop-status');
         const input = document.getElementById('stroop-input');
         if (status) {
-          status.innerHTML = `❌ Zeit abgelaufen! ${correctCount}/${NEEDED}<br><button id="stroop-restart-btn" style="margin-top:15px;padding:10px 20px;font-size:1rem;background:#FFD700;border:3px solid #b8a898;border-radius:8px;cursor:pointer;font-family:'Nineteen Ninety Seven',monospace;color:#333;font-weight:bold;box-shadow:4px 4px 0 #8b7355;">↻ Nochmal versuchen</button>`;
+          status.innerHTML = `❌ ${reason} ${correctCount}/${NEEDED}<br><button id="stroop-restart-btn" style="margin-top:15px;padding:10px 20px;font-size:1rem;background:#FFD700;border:3px solid #b8a898;border-radius:8px;cursor:pointer;font-family:'Nineteen Ninety Seven',monospace;color:#333;font-weight:bold;box-shadow:4px 4px 0 #8b7355;">↻ Nochmal starten</button>`;
           status.style.color = '#ff4444';
-          
-          // Add restart button handler
+
           setTimeout(() => {
             const restartBtn = document.getElementById('stroop-restart-btn');
             if (restartBtn) {
               restartBtn.onclick = () => {
-                hardResetGame(); // WICHTIG: Hard reset vor startGame!
                 status.textContent = '';
+                resetGame();
                 startGame();
               };
             }
@@ -1858,14 +2013,12 @@
       }
       
       function winGame() {
-        // Nur gewinnen wenn wirklich 13 richtige erreicht wurden
         if (correctCount < NEEDED) {
           console.warn('⚠️ winGame called but not enough correct answers:', correctCount);
           return;
         }
-        
+
         stopGame();
-        gameWon = true;
         const status = document.getElementById('stroop-status');
         const input = document.getElementById('stroop-input');
         if (input) input.disabled = true;
@@ -1873,38 +2026,34 @@
           status.textContent = '🎉 Geschafft! Die gelben Shorts sind dein!';
           status.style.color = '#00aa00';
         }
-        
+
+        // Mark as won
         if (typeof gameManager !== 'undefined') {
           gameManager.markWon('oma-opa-morg');
+          console.log('✅ oma-opa-morg marked as won');
         }
-        
+
+        // Navigate to landing page and dispatch event
         setTimeout(() => {
-          document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-          const landingPage = document.getElementById('landing-page');
-          if (landingPage) {
-            landingPage.classList.add('active');
-            
-            // RADIKALER FIX: Direkt message box updaten!
-            const missionBox = document.getElementById('mission-box');
-            if (missionBox) {
-              missionBox.textContent = 'Gehe nun zu: Oma Shelya!';
-              console.log('📝 DIRECT UPDATE: Mission box set to Oma Shelya');
+          window.dispatchEvent(new CustomEvent('gameWon', {
+            detail: { gameId: 'oma-opa-morg' }
+          }));
+
+          setTimeout(() => {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const landingPage = document.getElementById('landing-page');
+            if (landingPage) {
+              landingPage.classList.add('active');
             }
-            
-            setTimeout(() => {
-              window.dispatchEvent(new CustomEvent('gameWon', {
-                detail: { gameId: 'oma-opa-morg' }
-              }));
-            }, 100);
-          }
-        }, 2000);
+          }, 100);
+        }, 1500);
       }
 
       // K-cheat
       setInterval(() => {
         const page = document.getElementById('oma-opa-morg');
-        if (keys['KeyK'] && !gameWon && page && page.classList.contains('active')) {
-          correctCount = NEEDED; // Set to required amount for K-cheat
+        if (keys['KeyK'] && gameActive && page && page.classList.contains('active')) {
+          correctCount = NEEDED;
           winGame();
         }
       }, 100);
@@ -2006,14 +2155,14 @@
         <div class="riddle-note location-message-box">
           Zuhause, wo die Erinnerungen lebendig werden. Schau dir deine Polaroid-Fotos an!
         </div>
-        <div class="location-sprites">
+        <div class="location-sprites" style="margin-left:-50px;">
           <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
           <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
         </div>
       </div>
 
       <!-- Gästebuch Section -->
-      <div style="margin-top:30px;padding:20px;background:rgba(255,255,255,0.9);border:3px solid #000;box-shadow:4px 4px 0 #000;max-width:800px;margin-left:auto;margin-right:auto;">
+      <div style="margin-top:80px;padding:20px;background:rgba(255,255,255,0.9);border:3px solid #000;box-shadow:4px 4px 0 #000;max-width:800px;margin-left:auto;margin-right:auto;">
         <h3 style="margin:0 0 20px 0;font-family:'Nineteen Ninety Seven',monospace;text-align:center;color:#333;border-bottom:3px solid #000;padding-bottom:10px;">
           📖 GÄSTEBUCH
         </h3>
@@ -3110,7 +3259,7 @@
           const touchingWall = isWall(mouseX, mouseY);
 
           // Draw cursor
-          const cursorRadius = 8;
+          const cursorRadius = 4; // Half of original 8
           ctx.beginPath();
           ctx.arc(mouseX, mouseY, cursorRadius, 0, Math.PI * 2);
           ctx.fillStyle = touchingWall ? '#ff0000' : '#00ff00';
@@ -3652,47 +3801,41 @@
         const schoolPage = document.getElementById('school');
         if (schoolPage && schoolPage.classList.contains('active') && keys['KeyK'] && !schoolCheatUsed) {
           schoolCheatUsed = true;
-          
+
           console.log('🎮 School K-cheat activated!');
-          
-          // Use window.gameManager if available
+
+          // CRITICAL: Mark as won FIRST and wait for state to save
           if (window.gameManager) {
             window.gameManager.markWon('school');
-            console.log('✅ School marked as won via gameManager');
-          } else {
-            // Fallback: mark directly in state
-            if (window.DiasiteState) {
-              window.DiasiteState.gamesWon = window.DiasiteState.gamesWon || {};
-              window.DiasiteState.gamesWon['school'] = true;
-              window.DiasiteStorage && window.DiasiteStorage.saveState();
-              console.log('✅ School marked as won via state fallback');
-            }
+            console.log('✅ School marked as won');
           }
-          
-          // Return to landing page
-          document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-          const landingPage = document.getElementById('landing-page');
-          if (landingPage) {
-            landingPage.classList.add('active');
-            
-            // RADIKALER FIX: Direkt message box updaten!
-            const missionBox = document.getElementById('mission-box');
-            if (missionBox) {
-              missionBox.textContent = 'Gehe nun zu: Tanke!';
-              console.log('📝 DIRECT UPDATE: Mission box set to Tanke');
-            }
-            
-            // Dispatch gameWon event
+
+          // Wait for state to save, THEN navigate
+          setTimeout(() => {
+            console.log('📡 Dispatching gameWon event for school');
+            window.dispatchEvent(new CustomEvent('gameWon', {
+              detail: { gameId: 'school' }
+            }));
+
+            // THEN navigate using proper Navigation system
             setTimeout(() => {
-              console.log('📡 Dispatching gameWon event for school');
-              window.dispatchEvent(new CustomEvent('gameWon', { detail: { gameId: 'school' } }));
-              
+              if (window.Navigation) {
+                window.Navigation.navigateTo('landing-page');
+              } else {
+                // Fallback
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                const landingPage = document.getElementById('landing-page');
+                if (landingPage) {
+                  landingPage.classList.add('active');
+                }
+              }
+
               // Reset cheat flag after use
               setTimeout(() => {
                 schoolCheatUsed = false;
               }, 1000);
-            }, 100);
-          }
+            }, 200);
+          }, 500);
         }
       }, 100);
     })();
@@ -3712,10 +3855,9 @@
         <div class="game-container">
           <div style="text-align:center;padding:40px;">
             <p style="font-size:1.4rem;color:var(--terracotta);margin-bottom:30px;">
-              An der Tankstelle lief immer unser Lieblingssong...
+              Наслаждайся поездкой, детка.
             </p>
-            <button id="tanke-song-btn" class="play-btn" onclick="playTankeSong()">♪ Song abspielen</button>
-            <div id="tanke-song-status" style="margin-top:20px;font-size:1.1rem;color:#666;"></div>
+            <div id="tanke-song-status" style="margin-top:20px;font-size:1.1rem;color:#666;">🎵 Cherry Lady spielt...</div>
           </div>
         </div>
       </div>
@@ -3731,52 +3873,12 @@
     </div>
   </div>
   <script>
-    // Tanke Song System
-    let tankeSongPlaying = false;
-    let tankeSong = null;
-
-    window.playTankeSong = function() {
-      const btn = document.getElementById('tanke-song-btn');
-      const status = document.getElementById('tanke-song-status');
-
-      if (!tankeSong) {
-        tankeSong = new Audio('/assets/audios/cherryLady.mp3');
-        tankeSong.volume = 0.5;
-        tankeSong.addEventListener('ended', () => {
-          tankeSongPlaying = false;
-          status.textContent = 'Song zu Ende! Du hast die Erinnerung bewahrt.';
-          btn.textContent = '♪ Nochmal abspielen';
-          
-          // Auto-complete after song ends
-          setTimeout(() => {
-            if (typeof gameManager !== 'undefined') {
-              gameManager.markWon('tanke');
-            }
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            const landingPage = document.getElementById('landing-page');
-            if (landingPage) {
-              landingPage.classList.add('active');
-              setTimeout(() => {
-                window.dispatchEvent(new CustomEvent('gameWon', { detail: { gameId: 'tanke' } }));
-              }, 100);
-            }
-          }, 2000);
-        });
-      }
-
-      if (!tankeSongPlaying) {
-        tankeSong.currentTime = 0;
-        tankeSong.play();
-        tankeSongPlaying = true;
-        btn.textContent = '■ Song stoppen';
-        status.textContent = 'Song läuft...';
-      } else {
-        tankeSong.pause();
-        tankeSongPlaying = false;
-        btn.textContent = '♪ Song abspielen';
-        status.textContent = 'Song pausiert';
-      }
-    };
+    // Tanke - Audio managed by global AudioManager (plays automatically)
+    // Listen for song end via AudioManager to complete game
+    (function() {
+      // Audio is managed by window.AudioManager, song ends trigger is handled there
+      console.log('🎵 Tanke: Audio managed by global AudioManager');
+    })();
 
     // Tanke K-cheat
     (function() {
@@ -3789,6 +3891,7 @@
           if (typeof gameManager !== 'undefined') {
             gameManager.markWon('tanke');
           }
+          
           document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
           const landingPage = document.getElementById('landing-page');
           if (landingPage) {
@@ -3954,113 +4057,9 @@
   </script>
 
   <script>
-    // ===== GLOBAL MUSIC SYSTEM =====
-    (function() {
-      const audioTracks = {
-        nuPogodi: new Audio('/assets/audio/nuPogodi.mp3'),
-        krikGori: new Audio('/assets/audio/krikGori.mp3')
-      };
-
-      let currentTrack = null;
-      let musicStarted = false;
-      let krikGoriHasPlayed = false;
-
-      // krikGori gets special ended handler FIRST (before general config)
-      audioTracks.krikGori.addEventListener('ended', () => {
-        const krivayaPage = document.getElementById('krivaya');
-        if (krivayaPage && krivayaPage.classList.contains('active')) {
-          console.log('🔁 krikGori ended, still at krivaya - replaying');
-          audioTracks.krikGori.play();
-        } else {
-          console.log('✅ krikGori ended, not at krivaya - stopping');
-          audioTracks.krikGori.currentTime = 0; // Reset for next time
-        }
-      });
-
-      // Configure other audio tracks (nuPogodi only)
-      audioTracks.nuPogodi.volume = 0.5;
-      audioTracks.nuPogodi.preload = 'auto';
-      audioTracks.nuPogodi.addEventListener('ended', () => {
-        audioTracks.nuPogodi.currentTime = 0;
-      });
-
-      // Set krikGori config (volume/preload) without additional ended handler
-      audioTracks.krikGori.volume = 0.5;
-      audioTracks.krikGori.preload = 'auto';
-
-      function playTrack(trackName) {
-        const track = audioTracks[trackName];
-        if (!track) return;
-
-        // krikGori: only play once (unless replayed by 'ended' listener)
-        if (trackName === 'krikGori' && krikGoriHasPlayed && !track.paused) {
-          console.log(`🎵 krikGori already played once`);
-          return;
-        }
-
-        // If same track is already playing, do nothing
-        if (currentTrack === trackName && !track.paused) {
-          console.log(`🎵 ${trackName} already playing`);
-          return;
-        }
-
-        // Stop current track if different
-        if (currentTrack && currentTrack !== trackName) {
-          const oldTrack = audioTracks[currentTrack];
-          oldTrack.pause();
-          oldTrack.currentTime = 0;
-          console.log(`🛑 Stopped ${currentTrack}`);
-        }
-
-        // Play new track
-        currentTrack = trackName;
-        track.currentTime = 0;
-        track.play().catch(err => {
-          console.warn(`Could not play ${trackName}:`, err);
-        });
-
-        if (trackName === 'krikGori') {
-          krikGoriHasPlayed = true;
-        }
-
-        console.log(`▶️ Playing ${trackName}`);
-      }
-
-      // Start nuPogodi when entering from welcome.html or on first interaction
-      function startBackgroundMusic() {
-        if (!musicStarted) {
-          musicStarted = true;
-          playTrack('nuPogodi');
-        }
-      }
-
-      // Watch for page changes
-      const observer = new MutationObserver(() => {
-        const krivayaPage = document.getElementById('krivaya');
-        const landingPage = document.getElementById('landing-page');
-
-        // Start music when landing page becomes active (from welcome.html)
-        if (landingPage && landingPage.classList.contains('active') && !musicStarted) {
-          startBackgroundMusic();
-        }
-
-        // Switch to krikGori when krivaya becomes active
-        if (krivayaPage && krivayaPage.classList.contains('active')) {
-          playTrack('krikGori');
-        }
-      });
-
-      observer.observe(document.body, {
-        attributes: true,
-        subtree: true,
-        attributeFilter: ['class']
-      });
-
-      // Start music on any user interaction (fallback for autoplay policy)
-      document.addEventListener('click', startBackgroundMusic, { once: true });
-
-      console.log('✅ Music system initialized');
-    })();
+    // ===== AUDIO NOW MANAGED BY AudioManager =====
+    // All audio transitions handled by the global AudioManager above
+    console.log('✅ Audio system uses global AudioManager');
   </script>
 </body>
 </html>

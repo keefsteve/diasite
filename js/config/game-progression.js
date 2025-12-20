@@ -141,20 +141,6 @@ export const PROGRESSION = {
     displayName: 'School',
     game: null, // Noch zu implementieren
     collectible: null,
-    missionAfter: 'Gehe nun zur Tanke. Beeil dich!',
-    unlocks: ['tanke'],
-    character: null,
-    dialogue: null,
-    buttonVisible: true,
-    todo: 'Spiel noch zu überlegen'
-  },
-
-  // Level 10: Tanke
-  'tanke': {
-    level: 10,
-    displayName: 'Tanke',
-    game: null, // Noch zu implementieren
-    collectible: 'pasxa',
     missionAfter: 'Gehe nun nach Hause. Beeil dich!',
     unlocks: ['home'],
     character: null,
@@ -163,18 +149,32 @@ export const PROGRESSION = {
     todo: 'Spiel noch zu überlegen'
   },
 
-  // Level 11: Home
+  // Level 10: Tanke
   'home': {
-    level: 11,
-    displayName: 'Home',
-    game: 'final-game',
-    collectible: 'key',
-    missionAfter: 'Gehe nun zur Tanke. Beeil dich!',
+    level: 10,
+    displayName: 'Zuhause',
+    game: null, // Noch zu implementieren
+    collectible: 'pasxa',
+    missionAfter: 'Die Reise geht weiter:) Habt ihr überall Licht aus Fenster zu?',
     unlocks: ['tanke'],
     character: null,
     dialogue: null,
     buttonVisible: true,
-    isFinal: false
+    todo: 'Spiel noch zu überlegen'
+  },
+
+  // Level 11: Home
+  'tanke': {
+    level: 11,
+    displayName: 'Tanke',
+    game: 'final-game',
+    collectible: 'key',
+    missionAfter: 'Du hast alle Erinnerungen in diesem Jahr [2025] gesammelt! Auf viele weitere!',
+    unlocks: [],
+    character: null,
+    dialogue: null,
+    buttonVisible: true,
+    isFinal: true
   }
 };
 

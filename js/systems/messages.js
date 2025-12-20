@@ -166,30 +166,33 @@ class MessageSystem {
    * Listen to game events
    */
   setupEventListeners() {
-    console.log('🔊 Messages: Setting up event listeners');
-    
-    // Update mission on game won
-    window.addEventListener('gameWon', (e) => {
-      console.log('🎮 Messages: gameWon event received!', e.detail);
-      console.log('Current DiasiteState.games:', window.DiasiteState?.games);
-      this.updateMission();
-    });
+    console.log('🔊 Messages: DISABLED - MessageBox now managed by index.html MessageBoxManager');
 
-    // Update when landing page becomes active
-    const observer = new MutationObserver(() => {
-      const landingPage = document.getElementById('landing-page');
-      if (landingPage && landingPage.classList.contains('active')) {
-        this.updateMission();
-      }
-    });
+    // DISABLED: MessageBoxManager in index.html now handles all messageBox updates
+    // The old system was conflicting with the new one
 
-    const landingPage = document.getElementById('landing-page');
-    if (landingPage) {
-      observer.observe(landingPage, { attributes: true, attributeFilter: ['class'] });
-    }
+    // Update mission on game won - DISABLED
+    // window.addEventListener('gameWon', (e) => {
+    //   console.log('🎮 Messages: gameWon event received!', e.detail);
+    //   console.log('Current DiasiteState.games:', window.DiasiteState?.games);
+    //   this.updateMission();
+    // });
 
-    // Initial update
-    this.updateMission();
+    // Update when landing page becomes active - DISABLED
+    // const observer = new MutationObserver(() => {
+    //   const landingPage = document.getElementById('landing-page');
+    //   if (landingPage && landingPage.classList.contains('active')) {
+    //     this.updateMission();
+    //   }
+    // });
+
+    // const landingPage = document.getElementById('landing-page');
+    // if (landingPage) {
+    //   observer.observe(landingPage, { attributes: true, attributeFilter: ['class'] });
+    // }
+
+    // Initial update - DISABLED
+    // this.updateMission();
   }
 }
 

@@ -41,7 +41,7 @@ diasite/
 
 3. **i18n System**
    - Deutsch & Russisch Support
-   - Dynamischer Sprachwechsel
+   - Dynamischer Sprachwechsel 
    - Placeholder-System für Namen etc.
 
 4. **Klein-Dia Dialog System**
