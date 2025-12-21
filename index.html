@@ -719,7 +719,7 @@
       </div>
 
       <div class="location-message-row">
-        <div class="riddle-note location-message-box">
+        <div class="riddle-note location-message-box" style="max-width:500px;padding:20px;line-height:1.6;">
           *plumps* oh nein! jen, ich bin reingeplumpst! es ist so kalt... ich hoffe, dir ist nicht allzu kalt, denn du musst die kamera mit deinen trockenen händen rausfischen!
         </div>
         <div class="location-sprites">
@@ -2296,7 +2296,7 @@
       updateClock();
 
       // Load Polaroid Timeline
-      function loadPolaroidTimeline() {
+      window.loadPolaroidTimeline = function() {
         const timeline = document.getElementById('home-polaroid-timeline');
         if (!timeline) return;
 
@@ -2424,7 +2424,7 @@
         loadVoiceMessages();
       }
 
-      function loadVoiceMessages() {
+      window.loadVoiceMessages = function() {
         const list = document.getElementById('voice-messages-list');
         if (!list) return;
 
@@ -2494,7 +2494,7 @@
         `;
       }
 
-      function loadSouvenirs() {
+      window.loadSouvenirs = function() {
         const souvenirs = window.DiasiteState.home?.souvenirs || [];
         const container = document.getElementById('home-souvenirs-display');
         
@@ -2538,11 +2538,11 @@
       window.addEventListener('inventoryUpdated', () => {
         const currentLocation = window.DiasiteState?.currentLocation;
         if (currentLocation === 'home') {
-          enableSouvenirPlacement();
+          window.enableSouvenirPlacement();
         }
       });
 
-      function enableSouvenirPlacement() {
+      window.enableSouvenirPlacement = function() {
         setTimeout(() => {
           const inventoryItems = document.querySelectorAll('.inventory-item');
           inventoryItems.forEach(item => {
@@ -2556,14 +2556,14 @@
               e.stopPropagation();
               const itemId = item.dataset.item;
               if (itemId && window.DiasiteState.currentLocation === 'home') {
-                placeSouvenir(itemId);
+                window.placeSouvenir(itemId);
               }
             });
           });
         }, 100);
-      }
+      };
 
-      function placeSouvenir(itemId) {
+      window.placeSouvenir = function(itemId) {
         if (!window.DiasiteState.home) window.DiasiteState.home = {};
         if (!window.DiasiteState.home.souvenirs) window.DiasiteState.home.souvenirs = [];
 
@@ -2581,17 +2581,17 @@
 
           const souvenirSection = document.getElementById('home-section-souvenirs');
           if (souvenirSection && souvenirSection.style.display !== 'none') {
-            loadSouvenirs();
+            window.loadSouvenirs();
           }
         }
-      }
+      };
 
       // ===== WALL GAME =====
       let wallGameActive = false;
       let wallGameCount = 0;
       let wallGameListener = null;
 
-      function initWallGame() {
+      window.initWallGame = function() {
         console.log('🎮 Initializing Wall Game');
 
         // Reset game state
@@ -3826,6 +3826,57 @@
       let step = 0; // 0 = snail check, 1 = age, 2 = bunker item
       let age = '';
       let entries = JSON.parse(localStorage.getItem('bunker_entries') || '[]');
+      let bunkerItems = JSON.parse(localStorage.getItem('bunker_items') || '[]');
+      
+      // Bunker Item Management
+      window.addBunkerItem = function() {
+        const input = document.getElementById('bunker-item-input');
+        const item = input.value.trim();
+        
+        if (!item) return;
+        
+        bunkerItems.push({
+          id: Date.now(),
+          text: item,
+          timestamp: new Date().toLocaleString('de-DE')
+        });
+        
+        localStorage.setItem('bunker_items', JSON.stringify(bunkerItems));
+        input.value = '';
+        loadBunkerItems();
+        
+        showSalamanderBubble('Ich kümmere mich darum, dass es wieder in der Erde versinkt! 🦎', 2000);
+      };
+      
+      window.deleteBunkerItem = function(id) {
+        bunkerItems = bunkerItems.filter(item => item.id !== id);
+        localStorage.setItem('bunker_items', JSON.stringify(bunkerItems));
+        loadBunkerItems();
+      };
+      
+      function loadBunkerItems() {
+        const list = document.getElementById('bunker-items-list');
+        if (!list) return;
+        
+        if (bunkerItems.length === 0) {
+          list.innerHTML = '<p style="text-align:center;color:#888;font-style:italic;padding:20px;">Noch nichts in den Bunker geworfen...</p>';
+          return;
+        }
+        
+        list.innerHTML = bunkerItems.map(item => `
+          <div style="background:var(--cream);border:2px solid #000;padding:10px;margin-bottom:10px;box-shadow:2px 2px 0 #000;position:relative;">
+            <div style="font-size:0.85rem;color:#999;margin-bottom:5px;">${item.timestamp}</div>
+            <div style="font-family:'Nineteen Ninety Seven',monospace;">${escapeHtml(item.text)}</div>
+            <button onclick="deleteBunkerItem(${item.id})" style="position:absolute;top:8px;right:8px;background:#ff4444;color:#fff;border:2px solid #000;padding:3px 8px;font-size:0.7rem;cursor:pointer;border-radius:3px;">🗑️</button>
+          </div>
+        `).join('');
+      }
+      
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
       let snailDialogueShown = false;
       const keys = {};
       document.addEventListener('keydown', (e) => { keys[e.code] = true; });
@@ -3907,6 +3958,16 @@
             showSalamanderBubble('[PLACEHOLDER JOKE] Warum können Salamander nicht lügen? Weil sie zu kalt-blütig sind!', 4000);
             document.getElementById('bunker-response').textContent = '😂 Der Salamander hat einen Witz erzählt!';
             localStorage.setItem('salamander_snail_dialogue_done', 'true');
+            
+            // Zeige Bunker Items Section nach Witz
+            setTimeout(() => {
+              showSalamanderBubble('Was möchtest du in den Bunker werfen? Ich kümmere mich darum! 🦎', 3000);
+              const itemsSection = document.getElementById('bunker-items-section');
+              if (itemsSection) {
+                itemsSection.style.display = 'block';
+                if (window.loadBunkerItems) window.loadBunkerItems();
+              }
+            }, 4500);
             completeSnailDialogue();
           } else if (e.key === '2') {
             // Don't give snail
@@ -4062,7 +4123,7 @@
             </div>
 
             <!-- Canvas -->
-            <canvas id="pacman-canvas" width="700" height="700" style="display:block;margin:0 auto;background:#000;border:6px solid #2121de;box-shadow:6px 6px 0 #000;width:88%;height:calc(88% - 80px);"></canvas>
+            <canvas id="pacman-canvas" width="560" height="560" style="display:block;margin:0 auto;background:#000;border:6px solid #2121de;box-shadow:6px 6px 0 #000;image-rendering:pixelated;"></canvas>
 
             <!-- Victory Message -->
             <div id="school-victory" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,215,0,0.95);color:#000;padding:30px 50px;font-family:'Nineteen Ninety Seven',monospace;font-size:1.5rem;border:5px solid #000;box-shadow:0 0 30px rgba(255,215,0,0.8);display:none;text-align:center;z-index:200;">
@@ -4163,6 +4224,11 @@
           this.score = 0;
           this.gameActive = false;
           this.animFrame = 0;
+          
+          // Load popo.png
+          this.popoImg = new Image();
+          this.popoImg.src = '/assets/sprites/objects/popo.png';
+          console.log('🖼️ Loading popo.png');
 
           // Maze (1=wall, 0=path, 2=dot, 3=powerup)
           this.maze = [
@@ -4183,7 +4249,9 @@
           ];
 
           // REVERSED: Player (emoji) runs away, Eyer chases
-          this.player = { x: 1, y: 1, dir: 0, nextDir: 0 }; // User controlled
+          this.player = { x: 1, y: 1, dir: 0, nextDir: null }; // User controlled with queuing
+          this.playerMoveCounter = 0;
+          this.playerMoveSpeed = 2; // Moves every 2 frames for smooth response
           this.eyer = { x: 7, y: 7, dir: 0 }; // Autonomous chaser
 
           // Load eyer image from correct path
@@ -4254,11 +4322,10 @@
             this.eyerSpeed = 6; // Fast
           }
 
-          // Player always moves every 8 frames
-          const playerFrameInterval = 8;
-
-          // Handle player input
-          if (this.animFrame % playerFrameInterval === 0) {
+          // Player moves at consistent speed (smoother)
+          this.playerMoveCounter++;
+          if (this.playerMoveCounter >= this.playerMoveSpeed) {
+            this.playerMoveCounter = 0;
             this.handleInput();
             this.movePlayer();
           }
@@ -4280,10 +4347,13 @@
         }
 
         movePlayer() {
-          // Try to change direction
-          const nextPos = this.getNextPos(this.player.x, this.player.y, this.player.nextDir);
-          if (!this.isWall(nextPos.x, nextPos.y)) {
-            this.player.dir = this.player.nextDir;
+          // Try queued direction first
+          if (this.player.nextDir !== null) {
+            const nextPos = this.getNextPos(this.player.x, this.player.y, this.player.nextDir);
+            if (!this.isWall(nextPos.x, nextPos.y)) {
+              this.player.dir = this.player.nextDir;
+              this.player.nextDir = null; // Clear queue after successful turn
+            }
           }
 
           // Move in current direction
@@ -4413,13 +4483,18 @@
             }
           }
 
-          // Draw Player (emoji 🏃)
-          const px = this.player.x * this.tileSize + this.tileSize/2;
-          const py = this.player.y * this.tileSize + this.tileSize/2;
-          this.ctx.font = '32px Arial';
-          this.ctx.textAlign = 'center';
-          this.ctx.textBaseline = 'middle';
-          this.ctx.fillText('🏃', px, py);
+          // Draw Player (with popo.png)
+          const px = this.player.x * this.tileSize;
+          const py = this.player.y * this.tileSize;
+          if (this.popoImg.complete && this.popoImg.naturalWidth > 0) {
+            this.ctx.drawImage(this.popoImg, px, py, this.tileSize, this.tileSize);
+          } else {
+            // Fallback emoji while loading
+            this.ctx.font = '32px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText('🏃', px + this.tileSize/2, py + this.tileSize/2);
+          }
 
           // Draw Eyer (eyer.png)
           const ex = this.eyer.x * this.tileSize;
