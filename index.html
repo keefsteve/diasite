@@ -622,6 +622,12 @@
       // Auto-navigate to Botanical Garden on first start (spawn location)
       (function() {
         window.addEventListener('DOMContentLoaded', () => {
+          // Log visit
+          if (window.logVisit) {
+            const visitor = window.DiasiteState?.player?.name || 'Gast';
+            window.logVisit(visitor, 'Landing Page');
+          }
+          
           // Wait for state to load
           setTimeout(() => {
             if (window.DiasiteState && window.DiasiteState.gameProgress) {
@@ -678,6 +684,8 @@
 
   <!-- Botanical Garden Page (Spawn Location) -->
   <div id="botanical-garden" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
+    <img src="/assets/sprites/extra/1.png" style="position:absolute;top:80px;right:30px;width:160px;height:160px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
+    <img src="/assets/sprites/extra/1.png" style="position:absolute;top:10px;right:10px;width:80px;height:80px;object-fit:contain;z-index:1;opacity:0.8;pointer-events:none;" />
     <div class="page-header">
       <h2>Botanischer Garten</h2>
       <button class="back-btn" data-target="landing-page" style="display:none;">← Zurück</button>
@@ -710,6 +718,8 @@
 
   <!-- Fountain Page - Camera Fishing Game -->
   <div id="fountain" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
+    <img src="/assets/sprites/extra/3.png" style="position:absolute;bottom:180px;left:50%;transform:translateX(-50%);width:120px;height:120px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
+    <img src="/assets/sprites/extra/3.png" style="position:absolute;bottom:10px;left:10px;width:60px;height:60px;object-fit:contain;z-index:1;opacity:0.7;pointer-events:none;" />
     <div class="page-header">
       <h2>Fountain</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -1314,6 +1324,7 @@
 
   <!-- Oma Opa Shnol Page -->
   <div id="oma-opa-shnol" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
+    <img src="/assets/sprites/extra/4.png" style="position:absolute;bottom:180px;left:50%;transform:translateX(-50%);width:120px;height:120px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
     <div class="page-header">
       <h2>Oma & Opa Shnol</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -1764,6 +1775,8 @@
 
   <!-- Krivaya Gorka Page -->
   <div id="krivaya" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
+    <img src="/assets/sprites/extra/5.png" style="position:absolute;bottom:180px;left:50%;transform:translateX(-50%);width:140px;height:140px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
+    <img src="/assets/sprites/extra/5.png" style="position:absolute;top:50%;right:20px;width:70px;height:70px;object-fit:contain;z-index:1;opacity:0.75;pointer-events:none;" />
     <div class="page-header">
       <h2>Krivaya Gorka</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -1842,6 +1855,8 @@
 
   <!-- Oma & Opa Morg Page -->
   <div id="oma-opa-morg" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
+    <img src="/assets/sprites/extra/7.png" style="position:absolute;bottom:180px;left:50%;transform:translateX(-50%);width:130px;height:130px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
+    <img src="/assets/sprites/extra/7.png" style="position:absolute;top:15%;left:15%;width:65px;height:65px;object-fit:contain;z-index:1;opacity:0.8;pointer-events:none;" />
     <div class="page-header">
       <h2>Oma & Opa Morg</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -2130,6 +2145,8 @@
 
   <!-- Home Page -->
   <div id="home" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
+    <img src="/assets/sprites/extra/10.png" style="position:absolute;top:5%;right:5%;width:80px;height:80px;object-fit:contain;z-index:1;opacity:0.75;pointer-events:none;" />
+    <img src="/assets/sprites/extra/10.png" style="position:absolute;top:5%;right:5%;width:80px;height:80px;object-fit:contain;z-index:1;opacity:0.75;pointer-events:none;" />
     <div class="page-header">
       <h2>Home</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -2224,9 +2241,12 @@
                 </p>
 
                 <!-- Game Container -->
-                <div id="wallgame-container" style="position:relative;width:100%;height:400px;background-image:url('/assets/sprites/places/wall.png');background-size:cover;background-position:center;border:3px solid #000;overflow:hidden;">
-                  <!-- Jen Sprite -->
-                  <img id="wallgame-jen" src="/assets/sprites/people/jenSprite.png" alt="Jen" style="position:absolute;top:50%;transform:translateY(-50%);height:120px;width:auto;right:20px;transition:right 0.05s linear;" />
+                <div id="wallgame-container" style="position:relative;width:100%;height:400px;background:#d4c5a0;border:3px solid #000;overflow:hidden;">
+                  <!-- ASCII Wall -->
+                  <div id="wallgame-wall" style="position:absolute;right:0;top:0;bottom:0;width:80px;background:#8B4513;font-family:monospace;font-size:20px;line-height:20px;color:#654321;overflow:hidden;white-space:pre;padding:5px;"></div>
+                  
+                  <!-- Jen Head -->
+                  <img id="wallgame-jen" src="/assets/sprites/people/jenHead.png" alt="Jen" style="position:absolute;top:50%;transform:translateY(-50%) scaleY(-1) rotate(90deg);height:100px;width:auto;left:20px;transition:left 0.05s linear;" />
 
                   <!-- Counter Display -->
                   <div id="wallgame-counter" style="position:absolute;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:#fff;padding:15px 30px;font-family:'Nineteen Ninety Seven',monospace;font-size:2rem;border:3px solid #fff;box-shadow:0 0 20px rgba(255,255,255,0.5);">
@@ -2268,6 +2288,14 @@
 
         <!-- Gästebuch Entries -->
         <div id="guestbook-entries" style="max-height:400px;overflow-y:auto;"></div>
+      </div>
+
+      <!-- Visit Logs Section -->
+      <div style="width:100%;max-width:900px;padding:20px;background:rgba(255,255,255,0.9);border:3px solid #000;box-shadow:4px 4px 0 #000;margin-top:20px;">
+        <h3 style="margin:0 0 20px 0;font-family:'Nineteen Ninety Seven',monospace;text-align:center;color:#333;border-bottom:3px solid #000;padding-bottom:10px;">
+          📊 VISIT LOGS
+        </h3>
+        <div id="visit-logs" style="max-height:300px;overflow-y:auto;background:var(--paper-white);border:2px solid #666;padding:15px;font-family:'Nineteen Ninety Seven',monospace;font-size:0.85rem;"></div>
       </div>
     </div>
   </div>
@@ -2511,6 +2539,36 @@
         `;
       }
 
+      // Visit Logs Funktionen
+      window.loadVisitLogs = function() {
+        const logs = JSON.parse(localStorage.getItem('diasite_visit_logs') || '[]');
+        const logsDiv = document.getElementById('visit-logs');
+        if (!logsDiv) return;
+
+        if (logs.length === 0) {
+          logsDiv.innerHTML = '<p style="text-align:center;color:#888;font-style:italic;">Noch keine Besuche aufgezeichnet...</p>';
+          return;
+        }
+
+        logsDiv.innerHTML = logs.map((log, i) => `
+          <div style="padding:8px;border-bottom:1px solid #ddd;${i === 0 ? 'background:#fffacd;' : ''}">
+            <span style="color:#666;">[${log.timestamp}]</span>
+            <span style="color:#333;font-weight:bold;margin-left:10px;">${log.visitor || 'Anonym'}</span>
+            ${log.location ? `<span style="color:#888;margin-left:10px;">→ ${log.location}</span>` : ''}
+          </div>
+        `).reverse().join('');
+      }
+
+      window.logVisit = function(visitor, location) {
+        const logs = JSON.parse(localStorage.getItem('diasite_visit_logs') || '[]');
+        logs.push({
+          timestamp: new Date().toLocaleString('de-DE'),
+          visitor: visitor || 'Anonym',
+          location: location || 'Home'
+        });
+        localStorage.setItem('diasite_visit_logs', JSON.stringify(logs));
+      }
+
       window.loadSouvenirs = function() {
         const souvenirs = window.DiasiteState.home?.souvenirs || [];
         const container = document.getElementById('home-souvenirs-display');
@@ -2677,6 +2735,18 @@
       window.initWallGame = function() {
         console.log('🎮 Initializing Wall Game');
 
+        // Initialisiere ASCII Wand
+        const wall = document.getElementById('wallgame-wall');
+        if (wall) {
+          const wallChars = '█░▒▓#▉▊▋▌▍▎▏';
+          let wallContent = '';
+          for (let i = 0; i < 400; i++) {
+            wallContent += wallChars[Math.floor(Math.random() * wallChars.length)];
+            if ((i + 1) % 4 === 0) wallContent += '\n';
+          }
+          wall.textContent = wallContent;
+        }
+
         // Reset game state
         wallGameCount = 0;
         wallGameActive = true;
@@ -2686,7 +2756,7 @@
         const counter = document.getElementById('wallgame-counter');
         const victory = document.getElementById('wallgame-victory');
 
-        if (jen) jen.style.right = '20px';
+        if (jen) jen.style.left = '20px';
         if (counter) counter.textContent = '0 / 26';
         if (victory) victory.style.display = 'none';
 
@@ -2717,11 +2787,26 @@
             // Update counter
             if (counter) counter.textContent = `${wallGameCount} / 26`;
 
-            // Move Jen left (rapid movement)
+            // Brösele ASCII Wand alle paar Schläge
+            if (wallGameCount % 3 === 0) {
+              const wall = document.getElementById('wallgame-wall');
+              if (wall) {
+                let content = wall.textContent;
+                const chars = content.split('');
+                // Ersetze random Zeichen mit Leerzeichen
+                for (let i = 0; i < 15; i++) {
+                  const idx = Math.floor(Math.random() * chars.length);
+                  if (chars[idx] !== '\n') chars[idx] = ' ';
+                }
+                wall.textContent = chars.join('');
+              }
+            }
+
+            // Move Jen right (rapid movement)
             if (jen) {
-              const currentRight = parseInt(jen.style.right) || 20;
-              const newRight = Math.max(0, currentRight - 15); // Move 15px left each hit
-              jen.style.right = newRight + 'px';
+              const currentLeft = parseInt(jen.style.left) || 20;
+              const newLeft = currentLeft + 15; // Move 15px right each hit
+              jen.style.left = newLeft + 'px';
 
               // Add shake effect
               jen.style.filter = 'brightness(1.2)';
@@ -2897,6 +2982,7 @@
 
   <!-- Snails/Uni-Center Page -->
   <div id="snails" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
+    <img src="/assets/sprites/extra/2.png" style="position:absolute;top:80px;right:30px;width:130px;height:130px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
     <div class="page-header">
       <h2>Uni-Center</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -3633,6 +3719,8 @@
 
   <!-- Oma Shelya Page (Level 7) -->
   <div id="oma-shelya" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
+    <img src="/assets/sprites/extra/6.png" style="position:absolute;top:80px;right:30px;width:110px;height:110px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
+    <img src="/assets/sprites/extra/6.png" style="position:absolute;top:40%;right:30%;width:55px;height:55px;object-fit:contain;z-index:1;opacity:0.75;pointer-events:none;" />
     <div class="page-header">
       <h2>Oma Shelya</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -3867,6 +3955,8 @@
 
   <!-- Bunker Page -->
   <div id="bunker" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
+    <img src="/assets/sprites/extra/9.png" style="position:absolute;top:80px;right:30px;width:150px;height:150px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
+    <img src="/assets/sprites/extra/9.png" style="position:absolute;bottom:15%;right:10%;width:75px;height:75px;object-fit:contain;z-index:1;opacity:0.7;pointer-events:none;" />
     <div class="page-header">
       <h2>Bunker</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -4062,7 +4152,7 @@
             completeSnailDialogue(); // Gehe zur nächsten Location
           }
         };
-        document.addEvent<Listener('keydown', handleKeyPress);
+        document.addEventListener('keydown', handleKeyPress);
       }
 
       function completeSnailDialogue() {
@@ -4101,21 +4191,9 @@
         resetBtn.onclick = (e) => {
           e.preventDefault();
           e.stopPropagation();
-          console.log('🔄 Reset clicked - clearing dialog flag');
+          console.log('🔄 Reset clicked - full reload');
           localStorage.removeItem('salamander_snail_dialogue_done');
-          snailDialogueShown = false;
-          // Setze Dialog-UI zurück auf Anfangszustand
-          const questionEl = document.getElementById('bunker-question');
-          const responseEl = document.getElementById('bunker-response');
-          if (questionEl) questionEl.textContent = '';
-          if (responseEl) responseEl.textContent = '';
-          const itemsSection = document.getElementById('bunker-items-section');
-          if (itemsSection) itemsSection.style.display = 'none';
-          // Starte Dialog neu wenn Schnecke vorhanden
-          const hasSnail = window.DiasiteState?.player?.inventory?.includes('snail');
-          if (hasSnail) {
-            handleSnailDialogue();
-          }
+          window.location.reload();
         };
         const bunkerPage = document.getElementById('bunker');
         if (bunkerPage && !bunkerPage.querySelector('button[style*="#ff6600"]')) {
@@ -4208,6 +4286,8 @@
 
   <!-- School Page -->
   <div id="school" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
+    <img src="/assets/sprites/extra/11.png" style="position:absolute;bottom:180px;left:50%;transform:translateX(-50%);width:140px;height:140px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
+    <img src="/assets/sprites/extra/11.png" style="position:absolute;top:20%;left:5%;width:70px;height:70px;object-fit:contain;z-index:1;opacity:0.75;pointer-events:none;" />
     <div class="page-header">
       <h2>School</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -4830,6 +4910,8 @@
 
   <!-- Tanke Page -->
   <div id="tanke" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
+    <img src="/assets/sprites/extra/8.png" style="position:absolute;top:80px;right:30px;width:140px;height:140px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
+    <img src="/assets/sprites/extra/8.png" style="position:absolute;top:10%;left:50%;width:70px;height:70px;object-fit:contain;z-index:1;opacity:0.8;pointer-events:none;" />
     <div class="page-header">
       <h2>Tanke</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -4837,7 +4919,7 @@
     <div class="location-content">
       <div class="location-top-row">
         <div class="location-image-container">
-          <img src="/assets/sprites/places/tanke.png" alt="Tanke" class="location-image" onerror="this.style.display='none'" />
+          <img src="/assets/sprites/objects/cherryCola.png" alt="Tanke" class="location-image" onerror="this.style.display='none'" />
         </div>
         <div class="game-container">
           <div style="text-align:center;padding:40px;">

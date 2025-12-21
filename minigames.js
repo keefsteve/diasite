@@ -481,8 +481,8 @@ function initMazeGame(){
   
   if(!canvas) return;
   
-  canvas.style.width = '500px';
-  canvas.style.height = '500px';
+  canvas.style.width = '700px';
+  canvas.style.height = '700px';
   canvas.style.border = '3px solid var(--pink)';
   canvas.style.borderRadius = '8px';
   canvas.style.margin = '20px auto';
