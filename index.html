@@ -6,10 +6,20 @@
   <title>Diasite - Eine Reise durch die Kindheit</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="js/systems/ui.css" />
+  <style>
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-30px); }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+  </style>
 </head>
 <body class="app-ready">
   <!-- Landing Page -->
-  <div id="landing-page" class="page">
+  <div id="landing-page" class="page" style="background-color:#ebd7fa;">
     <!-- Clock in upper right corner -->
     <div id="game-clock" style="position:absolute;top:20px;right:20px;background:#222;color:#00ff88;padding:12px 30px;border:3px solid #00ff88;border-radius:0px;font-family:'Nineteen Ninety Seven';font-size:2rem;font-weight:normal;text-align:center;box-shadow:0 0 15px rgba(0,255,136,0.4),inset 0 0 8px rgba(0,255,136,0.15);z-index:200;text-transform:uppercase;image-rendering:pixelated;min-width:220px;">
       <div id="clock-date" style="font-size:0.8rem;margin-bottom:6px;"></div>
@@ -667,7 +677,7 @@
   </div>
 
   <!-- Botanical Garden Page (Spawn Location) -->
-  <div id="botanical-garden" class="page" style="align-items: flex-start; justify-content: flex-start;">
+  <div id="botanical-garden" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
     <div class="page-header">
       <h2>Botanischer Garten</h2>
       <button class="back-btn" data-target="landing-page" style="display:none;">← Zurück</button>
@@ -699,7 +709,7 @@
   </div>
 
   <!-- Fountain Page - Camera Fishing Game -->
-  <div id="fountain" class="page" style="align-items: flex-start; justify-content: flex-start;">
+  <div id="fountain" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
     <div class="page-header">
       <h2>Fountain</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -1303,7 +1313,7 @@
   </script>
 
   <!-- Oma Opa Shnol Page -->
-  <div id="oma-opa-shnol" class="page" style="align-items: flex-start; justify-content: flex-start;">
+  <div id="oma-opa-shnol" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
     <div class="page-header">
       <h2>Oma & Opa Shnol</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -1753,7 +1763,7 @@
   </script>
 
   <!-- Krivaya Gorka Page -->
-  <div id="krivaya" class="page" style="align-items: flex-start; justify-content: flex-start;">
+  <div id="krivaya" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
     <div class="page-header">
       <h2>Krivaya Gorka</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -1831,7 +1841,7 @@
   </script>
 
   <!-- Oma & Opa Morg Page -->
-  <div id="oma-opa-morg" class="page" style="align-items: flex-start; justify-content: flex-start;">
+  <div id="oma-opa-morg" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
     <div class="page-header">
       <h2>Oma & Opa Morg</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -2115,7 +2125,7 @@
   </script>
 
   <!-- Home Page -->
-  <div id="home" class="page" style="align-items: flex-start; justify-content: flex-start;">
+  <div id="home" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
     <div class="page-header">
       <h2>Home</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -2457,7 +2467,7 @@
       };
 
       // Stats
-      function loadStats() {
+      window.loadStats = function() {
         const statsDiv = document.getElementById('home-stats-content');
         if (!statsDiv) return;
 
@@ -2544,51 +2554,91 @@
 
       window.enableSouvenirPlacement = function() {
         console.log('🎁 Enabling souvenir placement...');
+        
+        // Warte bis Inventar geladen ist
         setTimeout(() => {
-          const inventoryItems = document.querySelectorAll('#items .item');
+          const inventoryContainer = document.getElementById('items');
+          if (!inventoryContainer) {
+            console.error('❌ Inventory container not found');
+            return;
+          }
+          
+          const inventoryItems = inventoryContainer.querySelectorAll('.item');
           console.log('🎁 Found inventory items:', inventoryItems.length);
+          
           inventoryItems.forEach(item => {
-            if (item.dataset.souvenirHandlerAdded) return;
-            item.dataset.souvenirHandlerAdded = 'true';
+            // Entferne alte Buttons
+            const oldBtn = item.querySelector('.souvenir-btn');
+            if (oldBtn) oldBtn.remove();
             
-            item.style.cursor = 'pointer';
-            item.title = 'Klicke um als Souvenir abzulegen';
+            // Füge Button direkt ins Item ein
+            const souvenirBtn = document.createElement('button');
+            souvenirBtn.className = 'souvenir-btn';
+            souvenirBtn.textContent = '⬇️';
+            souvenirBtn.title = 'Als Souvenir ablegen';
+            souvenirBtn.style.cssText = `
+              position: absolute;
+              bottom: 2px;
+              right: 2px;
+              background: #00aa00;
+              color: white;
+              border: 2px solid #000;
+              padding: 2px 6px;
+              font-size: 0.8rem;
+              cursor: pointer;
+              border-radius: 3px;
+              z-index: 10;
+            `;
             
-            const clickHandler = (e) => {
+            souvenirBtn.onclick = (e) => {
               e.stopPropagation();
               const itemId = item.dataset.id;
-              console.log('🎁 Clicked item:', itemId, 'at location:', window.DiasiteState?.currentLocation);
-              if (itemId && window.DiasiteState?.currentLocation === 'home') {
+              console.log('🎁 Button clicked for item:', itemId);
+              if (itemId) {
                 window.placeSouvenir(itemId);
               }
             };
             
-            item.removeEventListener('click', clickHandler);
-            item.addEventListener('click', clickHandler);
+            item.style.position = 'relative';
+            item.appendChild(souvenirBtn);
           });
-        }, 100);
+        }, 500);
       };
 
       window.placeSouvenir = function(itemId) {
+        console.log('🎁 placeSouvenir called with:', itemId);
+        console.log('🎁 Current location:', window.DiasiteState?.currentLocation);
+        console.log('🎁 DiasiteInventory exists:', !!window.DiasiteInventory);
+        
         if (!window.DiasiteState.home) window.DiasiteState.home = {};
         if (!window.DiasiteState.home.souvenirs) window.DiasiteState.home.souvenirs = [];
 
         if (window.DiasiteState.home.souvenirs.includes(itemId)) {
-          window.flashMessage('Souvenir bereits abgelegt!', 1500);
+          console.log('⚠️ Souvenir already placed');
+          if (window.flashMessage) window.flashMessage('Souvenir bereits abgelegt!', 1500);
           return;
         }
 
-        const removed = window.DiasiteInventory.removeItem(itemId);
-        if (removed) {
-          window.DiasiteState.home.souvenirs.push(itemId);
-          window.DiasiteStorage.saveState();
+        if (window.DiasiteInventory && typeof window.DiasiteInventory.removeItem === 'function') {
+          const removed = window.DiasiteInventory.removeItem(itemId);
+          console.log('🎁 Removed from inventory:', removed);
+          if (removed) {
+            window.DiasiteState.home.souvenirs.push(itemId);
+            if (window.DiasiteStorage && typeof window.DiasiteStorage.saveState === 'function') {
+              window.DiasiteStorage.saveState();
+            }
 
-          window.flashMessage(`${itemId} als Souvenir abgelegt!`, 1500);
+            if (window.flashMessage) window.flashMessage(`${itemId} als Souvenir abgelegt!`, 1500);
 
-          const souvenirSection = document.getElementById('home-section-souvenirs');
-          if (souvenirSection && souvenirSection.style.display !== 'none') {
-            window.loadSouvenirs();
+            const souvenirSection = document.getElementById('home-section-souvenirs');
+            if (souvenirSection && souvenirSection.style.display !== 'none') {
+              window.loadSouvenirs();
+            }
+            
+            console.log('✅ Souvenir successfully placed:', itemId);
           }
+        } else {
+          console.error('❌ DiasiteInventory.removeItem not available');
         }
       };
 
@@ -2819,7 +2869,7 @@
   </script>
 
   <!-- Snails/Uni-Center Page -->
-  <div id="snails" class="page" style="align-items: flex-start; justify-content: flex-start;">
+  <div id="snails" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
     <div class="page-header">
       <h2>Uni-Center</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -3381,7 +3431,7 @@
         // Game state
         let gameActive = false;
         let startTime = null;
-        const timeLimit = 60;
+        const timeLimit = 222; // 222 Sekunden für das Maze Game
         let mouseX = canvas.width / 2;
         let mouseY = canvas.height / 2;
         let mazeImageData = null;
@@ -3555,7 +3605,7 @@
   </script>
 
   <!-- Oma Shelya Page (Level 7) -->
-  <div id="oma-shelya" class="page" style="align-items: flex-start; justify-content: flex-start;">
+  <div id="oma-shelya" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
     <div class="page-header">
       <h2>Oma Shelya</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -3789,7 +3839,7 @@
   </script>
 
   <!-- Bunker Page -->
-  <div id="bunker" class="page" style="align-items: flex-start; justify-content: flex-start;">
+  <div id="bunker" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
     <div class="page-header">
       <h2>Bunker</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -3967,22 +4017,22 @@
             
             // Zeige Bunker Items Section nach Witz
             setTimeout(() => {
-              showSalamanderBubble('Was möchtest du in den Bunker werfen? Ich kümmere mich darum! 🦎', 3000);
+              showSalamanderBubble('Was möchtest du dieses Jahr in den Bunker werfen? 🦎', 3000);
               const itemsSection = document.getElementById('bunker-items-section');
               if (itemsSection) {
                 itemsSection.style.display = 'block';
                 if (window.loadBunkerItems) window.loadBunkerItems();
               }
+              // NICHT completeSnailDialogue() aufrufen - Spieler bleibt auf der Seite
             }, 4500);
-            completeSnailDialogue();
           } else if (e.key === '2') {
-            // Don't give snail
+            // Don't give snail - gehe direkt weiter
             document.removeEventListener('keydown', handleKeyPress);
             nodHead();
-            showSalamanderBubble('ya sharmuta mizdayenet ufffffffi mi po lifnei she ani mesanzher otakh', 4000);
-            document.getElementById('bunker-response').textContent = '😠 Der Salamander ist verärgert!';
+            showSalamanderBubble('Schade... dann eben nicht!', 2000);
+            document.getElementById('bunker-response').textContent = '😕 Salamander ist enttäuscht';
             localStorage.setItem('salamander_snail_dialogue_done', 'true');
-            completeSnailDialogue();
+            completeSnailDialogue(); // Gehe zur nächsten Location
           }
         };
         document.addEventListener('keydown', handleKeyPress);
@@ -4016,6 +4066,20 @@
         const snailDialogueDone = localStorage.getItem('salamander_snail_dialogue_done') === 'true';
 
         console.log('🦎 Bunker setup - hasSnail:', hasSnail, 'dialogueDone:', snailDialogueDone);
+
+        // RESET Button für Testing
+        const resetBtn = document.createElement('button');
+        resetBtn.textContent = '🔄 Dialog Reset (Testing)';
+        resetBtn.style.cssText = 'position:absolute;top:10px;right:10px;padding:8px;background:#ff6600;color:#fff;border:2px solid #000;cursor:pointer;z-index:999;font-family:"Nineteen Ninety Seven",monospace;';
+        resetBtn.onclick = () => {
+          localStorage.removeItem('salamander_snail_dialogue_done');
+          snailDialogueShown = false;
+          window.location.reload();
+        };
+        const bunkerPage = document.getElementById('bunker');
+        if (bunkerPage && !bunkerPage.querySelector('button[style*="#ff6600"]')) {
+          bunkerPage.appendChild(resetBtn);
+        }
 
         if (hasSnail && !snailDialogueDone && !snailDialogueShown) {
           snailDialogueShown = true;
@@ -4102,7 +4166,7 @@
   </script>
 
   <!-- School Page -->
-  <div id="school" class="page" style="align-items: flex-start; justify-content: flex-start;">
+  <div id="school" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
     <div class="page-header">
       <h2>School</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -4389,8 +4453,8 @@
               document.getElementById('pacman-score').textContent = this.score;
             }
 
-            // Check win
-            if (this.dotsRemaining === 0) {
+            // Check win by score OR dots
+            if (this.score >= 900 || this.dotsRemaining === 0) {
               this.win();
             }
           }
@@ -4507,16 +4571,18 @@
             this.ctx.fillText('🏃', px + this.tileSize/2, py + this.tileSize/2);
           }
 
-          // Draw Eyer (eyer.png)
+          // Draw Eyer (eyer.png) - DOPPELT SO GROSS
           const ex = this.eyer.x * this.tileSize;
           const ey = this.eyer.y * this.tileSize;
+          const eyerSize = this.tileSize * 2; // Doppelte Größe
+          const eyerOffset = -this.tileSize / 2; // Zentriere das vergrößerte Bild
           if (this.eyerImg.complete && this.eyerImg.naturalWidth > 0) {
-            this.ctx.drawImage(this.eyerImg, ex, ey, this.tileSize, this.tileSize);
+            this.ctx.drawImage(this.eyerImg, ex + eyerOffset, ey + eyerOffset, eyerSize, eyerSize);
           } else {
             // Fallback: draw red circle if image not loaded
             this.ctx.fillStyle = '#ff0000';
             this.ctx.beginPath();
-            this.ctx.arc(ex + this.tileSize/2, ey + this.tileSize/2, this.tileSize/2 - 2, 0, Math.PI * 2);
+            this.ctx.arc(ex + this.tileSize/2, ey + this.tileSize/2, this.tileSize - 2, 0, Math.PI * 2);
             this.ctx.fill();
           }
         }
@@ -4524,20 +4590,132 @@
         win() {
           console.log('🎉 Pac-Man WON!');
           this.gameActive = false;
-          document.getElementById('school-victory').style.display = 'block';
-
-          if (typeof gameManager !== 'undefined') {
-            gameManager.markWon('school');
-          }
-
+          
+          // Tariq.png erscheint und sagt seinen Text
+          const schoolPage = document.getElementById('school');
+          const overlay = document.createElement('div');
+          overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 3s ease-in;
+          `;
+          
+          const tariqImg = document.createElement('img');
+          tariqImg.src = '/assets/sprites/people/tariq.png';
+          tariqImg.style.cssText = `
+            width: 400px;
+            height: 400px;
+            object-fit: contain;
+            margin-bottom: 30px;
+            image-rendering: pixelated;
+          `;
+          
+          const textBox = document.createElement('div');
+          textBox.style.cssText = `
+            background: var(--paper-white);
+            border: 4px solid #000;
+            padding: 30px;
+            max-width: 600px;
+            font-family: 'Nineteen Ninety Seven', monospace;
+            font-size: 1.2rem;
+            text-align: center;
+            box-shadow: 6px 6px 0 #000;
+            line-height: 1.6;
+          `;
+          textBox.textContent = 'Diesmal gewinnst du, aber nächstes mal kriege ich meinen badonkadong!! Und wenn nicht bei dir, dann die haariga harmonika von der Monika! Erzähl allen Jüdinnen_Juden über die anti-deutsche Drachenzunge!!!!!!!';
+          
+          overlay.appendChild(tariqImg);
+          overlay.appendChild(textBox);
+          document.body.appendChild(overlay);
+          
+          // Fade in
+          setTimeout(() => { overlay.style.opacity = '1'; }, 100);
+          
+          // Fade out nach 8 Sekunden
           setTimeout(() => {
-            window.dispatchEvent(new CustomEvent('gameWon', { detail: { gameId: 'school' } }));
+            overlay.style.opacity = '0';
             setTimeout(() => {
-              document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-              const landingPage = document.getElementById('landing-page');
-              if (landingPage) landingPage.classList.add('active');
-            }, 100);
-          }, 2000);
+              overlay.remove();
+              
+              // Jen und Steve bounce Animation
+              const victoryOverlay = document.createElement('div');
+              victoryOverlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(255,255,255,0.95);
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+              `;
+              
+              const spritesContainer = document.createElement('div');
+              spritesContainer.style.cssText = 'display: flex; gap: 50px; margin-bottom: 30px;';
+              
+              const jenSprite = document.createElement('img');
+              jenSprite.src = '/assets/sprites/people/jenSprite.png';
+              jenSprite.style.cssText = `
+                width: 300px;
+                height: 300px;
+                animation: bounce 0.5s ease-in-out infinite;
+              `;
+              
+              const steveSprite = document.createElement('img');
+              steveSprite.src = '/assets/sprites/people/steveSprite.png';
+              steveSprite.style.cssText = `
+                width: 300px;
+                height: 300px;
+                animation: bounce 0.5s ease-in-out infinite 0.25s;
+              `;
+              
+              const victoryText = document.createElement('div');
+              victoryText.style.cssText = `
+                font-family: 'Nineteen Ninety Seven', monospace;
+                font-size: 3rem;
+                font-weight: bold;
+                color: #00aa00;
+                text-align: center;
+                animation: pulse 1s ease-in-out infinite;
+              `;
+              victoryText.textContent = 'WIR HABEN IHN BESIEGT!';
+              
+              spritesContainer.appendChild(jenSprite);
+              spritesContainer.appendChild(steveSprite);
+              victoryOverlay.appendChild(spritesContainer);
+              victoryOverlay.appendChild(victoryText);
+              document.body.appendChild(victoryOverlay);
+              
+              // Game gewonnen markieren
+              if (typeof gameManager !== 'undefined') {
+                gameManager.markWon('school');
+              }
+              
+              // Nach 5 Sekunden zur Landing Page
+              setTimeout(() => {
+                victoryOverlay.remove();
+                window.dispatchEvent(new CustomEvent('gameWon', { detail: { gameId: 'school' } }));
+                setTimeout(() => {
+                  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                  const landingPage = document.getElementById('landing-page');
+                  if (landingPage) landingPage.classList.add('active');
+                }, 100);
+              }, 5000);
+            }, 3000);
+          }, 8000);
         }
 
         lose() {
@@ -4551,7 +4729,7 @@
   </script>
 
   <!-- Tanke Page -->
-  <div id="tanke" class="page" style="align-items: flex-start; justify-content: flex-start;">
+  <div id="tanke" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
     <div class="page-header">
       <h2>Tanke</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
