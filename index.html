@@ -1786,7 +1786,7 @@
 
       <div class="location-message-row">
         <div class="riddle-note location-message-box">
-          Die steile Rutsche hinunter zur Krivaya Gorka war immer ein Abenteuer. Nasse Klamotten waren garantiert!
+          Die Krivaya Gorka war immer ein Abenteuer. Allerdings kann sie einen kindlichen Kopf echt durcheinanderbringen. Versuche, da rauszukommen!
         </div>
         <div class="location-sprites">
           <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
@@ -1877,7 +1877,7 @@
 
       <div class="location-message-row">
         <div class="riddle-note location-message-box">
-          Bei Oma und Opa Morg gab es immer die besten Geschichten und leckeres Essen!
+          Oma und Opa Morgulis/Kleiner waren unser zweites Zuhause, war aber nicht ohne! Je älter man wurde, desto schwieriger wurde es. Hier kannst Du deine Kommunikationsskills mit unseren Grossis testen.
         </div>
         <div class="location-sprites">
           <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
@@ -2042,7 +2042,11 @@
             }
           }, 100);
         }
-        if (input) input.disabled = true;
+        // Input NICHT disablen, damit man weitertippen kann
+        if (input) {
+          input.value = '';
+          input.focus();
+        }
       }
       
       function stopGame() {
@@ -2201,6 +2205,9 @@
             <div id="home-section-souvenirs" class="home-section" style="display:none;">
               <div style="background:var(--paper-white);border:3px solid #000;padding:20px;box-shadow:4px 4px 0 #000;">
                 <h4 style="margin:0 0 15px 0;font-family:'Nineteen Ninety Seven',monospace;color:#333;">Souvenir Schublade</h4>
+                <div style="background:#e8f5e9;border:2px solid #4caf50;padding:12px;margin-bottom:15px;border-radius:4px;font-size:0.9rem;color:#2e7d32;">
+                  💡 <strong>Tipp:</strong> Klicke auf den grünen ⬇️ Button bei einem Inventar-Item, um es als Souvenir abzulegen!
+                </div>
                 <p style="font-size:0.9rem;color:#666;margin-bottom:15px;">Klicke auf ein Item im Inventar um es hier abzulegen.</p>
                 <div id="home-souvenirs-display" style="display:flex;flex-wrap:wrap;gap:15px;min-height:200px;background:rgba(232,223,208,0.3);padding:15px;border-radius:8px;">
                   <!-- Souvenirs werden hier angezeigt -->
@@ -3588,7 +3595,7 @@
 
           ctx.font = '20px "Nineteen Ninety Seven"';
           ctx.fillStyle = '#fff';
-          ctx.fillText(won ? 'Nasse Klamotten gefunden!' : 'Click to try again', canvas.width/2, canvas.height/2 + 20);
+          ctx.fillText(won ? 'Du hast es geschafft!' : 'Click to try again', canvas.width/2, canvas.height/2 + 20);
 
           if (won) {
             setTimeout(() => {
@@ -3645,7 +3652,7 @@
 
       <div class="location-message-row">
         <div class="riddle-note location-message-box">
-          Oma Shelya hatte immer frischen Fisch für uns. Ihre Geschichten vom Meer waren legendär!
+          Oma Shelya hat sich immer gefreut, wenn wir kamen. Was ziemlich ironisch war, weil sie durch unsere Präsenz stets höheren Blutdruck bekam, es könnte ja jede Sekunde was passieren. Das was passierte, war aber nur das traumatische Einatmen von ungelüftetem Fisch!
         </div>
         <div class="location-sprites">
           <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
@@ -4055,7 +4062,7 @@
             completeSnailDialogue(); // Gehe zur nächsten Location
           }
         };
-        document.addEventListener('keydown', handleKeyPress);
+        document.addEvent<Listener('keydown', handleKeyPress);
       }
 
       function completeSnailDialogue() {
@@ -4094,16 +4101,21 @@
         resetBtn.onclick = (e) => {
           e.preventDefault();
           e.stopPropagation();
+          console.log('🔄 Reset clicked - clearing dialog flag');
           localStorage.removeItem('salamander_snail_dialogue_done');
           snailDialogueShown = false;
-          // Bleibe auf der aktuellen Seite (bunker)
-          const bunkerPage = document.getElementById('bunker');
-          if (bunkerPage) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            bunkerPage.classList.add('active');
+          // Setze Dialog-UI zurück auf Anfangszustand
+          const questionEl = document.getElementById('bunker-question');
+          const responseEl = document.getElementById('bunker-response');
+          if (questionEl) questionEl.textContent = '';
+          if (responseEl) responseEl.textContent = '';
+          const itemsSection = document.getElementById('bunker-items-section');
+          if (itemsSection) itemsSection.style.display = 'none';
+          // Starte Dialog neu wenn Schnecke vorhanden
+          const hasSnail = window.DiasiteState?.player?.inventory?.includes('snail');
+          if (hasSnail) {
+            handleSnailDialogue();
           }
-          // Reload nur die Bunker-Logik neu
-          setTimeout(() => setupBunker(), 100);
         };
         const bunkerPage = document.getElementById('bunker');
         if (bunkerPage && !bunkerPage.querySelector('button[style*="#ff6600"]')) {
@@ -4304,15 +4316,74 @@
       let pacmanGame = null;
 
       window.startSchoolGame = function() {
-        console.log('🎮 Starting Pac-Man Game');
-        document.getElementById('school-game-intro').style.display = 'none';
-        document.getElementById('school-game-arena').style.display = 'block';
-        document.getElementById('school-victory').style.display = 'none';
-        document.getElementById('school-gameover').style.display = 'none';
+        console.log('🎮 Starting Pac-Man Game with villain intro');
+        
+        // Zeige zuerst Villain Animation
+        const villainOverlay = document.createElement('div');
+        villainOverlay.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.9);
+          z-index: 9999;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          transition: opacity 0.5s ease-in;
+        `;
+        
+        const villainImg = document.createElement('img');
+        villainImg.src = '/assets/sprites/people/villain.png';
+        villainImg.style.cssText = `
+          width: 400px;
+          height: 400px;
+          object-fit: contain;
+          margin-bottom: 30px;
+          image-rendering: pixelated;
+        `;
+        
+        const villainText = document.createElement('div');
+        villainText.style.cssText = `
+          background: var(--paper-white);
+          border: 4px solid #000;
+          padding: 30px;
+          max-width: 600px;
+          font-family: 'Nineteen Ninety Seven', monospace;
+          font-size: 1.2rem;
+          text-align: center;
+          box-shadow: 6px 6px 0 #000;
+          line-height: 1.6;
+        `;
+        villainText.textContent = 'HA! Ihr schon wieder! Ihr seid es mir nicht wert mit euch zu kämpfen, ich schicke meinen Kurzen hier auf Euch los, er packt das schon!';
+        
+        villainOverlay.appendChild(villainImg);
+        villainOverlay.appendChild(villainText);
+        document.body.appendChild(villainOverlay);
+        
+        // Fade in
+        setTimeout(() => { villainOverlay.style.opacity = '1'; }, 100);
+        
+        // Nach 6 Sekunden: Fade out und starte Spiel
+        setTimeout(() => {
+          villainOverlay.style.opacity = '0';
+          setTimeout(() => {
+            villainOverlay.remove();
+            
+            // Jetzt starte das eigentliche Spiel
+            document.getElementById('school-game-intro').style.display = 'none';
+            document.getElementById('school-game-arena').style.display = 'block';
+            document.getElementById('school-victory').style.display = 'none';
+            document.getElementById('school-gameover').style.display = 'none';
 
-        if (pacmanGame) pacmanGame.stop();
-        pacmanGame = new PacManGame();
-        pacmanGame.start();
+            if (pacmanGame) pacmanGame.stop();
+            pacmanGame = new PacManGame();
+            pacmanGame.start();
+          }, 500);
+        }, 6000);
       };
 
       window.restartSchoolGame = function() {
@@ -4670,7 +4741,7 @@
           // Fade in
           setTimeout(() => { overlay.style.opacity = '1'; }, 100);
           
-          // Fade out nach 10 Sekunden (2s länger)
+          // Fade out nach 12 Sekunden (4s länger als ursprünglich)
           setTimeout(() => {
             overlay.style.opacity = '0';
             setTimeout(() => {
