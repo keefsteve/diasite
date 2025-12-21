@@ -2552,8 +2552,27 @@
         }
       });
 
+      // Beobachte das Inventar und füge Buttons hinzu sobald Items erscheinen
+      const inventoryContainer = document.getElementById('items');
+      if (inventoryContainer) {
+        const observer = new MutationObserver(() => {
+          const currentLocation = window.DiasiteState?.currentLocation;
+          if (currentLocation === 'home') {
+            console.log('🎁 Inventory changed, re-enabling souvenir placement...');
+            window.enableSouvenirPlacement();
+          }
+        });
+        observer.observe(inventoryContainer, { childList: true, subtree: true });
+        console.log('✅ Souvenir observer installed');
+      }
+
       window.enableSouvenirPlacement = function() {
         console.log('🎁 Enabling souvenir placement...');
+        
+        // Lade Inventar explizit neu
+        if (typeof window.loadInventory === 'function') {
+          window.loadInventory();
+        }
         
         // Warte bis Inventar geladen ist
         setTimeout(() => {
@@ -2565,6 +2584,7 @@
           
           const inventoryItems = inventoryContainer.querySelectorAll('.item');
           console.log('🎁 Found inventory items:', inventoryItems.length);
+          console.log('🎁 Inventory HTML:', inventoryContainer.innerHTML);
           
           inventoryItems.forEach(item => {
             // Entferne alte Buttons
@@ -4071,10 +4091,19 @@
         const resetBtn = document.createElement('button');
         resetBtn.textContent = '🔄 Dialog Reset (Testing)';
         resetBtn.style.cssText = 'position:absolute;top:10px;right:10px;padding:8px;background:#ff6600;color:#fff;border:2px solid #000;cursor:pointer;z-index:999;font-family:"Nineteen Ninety Seven",monospace;';
-        resetBtn.onclick = () => {
+        resetBtn.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
           localStorage.removeItem('salamander_snail_dialogue_done');
           snailDialogueShown = false;
-          window.location.reload();
+          // Bleibe auf der aktuellen Seite (bunker)
+          const bunkerPage = document.getElementById('bunker');
+          if (bunkerPage) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            bunkerPage.classList.add('active');
+          }
+          // Reload nur die Bunker-Logik neu
+          setTimeout(() => setupBunker(), 100);
         };
         const bunkerPage = document.getElementById('bunker');
         if (bunkerPage && !bunkerPage.querySelector('button[style*="#ff6600"]')) {
@@ -4607,7 +4636,7 @@
             align-items: center;
             justify-content: center;
             opacity: 0;
-            transition: opacity 3s ease-in;
+            transition: opacity 5s ease-in;
           `;
           
           const tariqImg = document.createElement('img');
@@ -4641,7 +4670,7 @@
           // Fade in
           setTimeout(() => { overlay.style.opacity = '1'; }, 100);
           
-          // Fade out nach 8 Sekunden
+          // Fade out nach 10 Sekunden (2s länger)
           setTimeout(() => {
             overlay.style.opacity = '0';
             setTimeout(() => {
