@@ -128,13 +128,20 @@
         let currentLocation = null;
 
         // Audio flow:
-        // nuPogodi.mp3: starts at botanischer garten, stops at oma opa shnol
-        // nasnedogonyat.mp3: starts at oma opa shnol, stops at krivaya gorka
-        // krikGori.mp3: plays until tanke, stops there and cherryLady.mp3 starts
+        // nuPogodi.mp3: starts at botanical-garden, stops at oma-opa-shnol
+        // nasnedogonyat.mp3: starts at oma-opa-shnol, stops at krivaya
+        // krikGori.mp3: starts at krivaya, stops at oma-opa-morg
+        // asheynemeydele.mp3: starts at oma-opa-morg, stops at oma-shelya
+        // lasernoe.mp3: starts at oma-shelya, stops at school
+        // ddtTiNeOdin.mp3: starts at school, stops at tanke
+        // cherryLady.mp3: starts at tanke (final)
         const audioMap = {
           'botanical-garden': 'assets/audio/nuPogodi.mp3',
           'oma-opa-shnol': 'assets/audio/nasnedogonyat.mp3',
           'krivaya': 'assets/audio/krikGori.mp3',
+          'oma-opa-morg': 'assets/audio/asheynemeydele.mp3',
+          'oma-shelya': 'assets/audio/lasernoe.mp3',
+          'school': 'assets/audio/ddtTiNeOdin.mp3',
           'tanke': 'assets/audio/cherryLady.mp3'
         };
 
@@ -151,19 +158,29 @@
           console.log('🎵 AudioManager.playForLocation:', locationId, '| Current:', currentLocation);
 
           // Stop rules based on destination (more robust):
-          // nuPogodi stops at oma-opa-shnol
+          // Stop and start new audio at each transition point
           if (locationId === 'oma-opa-shnol' && currentAudio) {
-            console.log('🔇 Stopping any audio at oma-opa-shnol (nasnedogonyat will start)');
+            console.log('🔇 Stopping nuPogodi → nasnedogonyat');
             stopAll();
           }
-          // nasnedogonyat stops at krivaya
           else if (locationId === 'krivaya' && currentAudio) {
-            console.log('🔇 Stopping any audio at krivaya (krikGori will start)');
+            console.log('🔇 Stopping nasnedogonyat → krikGori');
             stopAll();
           }
-          // krikGori stops at tanke
+          else if (locationId === 'oma-opa-morg' && currentAudio) {
+            console.log('🔇 Stopping krikGori → asheynemeydele');
+            stopAll();
+          }
+          else if (locationId === 'oma-shelya' && currentAudio) {
+            console.log('🔇 Stopping asheynemeydele → lasernoe');
+            stopAll();
+          }
+          else if (locationId === 'school' && currentAudio) {
+            console.log('🔇 Stopping lasernoe → ddtTiNeOdin');
+            stopAll();
+          }
           else if (locationId === 'tanke' && currentAudio) {
-            console.log('🔇 Stopping any audio at tanke (cherryLady will start)');
+            console.log('🔇 Stopping ddtTiNeOdin → cherryLady');
             stopAll();
           }
 
@@ -693,18 +710,17 @@
           <img src="/assets/sprites/places/fountain.jpeg" alt="Fountain" class="location-image" onerror="this.style.display='none'" />
         </div>
 
-        <div class="game-container" id="fountain-fishing-game" style="min-height:550px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;margin-top:-50px;">
+        <div class="game-container" id="fountain-fishing-game" style="min-height:650px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;margin-top:-50px;padding-bottom:40px;">
           <canvas id="fishing-canvas" width="600" height="450" style="background:#4A90E2;border:4px solid #8b5a3c;border-radius:8px;cursor:crosshair;display:block;"></canvas>
-          <div id="fishing-instructions" style="text-align:center;padding:10px 20px;">
-            <h3 style="font-size:1.5rem;color:var(--forest);margin-bottom:10px;">Fisch das mal raus!</h3>
-            <p style="font-size:1rem;color:#666;margin-bottom:15px;">Steuere die Angel mit W - A - S - D aber Obacht, eure Hände sind tollpatschig wie Kinderhände halt so sind!</p>
+          <div id="fishing-instructions" style="text-align:center;padding:20px 20px 40px 20px;max-width:650px;width:100%;">
+            <p style="font-size:0.9rem;color:#666;margin-bottom:20px;white-space:normal;word-wrap:break-word;line-height:1.4;">Steuere die Angel mit W - A - S - D aber Obacht, eure Hände sind tollpatschig wie Kinderhände halt so sind!</p>
           </div>
         </div>
       </div>
 
       <div class="location-message-row">
         <div class="riddle-note location-message-box">
-          Im Brunnen schwimmt etwas... eine Kamera! Fische sie heraus!
+          *plumps* oh nein! jen, ich bin reingeplumpst! es ist so kalt... ich hoffe, dir ist nicht allzu kalt, denn du musst die kamera mit deinen trockenen händen rausfischen!
         </div>
         <div class="location-sprites">
           <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
@@ -1061,7 +1077,7 @@
 
               setTimeout(() => {
                 bubble.style.opacity = '1';
-                bubble.style.animation = 'bubbleBounce 2s ease-in-out infinite';
+                bubble.style.animation = 'bubbleBounce 3s ease-in-out infinite';
               }, 10);
 
               setTimeout(() => {
@@ -1431,7 +1447,7 @@
       // Show dialogue and navigate
       setTimeout(() => {
         if(window.CharacterDialogue) {
-          window.CharacterDialogue.showDialogue('steve', 'Hier Opa, nimm diesen Kalender und sei nicht sauer! Wir müssen los!!', {
+          window.CharacterDialogue.showDialogue('steve', 'дедушка! на, возьми этот календарь и не злись! !', {
             duration: 3000,
             onComplete: () => {
               document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1503,7 +1519,7 @@
 
         // Show countdown
         let countdown = 3;
-        statusEl.textContent = `Oma is counting: ${countdown}...`;
+        statusEl.textContent = `я считаю до: ${countdown}...`;
         statusEl.style.color = 'var(--muted-red)';
 
         // Show walking Opa sprite during countdown
@@ -1526,14 +1542,14 @@
         const countInterval = setInterval(() => {
           countdown--;
           if (countdown > 0) {
-            statusEl.textContent = `Oma is counting: ${countdown}...`;
+            statusEl.textContent = `я считаю до: ${countdown}...`;
           } else {
             clearInterval(countInterval);
             clearInterval(walkInterval);
             if (walkingEmoji) walkingEmoji.remove();
 
             // Show belt swing
-            animEl.textContent = beltSwing === 'left' ? '💥⬅️' : '➡️💥';
+            animEl.textContent = beltSwing === 'left' ? '💥' : '💥';
             animEl.style.animation = 'beltSwing 0.3s ease-out';
 
             setTimeout(() => {
@@ -1560,7 +1576,7 @@
                 hits++;
                 currentHits = hits; // Update global counter
                 if (hitsEl) hitsEl.textContent = hits;
-                statusEl.textContent = `💥 OUCH! The belt hit your ${playerChoice} cheek!`;
+                statusEl.textContent = `💥`;
                 statusEl.style.color = '#ff4444';
 
                 // Show Opa speech bubble with random phrase (right side, triangle up)
@@ -1579,7 +1595,7 @@
                   clearInterval(walkInterval);
                   walkingEmoji.remove();
                   setTimeout(() => {
-                    statusEl.textContent = '😢 Game Over! Try again!';
+                    statusEl.textContent = 'Геймовер! Cлишком много получила по жопе!';
                   }, 1500);
                   return;
                 }
@@ -1587,7 +1603,7 @@
                 // DODGED!
                 dodged++;
                 if (dodgedEl) dodgedEl.textContent = dodged;
-                statusEl.textContent = `✨ Nice dodge! The belt swung ${beltSwing}, you showed ${playerChoice}!`;
+                statusEl.textContent = `Дедушка промазал!`;
                 statusEl.style.color = 'green';
 
                 if (dodged >= 13) {
@@ -1595,7 +1611,7 @@
                   clearInterval(walkInterval);
                   if (walkingEmoji) walkingEmoji.remove();
                   setTimeout(() => {
-                    statusEl.textContent = '🎉 YOU WIN! Belt-dodging master!';
+                    statusEl.textContent = 'Молодец, выиграла! Дедушка промазал и задолбался.';
 
                     // Mark game won
                     if (typeof gameManager !== 'undefined') {
@@ -1607,7 +1623,7 @@
                       if(window.CharacterDialogue) {
                         window.CharacterDialogue.showDialogue('steve', 'Спасибо за ваше время, бабушка и дедушка! Дедушка, мы хотели кое-что вам подарить... ах, я забыл, может быть, в следующий раз!', {
                           position: 'right',
-                          duration: 3000,
+                          duration: 5000,
                           onComplete: () => {
                             // Navigate to landing page
                             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1634,7 +1650,7 @@
               // Re-enable buttons and resume walking
               setTimeout(() => {
                 animEl.textContent = '';
-                statusEl.textContent = 'Pick which cheek to show!';
+                statusEl.textContent = 'ну чё, какую полупопину даёшь?? ';
                 statusEl.style.color = 'var(--terracotta)';
                 leftBtn.style.pointerEvents = 'auto';
                 rightBtn.style.pointerEvents = 'auto';
@@ -1663,7 +1679,7 @@
           gameActive = false;
           dodged = 7;
           if (dodgedEl) dodgedEl.textContent = dodged;
-          statusEl.textContent = '🎉 YOU WIN! Belt-dodging master!';
+          statusEl.textContent = 'Молодец, выиграла! Дедушка промазал и задолбался.';
           statusEl.style.color = 'green';
 
           // Only show message if on correct page
@@ -1681,7 +1697,7 @@
           setTimeout(() => {
             if(window.CharacterDialogue) {
               window.CharacterDialogue.showDialogue('steve', 'Спасибо за ваше время, бабушка и дедушка! Дедушка, мы хотели кое-что вам подарить... ах, я забыла, может быть, в следующий раз!', {
-                duration: 3000,
+                duration: 5000,
                 onComplete: () => {
                   // Navigate to landing page
                   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1866,13 +1882,18 @@
       const keys = {};
       let gameActive = false;
       let correctCount = 0;
+      let gameWon = false; // NEW: Track if game was won
       const NEEDED = 13;
       const TIME_LIMIT = 22; // 22 Sekunden für 13 richtige
       let startTime = null;
       let timerInterval = null;
       let currentPair = null;
-      
+
       function resetGame() {
+        if (gameWon) {
+          console.log('⚠️ Game was won, skipping reset');
+          return; // Don't reset if game was won
+        }
         gameActive = false;
         correctCount = 0;
         startTime = null;
@@ -1919,17 +1940,18 @@
         const display = document.getElementById('stroop-word-display');
         const status = document.getElementById('stroop-status');
         const counter = document.getElementById('stroop-correct');
-        
+
         if (!input || !display) return;
-        
+
         gameActive = true;
+        gameWon = false; // Reset win flag when starting new game
         correctCount = 0;
         startTime = Date.now();
         input.value = '';
         input.disabled = false;
         counter.textContent = '0';
         status.textContent = '';
-        
+
         showWord();
         
         if (timerInterval) clearInterval(timerInterval);
@@ -1951,8 +1973,10 @@
             setTimeout(() => {
               status.textContent = '';
               if (correctCount >= NEEDED) {
+                console.log(`🎉 WIN CONDITION MET: ${correctCount} >= ${NEEDED}`);
                 winGame();
               } else {
+                console.log(`📝 Continue: ${correctCount}/${NEEDED}`);
                 showWord();
               }
             }, 300);
@@ -2020,12 +2044,22 @@
       }
       
       function winGame() {
+        // Double-check win condition
         if (correctCount < NEEDED) {
-          console.warn('⚠️ winGame called but not enough correct answers:', correctCount);
+          console.error(`❌ winGame called but not enough correct answers: ${correctCount}/${NEEDED}`);
           return;
         }
 
+        // Prevent duplicate win calls
+        if (gameWon) {
+          console.warn('⚠️ winGame already called, ignoring duplicate');
+          return;
+        }
+
+        console.log(`✅ winGame: ${correctCount}/${NEEDED} - Setting gameWon flag`);
+        gameWon = true; // CRITICAL: Set flag BEFORE any navigation
         stopGame();
+
         const status = document.getElementById('stroop-status');
         const input = document.getElementById('stroop-input');
         if (input) input.disabled = true;
@@ -2040,17 +2074,30 @@
           console.log('✅ oma-opa-morg marked as won');
         }
 
-        // Navigate to landing page and dispatch event
+        // Navigate to landing page and dispatch event ONLY if actually won
         setTimeout(() => {
+          if (!gameWon || correctCount < NEEDED) {
+            console.error('❌ Aborting navigation - game not properly won');
+            return;
+          }
+
+          console.log('🚀 Dispatching gameWon event and navigating to landing page');
           window.dispatchEvent(new CustomEvent('gameWon', {
             detail: { gameId: 'oma-opa-morg' }
           }));
 
           setTimeout(() => {
+            // Final check before navigation
+            if (!gameWon) {
+              console.error('❌ gameWon flag lost, aborting navigation');
+              return;
+            }
+
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             const landingPage = document.getElementById('landing-page');
             if (landingPage) {
               landingPage.classList.add('active');
+              console.log('✅ Navigated to landing page');
             }
           }, 100);
         }, 1500);
@@ -2073,15 +2120,9 @@
       <h2>Home</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
     </div>
-    <div class="location-content">
-      <div class="location-top-row">
-        <div class="location-image-container">
-          <img src="/assets/sprites/places/home.png" alt="Home" class="location-image" onerror="this.style.display='none'" />
-        </div>
-
-        <div class="game-container" style="overflow-y:auto;">
-          <!-- 90s Vintage Home Menu -->
-          <div id="home-menu-system" style="padding:20px;">
+    <div class="location-content" style="display:flex;flex-direction:column;align-items:center;width:100%;max-width:1200px;margin:0 auto;padding:20px;">
+      <!-- Home Menu System - Full Width -->
+      <div id="home-menu-system" style="width:100%;max-width:900px;padding:20px;background:rgba(255,255,255,0.95);border:3px solid #000;box-shadow:4px 4px 0 #000;margin-bottom:30px;">
 
             <!-- Menu Header -->
             <div style="background:var(--warm-brown);border:3px solid #000;padding:15px;margin-bottom:20px;box-shadow:4px 4px 0 #000;">
@@ -2191,22 +2232,10 @@
               </div>
             </div>
 
-          </div>
-        </div>
       </div>
 
-      <div class="location-message-row">
-        <div class="riddle-note location-message-box">
-          Zuhause, wo die Erinnerungen lebendig werden. Schau dir deine Polaroid-Fotos an!
-        </div>
-        <div class="location-sprites" style="margin-left:-50px;">
-          <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
-          <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
-        </div>
-      </div>
-
-      <!-- Gästebuch Section -->
-      <div style="margin-top:80px;padding:20px;background:rgba(255,255,255,0.9);border:3px solid #000;box-shadow:4px 4px 0 #000;max-width:800px;margin-left:auto;margin-right:auto;">
+      <!-- Gästebuch Section - Same Width as Home System -->
+      <div style="width:100%;max-width:900px;padding:20px;background:rgba(255,255,255,0.9);border:3px solid #000;box-shadow:4px 4px 0 #000;">
         <h3 style="margin:0 0 20px 0;font-family:'Nineteen Ninety Seven',monospace;text-align:center;color:#333;border-bottom:3px solid #000;padding-bottom:10px;">
           📖 GÄSTEBUCH
         </h3>
@@ -2228,22 +2257,32 @@
 
   <script>
     // ===== HOME MENU SYSTEM =====
+
+    // Section switching - defined globally FIRST
+    window.showHomeSection = function(section) {
+      console.log('🏠 showHomeSection called:', section);
+      document.querySelectorAll('.home-section').forEach(s => s.style.display = 'none');
+      const targetSection = document.getElementById(`home-section-${section}`);
+      if (targetSection) {
+        targetSection.style.display = 'block';
+      } else {
+        console.error('❌ Section not found:', `home-section-${section}`);
+        return;
+      }
+
+      if (section === 'polaroids') loadPolaroidTimeline();
+      if (section === 'messages') loadVoiceMessages();
+      if (section === 'souvenirs') loadSouvenirs();
+      if (section === 'stats') loadStats();
+      if (section === 'wallgame') initWallGame();
+    };
+
+    console.log('✅ showHomeSection function defined');
+
     (function() {
       let mediaRecorder = null;
       let audioChunks = [];
       let isRecording = false;
-
-      // Section switching
-      window.showHomeSection = function(section) {
-        document.querySelectorAll('.home-section').forEach(s => s.style.display = 'none');
-        document.getElementById(`home-section-${section}`).style.display = 'block';
-
-        if (section === 'polaroids') loadPolaroidTimeline();
-        if (section === 'messages') loadVoiceMessages();
-        if (section === 'souvenirs') loadSouvenirs();
-        if (section === 'stats') loadStats();
-        if (section === 'wallgame') initWallGame();
-      };
 
       // Update clock
       function updateClock() {
@@ -2479,8 +2518,8 @@
           
           return `
             <div style="
-              width:80px;
-              height:80px;
+              width:100px;
+              height:100px;
               background:white;
               border:2px solid #000;
               box-shadow:2px 2px 0 #000;
@@ -2579,11 +2618,15 @@
 
           // Only respond to spacebar
           if (e.code === 'Space' || e.key === ' ') {
-            e.preventDefault();
+            // Check if home page is active
+            const homePage = document.getElementById('home');
+            if (!homePage || !homePage.classList.contains('active')) return;
 
-            // Check if wallgame is visible
+            // Check if wallgame section is visible
             const wallgameSection = document.getElementById('home-section-wallgame');
             if (!wallgameSection || wallgameSection.style.display === 'none') return;
+
+            e.preventDefault();
 
             wallGameCount++;
             console.log(`💥 Wall smash count: ${wallGameCount}/26`);
@@ -3600,16 +3643,16 @@
           shelyaSpriteElement.style.right = '250px';
           shelyaSpriteElement.style.animation = 'characterBounce 2s ease-in-out infinite';
 
-          // PART 1: Shelya greeting
+          // PART 1: Kids greeting
           setTimeout(() => {
-            showShelyaDialogue_Part("Привет дети! Как дела? Что вы сегодня делаете?", () => {
-              // After 1.5 seconds, show kids response
+            showKidsResponse("Привет Бабушкаska! Как дела? Что вы сегодня делаете?", () => {
+              // After 1.5 seconds, show Shelya response
               setTimeout(() => {
-                showKidsResponse("О, всё в порядке, по-стариковски...", () => {
-                  // After 1.5 seconds, show Shelya's second dialogue
+                showShelyaDialogue_Part("О, всё в порядке, по-стариковски...", () => {
+                  // WAIT 2 SECONDS, then show Shelya's continuation
                   setTimeout(() => {
-                    showShelyaDialogue_Part("Я лишь одолжил кому-то увеличительное стекло, и я не помню кому.", () => {
-                      // After 2 seconds, show kids giving the magnifying glass
+                    showShelyaDialogue_Part("Я лишь одолжилa кому-то увеличительное стекло, и я не помню кому.", () => {
+                      // After 1.5 seconds, show kids giving the magnifying glass
                       setTimeout(() => {
                         showKidsResponse("Бабушка, ты одолжила нам увеличительное стекло! Оно нам сегодня очень пригодилось, но теперь можешь забрать его обратно!", () => {
                           // Remove magnifying glass from inventory
@@ -3621,6 +3664,7 @@
                           // After 1.5 seconds, show Shelya's thanks
                           setTimeout(() => {
                             showShelyaDialogue_Part("Спасибо всем, хотите что-нибудь еще поесть?", () => {
+                              // WAIT 3 SECONDS before "рыба сегодня"
                               setTimeout(() => {
                                 showShelyaDialogue_Part("рыба сегодня", () => {
                                   setTimeout(() => {
@@ -3631,17 +3675,17 @@
                                     });
                                   }, 1500);
                                 });
-                              }, 2000);
+                              }, 3000); // Changed from 2000 to 3000 (3 seconds)
                             });
-                          }, 1500);
+                          }, 2000);
                         });
-                      }, 1500);
+                      }, 2000);
                     });
-                  }, 1500);
+                  }, 2500); // Changed from 1500 to 2000 (2 seconds)
                 });
-              }, 1500);
+              }, 2000);
             });
-          }, 1000);
+          }, 2000);
         }, 100);
       }
 
@@ -3935,11 +3979,43 @@
           <img src="/assets/sprites/places/school.png" alt="School" class="location-image" onerror="this.style.display='none'" />
         </div>
         <div class="game-container">
-          <div style="text-align:center;padding:40px;">
-            <p style="font-size:1.4rem;color:var(--terracotta);margin-bottom:30px;">
-              Die Schule wartet auf ihr Spiel...
+          <!-- Reversed Pac-Man Game -->
+          <div id="school-game-intro" style="text-align:center;padding:40px;">
+            <p style="font-size:1.4rem;color:var(--terracotta);margin-bottom:20px;">
+              FLUCHT VOR EYER!
             </p>
-            <button class="play-btn" onclick="alert('Spiel noch nicht implementiert!')">▶ Play</button>
+            <p style="font-size:1rem;color:#666;margin-bottom:30px;">
+              Lauf vor dem Eyer weg und sammle alle Dots!<br>
+              Benutze die Pfeiltasten ← ↑ → ↓<br>
+              Sammle alle Dots ohne erwischt zu werden!
+            </p>
+            <button class="play-btn" onclick="startSchoolGame()">▶ Play</button>
+          </div>
+
+          <!-- Pac-Man Game Arena -->
+          <div id="school-game-arena" style="display:none;margin:20px auto;max-width:100%;overflow:visible;">
+            <!-- Score Display -->
+            <div style="text-align:center;margin-bottom:10px;font-family:'Nineteen Ninety Seven',monospace;font-size:1.5rem;color:#000;">
+              SCORE: <span id="pacman-score">0</span>
+            </div>
+
+            <!-- Canvas -->
+            <canvas id="pacman-canvas" width="560" height="560" style="display:block;margin:0 auto;background:#000;border:4px solid #2121de;box-shadow:4px 4px 0 #000;max-width:100%;height:auto;"></canvas>
+
+            <!-- Victory Message -->
+            <div id="school-victory" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,215,0,0.95);color:#000;padding:30px 50px;font-family:'Nineteen Ninety Seven',monospace;font-size:1.5rem;border:5px solid #000;box-shadow:0 0 30px rgba(255,215,0,0.8);display:none;text-align:center;z-index:200;">
+              🎉 LEVEL COMPLETE! 🎉<br>
+              <span style="font-size:1rem;margin-top:10px;display:block;">Alle Dots gesammelt!</span>
+            </div>
+
+            <!-- Game Over Message -->
+            <div id="school-gameover" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,0,0,0.95);color:#fff;padding:30px 50px;font-family:'Nineteen Ninety Seven',monospace;font-size:1.5rem;border:5px solid #000;box-shadow:0 0 30px rgba(255,0,0,0.8);display:none;text-align:center;z-index:200;">
+              💀 GAME OVER! 💀<br>
+              <span style="font-size:1rem;margin-top:10px;display:block;">
+                Score: <span id="final-score">0</span><br>
+                <button onclick="restartSchoolGame()" style="margin-top:15px;padding:10px 20px;background:#fff;color:#000;border:3px solid #000;font-family:'Nineteen Ninety Seven',monospace;cursor:pointer;">Nochmal</button>
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -3996,6 +4072,333 @@
           }, 800);
         }
       }, 100);
+
+      // ===== PAC-MAN GAME =====
+      let pacmanGame = null;
+
+      window.startSchoolGame = function() {
+        console.log('🎮 Starting Pac-Man Game');
+        document.getElementById('school-game-intro').style.display = 'none';
+        document.getElementById('school-game-arena').style.display = 'block';
+        document.getElementById('school-victory').style.display = 'none';
+        document.getElementById('school-gameover').style.display = 'none';
+
+        if (pacmanGame) pacmanGame.stop();
+        pacmanGame = new PacManGame();
+        pacmanGame.start();
+      };
+
+      window.restartSchoolGame = function() {
+        window.startSchoolGame();
+      };
+
+      class PacManGame {
+        constructor() {
+          this.canvas = document.getElementById('pacman-canvas');
+          this.ctx = this.canvas.getContext('2d');
+          this.tileSize = 40;
+          this.gridSize = 14;
+          this.score = 0;
+          this.gameActive = false;
+          this.animFrame = 0;
+
+          // Maze (1=wall, 0=path, 2=dot, 3=powerup)
+          this.maze = [
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            [1,2,2,2,2,2,2,1,2,2,2,2,2,1],
+            [1,2,1,1,2,1,2,1,2,1,2,1,2,1],
+            [1,3,1,1,2,1,2,2,2,1,2,1,3,1],
+            [1,2,2,2,2,2,2,2,2,2,2,2,2,1],
+            [1,2,1,1,2,1,1,1,1,1,2,1,2,1],
+            [1,2,2,2,2,2,2,1,2,2,2,2,2,1],
+            [1,1,1,1,2,1,0,0,0,1,2,1,1,1],
+            [1,2,2,2,2,1,0,0,0,1,2,2,2,1],
+            [1,2,1,1,2,2,2,2,2,2,2,1,2,1],
+            [1,2,1,1,2,1,1,1,1,1,2,1,2,1],
+            [1,3,2,2,2,2,2,2,2,2,2,2,3,1],
+            [1,2,1,1,2,1,2,1,2,1,2,1,2,1],
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+          ];
+
+          // REVERSED: Player (emoji) runs away, Eyer chases
+          this.player = { x: 1, y: 1, dir: 0, nextDir: 0 }; // User controlled
+          this.eyer = { x: 7, y: 7, dir: 0 }; // Autonomous chaser
+
+          // Load eyer image from correct path
+          this.eyerImg = new Image();
+          this.eyerImg.src = '/assets/sprites/objects/eyer.png';
+          console.log('🖼️ Loading eyer.png from /assets/sprites/objects/eyer.png');
+
+          // Progressive difficulty
+          this.gameStartTime = null;
+          this.eyerSpeed = 1; // Start at 1 (slowest)
+          this.dotsRemaining = 0;
+          this.countDots();
+        }
+
+        countDots() {
+          this.dotsRemaining = 0;
+          for (let y = 0; y < this.gridSize; y++) {
+            for (let x = 0; x < this.gridSize; x++) {
+              if (this.maze[y][x] === 2 || this.maze[y][x] === 3) this.dotsRemaining++;
+            }
+          }
+        }
+
+        start() {
+          this.gameActive = true;
+          this.gameStartTime = Date.now();
+          this.eyerSpeed = 1; // Reset to slowest
+          console.log('🎮 Pac-Man game started - progressive difficulty enabled');
+          this.gameLoop();
+        }
+
+        stop() {
+          this.gameActive = false;
+        }
+
+        gameLoop() {
+          if (!this.gameActive) return;
+
+          const schoolPage = document.getElementById('school');
+          if (!schoolPage || !schoolPage.classList.contains('active')) {
+            this.stop();
+            return;
+          }
+
+          this.update();
+          this.draw();
+          this.animFrame++;
+
+          requestAnimationFrame(() => this.gameLoop());
+        }
+
+        update() {
+          // Calculate progressive difficulty
+          const elapsedSeconds = (Date.now() - this.gameStartTime) / 1000;
+
+          // Eyer speed increases over time:
+          // 0-10s: every 16 frames (slow)
+          // 10-20s: every 12 frames
+          // 20-30s: every 8 frames
+          // 30+s: every 6 frames (fast)
+          if (elapsedSeconds < 10) {
+            this.eyerSpeed = 16; // Very slow at start
+          } else if (elapsedSeconds < 20) {
+            this.eyerSpeed = 12;
+          } else if (elapsedSeconds < 30) {
+            this.eyerSpeed = 8;
+          } else {
+            this.eyerSpeed = 6; // Fast
+          }
+
+          // Player always moves every 8 frames
+          const playerFrameInterval = 8;
+
+          // Handle player input
+          if (this.animFrame % playerFrameInterval === 0) {
+            this.handleInput();
+            this.movePlayer();
+          }
+
+          // Move eyer at variable speed
+          if (this.animFrame % this.eyerSpeed === 0) {
+            this.moveEyer();
+          }
+
+          // Check collisions every frame
+          this.checkCollisions();
+        }
+
+        handleInput() {
+          if (keys['ArrowLeft']) this.player.nextDir = 2;
+          if (keys['ArrowRight']) this.player.nextDir = 0;
+          if (keys['ArrowUp']) this.player.nextDir = 3;
+          if (keys['ArrowDown']) this.player.nextDir = 1;
+        }
+
+        movePlayer() {
+          // Try to change direction
+          const nextPos = this.getNextPos(this.player.x, this.player.y, this.player.nextDir);
+          if (!this.isWall(nextPos.x, nextPos.y)) {
+            this.player.dir = this.player.nextDir;
+          }
+
+          // Move in current direction
+          const newPos = this.getNextPos(this.player.x, this.player.y, this.player.dir);
+          if (!this.isWall(newPos.x, newPos.y)) {
+            this.player.x = newPos.x;
+            this.player.y = newPos.y;
+
+            // Eat dot
+            if (this.maze[newPos.y][newPos.x] === 2) {
+              this.maze[newPos.y][newPos.x] = 0;
+              this.score += 10;
+              this.dotsRemaining--;
+              document.getElementById('pacman-score').textContent = this.score;
+            }
+
+            // Eat powerup (still give points but no frightened mode)
+            if (this.maze[newPos.y][newPos.x] === 3) {
+              this.maze[newPos.y][newPos.x] = 0;
+              this.score += 50;
+              this.dotsRemaining--;
+              document.getElementById('pacman-score').textContent = this.score;
+            }
+
+            // Check win
+            if (this.dotsRemaining === 0) {
+              this.win();
+            }
+          }
+        }
+
+        moveEyer() {
+          // Autonomous movement: mix of random and chasing behavior
+          // 15% chance to move randomly, 85% chance to chase player
+          if (Math.random() < 0.15) {
+            // Random direction change
+            const dirs = [0, 1, 2, 3].filter(d => {
+              const pos = this.getNextPos(this.eyer.x, this.eyer.y, d);
+              return !this.isWall(pos.x, pos.y);
+            });
+            if (dirs.length > 0) {
+              this.eyer.dir = dirs[Math.floor(Math.random() * dirs.length)];
+            }
+          } else {
+            // Chase player (move towards them)
+            const dx = this.player.x - this.eyer.x;
+            const dy = this.player.y - this.eyer.y;
+
+            // Prefer horizontal or vertical movement based on distance
+            if (Math.abs(dx) > Math.abs(dy)) {
+              const newDir = dx > 0 ? 0 : 2; // Right or Left
+              const pos = this.getNextPos(this.eyer.x, this.eyer.y, newDir);
+              if (!this.isWall(pos.x, pos.y)) {
+                this.eyer.dir = newDir;
+              }
+            } else {
+              const newDir = dy > 0 ? 1 : 3; // Down or Up
+              const pos = this.getNextPos(this.eyer.x, this.eyer.y, newDir);
+              if (!this.isWall(pos.x, pos.y)) {
+                this.eyer.dir = newDir;
+              }
+            }
+          }
+
+          // Move in current direction
+          const newPos = this.getNextPos(this.eyer.x, this.eyer.y, this.eyer.dir);
+          if (!this.isWall(newPos.x, newPos.y)) {
+            this.eyer.x = newPos.x;
+            this.eyer.y = newPos.y;
+          } else {
+            // Hit wall, pick random valid direction
+            const dirs = [0, 1, 2, 3].filter(d => {
+              const pos = this.getNextPos(this.eyer.x, this.eyer.y, d);
+              return !this.isWall(pos.x, pos.y);
+            });
+            if (dirs.length > 0) {
+              this.eyer.dir = dirs[Math.floor(Math.random() * dirs.length)];
+            }
+          }
+        }
+
+        checkCollisions() {
+          // Check if eyer caught the player
+          if (this.eyer.x === this.player.x && this.eyer.y === this.player.y) {
+            this.lose();
+          }
+        }
+
+        getNextPos(x, y, dir) {
+          const dirs = [[1,0], [0,1], [-1,0], [0,-1]];
+          return { x: x + dirs[dir][0], y: y + dirs[dir][1] };
+        }
+
+        isWall(x, y) {
+          if (x < 0 || x >= this.gridSize || y < 0 || y >= this.gridSize) return true;
+          return this.maze[y][x] === 1;
+        }
+
+        draw() {
+          this.ctx.fillStyle = '#000';
+          this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+          // Draw maze
+          for (let y = 0; y < this.gridSize; y++) {
+            for (let x = 0; x < this.gridSize; x++) {
+              const tile = this.maze[y][x];
+              const px = x * this.tileSize;
+              const py = y * this.tileSize;
+
+              if (tile === 1) {
+                // Wall
+                this.ctx.fillStyle = '#2121de';
+                this.ctx.fillRect(px, py, this.tileSize, this.tileSize);
+              } else if (tile === 2) {
+                // Dot
+                this.ctx.fillStyle = '#ffb8ae';
+                this.ctx.beginPath();
+                this.ctx.arc(px + this.tileSize/2, py + this.tileSize/2, 3, 0, Math.PI * 2);
+                this.ctx.fill();
+              } else if (tile === 3) {
+                // Powerup
+                this.ctx.fillStyle = '#ffb8ae';
+                this.ctx.beginPath();
+                this.ctx.arc(px + this.tileSize/2, py + this.tileSize/2, 8, 0, Math.PI * 2);
+                this.ctx.fill();
+              }
+            }
+          }
+
+          // Draw Player (emoji 🏃)
+          const px = this.player.x * this.tileSize + this.tileSize/2;
+          const py = this.player.y * this.tileSize + this.tileSize/2;
+          this.ctx.font = '32px Arial';
+          this.ctx.textAlign = 'center';
+          this.ctx.textBaseline = 'middle';
+          this.ctx.fillText('🏃', px, py);
+
+          // Draw Eyer (eyer.png)
+          const ex = this.eyer.x * this.tileSize;
+          const ey = this.eyer.y * this.tileSize;
+          if (this.eyerImg.complete && this.eyerImg.naturalWidth > 0) {
+            this.ctx.drawImage(this.eyerImg, ex, ey, this.tileSize, this.tileSize);
+          } else {
+            // Fallback: draw red circle if image not loaded
+            this.ctx.fillStyle = '#ff0000';
+            this.ctx.beginPath();
+            this.ctx.arc(ex + this.tileSize/2, ey + this.tileSize/2, this.tileSize/2 - 2, 0, Math.PI * 2);
+            this.ctx.fill();
+          }
+        }
+
+        win() {
+          console.log('🎉 Pac-Man WON!');
+          this.gameActive = false;
+          document.getElementById('school-victory').style.display = 'block';
+
+          if (typeof gameManager !== 'undefined') {
+            gameManager.markWon('school');
+          }
+
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('gameWon', { detail: { gameId: 'school' } }));
+            setTimeout(() => {
+              document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+              const landingPage = document.getElementById('landing-page');
+              if (landingPage) landingPage.classList.add('active');
+            }, 100);
+          }, 2000);
+        }
+
+        lose() {
+          console.log('💀 Pac-Man LOST!');
+          this.gameActive = false;
+          document.getElementById('final-score').textContent = this.score;
+          document.getElementById('school-gameover').style.display = 'block';
+        }
+      }
     })();
   </script>
 
