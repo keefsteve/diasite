@@ -717,7 +717,7 @@
 
   <!-- Fountain Page - Camera Fishing Game -->
   <div id="fountain" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
-    <img src="/assets/sprites/extra/3.png" style="position:absolute;bottom:180px;left:50%;transform:translateX(-50%);width:120px;height:120px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
+    <img src="/assets/sprites/extra/3.png" style="position:absolute;bottom:220px;left:50%;transform:translateX(-50%);width:120px;height:120px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
     <div class="page-header">
       <h2>Fountain</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -1322,7 +1322,7 @@
 
   <!-- Oma Opa Shnol Page -->
   <div id="oma-opa-shnol" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
-    <img src="/assets/sprites/extra/4.png" style="position:absolute;bottom:180px;left:50%;transform:translateX(-50%);width:120px;height:120px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
+    <img src="/assets/sprites/extra/4.png" style="position:absolute;bottom:220px;left:50%;transform:translateX(-50%);width:120px;height:120px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
     <div class="page-header">
       <h2>Oma & Opa Shnol</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -1773,7 +1773,7 @@
 
   <!-- Krivaya Gorka Page -->
   <div id="krivaya" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
-    <img src="/assets/sprites/extra/5.png" style="position:absolute;bottom:180px;left:50%;transform:translateX(-50%);width:140px;height:140px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
+    <img src="/assets/sprites/extra/5.png" style="position:absolute;bottom:220px;left:50%;transform:translateX(-50%);width:140px;height:140px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
     <div class="page-header">
       <h2>Krivaya Gorka</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -1852,7 +1852,7 @@
 
   <!-- Oma & Opa Morg Page -->
   <div id="oma-opa-morg" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
-    <img src="/assets/sprites/extra/7.png" style="position:absolute;bottom:180px;left:50%;transform:translateX(-50%);width:130px;height:130px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
+    <img src="/assets/sprites/extra/7.png" style="position:absolute;bottom:220px;left:50%;transform:translateX(-50%);width:130px;height:130px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
     <div class="page-header">
       <h2>Oma & Opa Morg</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -2141,7 +2141,7 @@
 
   <!-- Home Page -->
   <div id="home" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
-    <img src="/assets/sprites/extra/10.png" style="position:absolute;top:110px;right:20px;width:160px;height:160px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
+    <img src="/assets/sprites/extra/10.png" style="position:absolute;top:70px;right:20px;width:160px;height:160px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
     <div class="page-header">
       <h2>Home</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -2797,15 +2797,17 @@
               }
             }
 
-            // Jen hämmert mit Shake-Effekt (bleibt an Position)
+            // Jen bewegt sich von links nach rechts (20px bounce)
             if (jen) {
-              // Add shake effect
+              // Bounce right 20px
               jen.style.filter = 'brightness(1.2)';
-              jen.style.transform = 'translateY(-50%) scaleY(-1) rotate(90deg) translateX(-5px)';
+              const currentRight = parseInt(jen.style.right) || 90;
+              jen.style.right = (currentRight - 20) + 'px';
+              
               setTimeout(() => {
                 jen.style.filter = 'brightness(1)';
-                jen.style.transform = 'translateY(-50%) scaleY(-1) rotate(90deg)';
-              }, 50);
+                jen.style.right = currentRight + 'px';
+              }, 100);
             }
 
             // Check win condition
@@ -2975,7 +2977,7 @@
 
   <!-- Snails/Uni-Center Page -->
   <div id="snails" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
-    <img src="/assets/sprites/extra/2.jpg" style="position:absolute;top:80px;right:30px;width:130px;height:130px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
+    <img src="/assets/sprites/extra/2.jpg" style="position:absolute;top:40px;right:30px;width:130px;height:130px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
     <div class="page-header">
       <h2>Uni-Center</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -3947,7 +3949,7 @@
 
   <!-- Bunker Page -->
   <div id="bunker" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
-    <img src="/assets/sprites/extra/9.png" style="position:absolute;top:80px;right:30px;width:150px;height:150px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
+    <img src="/assets/sprites/extra/9.png" style="position:absolute;top:40px;right:30px;width:150px;height:150px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
     <div class="page-header">
       <h2>Bunker</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -3970,6 +3972,23 @@
               <h4 style="font-size:1rem;color:var(--terracotta);margin-bottom:10px;">Einträge dieser Session:</h4>
               <ul id="bunker-entries" style="list-style:none;padding:0;font-size:0.9rem;color:#666;">
               </ul>
+            </div>
+            
+            <!-- Bunker Items Section (nach Salamander Frage) -->
+            <div id="bunker-items-section" style="margin-top:30px;padding:20px;background:rgba(232,223,208,0.5);border-radius:8px;text-align:left;display:none;">
+              <h4 style="font-size:1rem;color:var(--terracotta);margin-bottom:15px;">🦎 Was möchtest du in den Bunker werfen?</h4>
+              
+              <!-- Input Field -->
+              <div style="margin-bottom:20px;">
+                <input type="text" id="bunker-item-input" placeholder="z.B. Alte Fotos, Tagebuch..." style="width:100%;padding:12px;font-size:1rem;border:2px solid #b8a898;border-radius:4px;font-family:'Nineteen Ninety Seven',monospace;margin-bottom:10px;" />
+                <button onclick="addBunkerItem()" style="background:var(--terracotta);color:#fff;border:3px solid #000;padding:10px 20px;font-family:'Nineteen Ninety Seven',monospace;cursor:pointer;box-shadow:3px 3px 0 #000;width:100%;">🔽 In Bunker werfen</button>
+              </div>
+              
+              <!-- Items List (Logs der letzten Jahre) -->
+              <div>
+                <h5 style="font-size:0.9rem;color:#666;margin-bottom:10px;">📜 Was bereits im Bunker liegt:</h5>
+                <div id="bunker-items-list" style="max-height:250px;overflow-y:auto;"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -4277,7 +4296,7 @@
 
   <!-- School Page -->
   <div id="school" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
-    <img src="/assets/sprites/extra/11.png" style="position:absolute;bottom:180px;left:50%;transform:translateX(-50%);width:140px;height:140px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
+    <img src="/assets/sprites/extra/11.png" style="position:absolute;bottom:220px;left:50%;transform:translateX(-50%);width:140px;height:140px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
     <div class="page-header">
       <h2>School</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
