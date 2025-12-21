@@ -3677,13 +3677,13 @@
                                 });
                               }, 3000); // Changed from 2000 to 3000 (3 seconds)
                             });
-                          }, 2000);
+                          }, 2500);
                         });
-                      }, 2000);
+                      }, 2500);
                     });
                   }, 2500); // Changed from 1500 to 2000 (2 seconds)
                 });
-              }, 2000);
+              }, 2500);
             });
           }, 2000);
         }, 100);
@@ -3799,7 +3799,7 @@
               <img id="salamander-body" src="/assets/sprites/people/salamander.png" alt="Salamander" style="width:200px;height:200px;object-fit:contain;image-rendering:pixelated;" />
               <img id="salamander-head" src="/assets/sprites/objects/salamanderKopf.png" alt="Salamander Head" style="position:absolute;top:33px;left:calc(50% - 25px);transform:translateX(-50%);width:80px;height:80px;object-fit:contain;image-rendering:pixelated;transition:transform 0.2s;" />
             </div>
-            <p id="bunker-question" style="font-size:1.2rem;color:var(--terracotta);margin-bottom:20px;">Wie alt bist du?</p>
+            <p id="bunker-question" style="font-size:1.2rem;color:#8B4513;margin-bottom:20px;">Wie alt bist du?</p>
             <input type="text" id="bunker-input" style="padding:12px;font-size:1.1rem;border:3px solid #b8a898;border-radius:8px;width:300px;text-align:center;font-family:'Nineteen Ninety Seven',monospace;" />
             <div id="bunker-response" style="margin-top:20px;font-size:1.1rem;color:#666;min-height:60px;"></div>
             <div id="bunker-history" style="margin-top:30px;padding:20px;background:rgba(232,223,208,0.5);border-radius:8px;text-align:left;max-height:200px;overflow-y:auto;display:none;">
@@ -3823,9 +3823,10 @@
   </div>
   <script>
     (function() {
-      let step = 1;
+      let step = 0; // 0 = snail check, 1 = age, 2 = bunker item
       let age = '';
-      let entries = [];
+      let entries = JSON.parse(localStorage.getItem('bunker_entries') || '[]');
+      let snailDialogueShown = false;
       const keys = {};
       document.addEventListener('keydown', (e) => { keys[e.code] = true; });
       document.addEventListener('keyup', (e) => { keys[e.code] = false; });
@@ -3886,7 +3887,7 @@
         const entriesList = document.getElementById('bunker-entries');
         if (entries.length > 0) {
           historyDiv.style.display = 'block';
-          entriesList.innerHTML = entries.map((e, i) => 
+          entriesList.innerHTML = entries.map((e, i) =>
             `<li style="margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.7);border-radius:4px;">
               <strong>#${i+1}:</strong> Alter ${e.age}, möchte "${e.item}" reinwerfen
             </li>`
@@ -3894,9 +3895,68 @@
         }
       }
 
+      function handleSnailDialogue() {
+        const handleKeyPress = (e) => {
+          if (e.key === '1') {
+            // Give snail
+            document.removeEventListener('keydown', handleKeyPress);
+            if (window.DiasiteInventory) {
+              window.DiasiteInventory.removeItem('snail');
+            }
+            nodHead();
+            showSalamanderBubble('[PLACEHOLDER JOKE] Warum können Salamander nicht lügen? Weil sie zu kalt-blütig sind!', 4000);
+            document.getElementById('bunker-response').textContent = '😂 Der Salamander hat einen Witz erzählt!';
+            localStorage.setItem('salamander_snail_dialogue_done', 'true');
+            completeSnailDialogue();
+          } else if (e.key === '2') {
+            // Don't give snail
+            document.removeEventListener('keydown', handleKeyPress);
+            nodHead();
+            showSalamanderBubble('ya sharmuta mizdayenet ufffffffi mi po lifnei she ani mesanzher otakh', 4000);
+            document.getElementById('bunker-response').textContent = '😠 Der Salamander ist verärgert!';
+            localStorage.setItem('salamander_snail_dialogue_done', 'true');
+            completeSnailDialogue();
+          }
+        };
+        document.addEventListener('keydown', handleKeyPress);
+      }
+
+      function completeSnailDialogue() {
+        setTimeout(() => {
+          if (typeof gameManager !== 'undefined') {
+            gameManager.markWon('bunker');
+          }
+          window.dispatchEvent(new CustomEvent('gameWon', { detail: { gameId: 'bunker' } }));
+          setTimeout(() => {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const landingPage = document.getElementById('landing-page');
+            if (landingPage) {
+              landingPage.classList.add('active');
+            }
+          }, 100);
+        }, 3000);
+      }
+
       function setupBunker() {
         const input = document.getElementById('bunker-input');
         if (!input) return;
+
+        // Load history on setup
+        updateHistory();
+
+        // Check if player has snail and hasn't done snail dialogue yet
+        const hasSnail = window.DiasiteState?.player?.inventory?.includes('snail');
+        const snailDialogueDone = localStorage.getItem('salamander_snail_dialogue_done') === 'true';
+
+        if (hasSnail && !snailDialogueDone && !snailDialogueShown) {
+          snailDialogueShown = true;
+          step = 0;
+          input.style.display = 'none';
+          document.getElementById('bunker-question').textContent = 'Gib mir die Schnecke und ich erzähle dir einen Witz!';
+          document.getElementById('bunker-response').textContent = 'Drücke 1 zum Geben, 2 zum Ablehnen';
+          handleSnailDialogue();
+          return;
+        }
 
         // Reset on each setup (allow replaying)
         if (input.dataset.setup) {
@@ -3904,6 +3964,7 @@
           input.value = '';
           step = 1;
           age = '';
+          input.style.display = 'block';
           document.getElementById('bunker-question').textContent = 'Wie alt bist du?';
           document.getElementById('bunker-response').textContent = '';
         }
@@ -3924,6 +3985,7 @@
               step = 2;
             } else if (step === 2) {
               entries.push({ age: age, item: val });
+              localStorage.setItem('bunker_entries', JSON.stringify(entries));
               updateHistory();
               nodHead();
               showSalamanderBubble('Sehr gute Wahl, viel Erfolg weiterhin beim Leben.', 3000);
@@ -3981,26 +4043,26 @@
         <div class="game-container">
           <!-- Reversed Pac-Man Game -->
           <div id="school-game-intro" style="text-align:center;padding:40px;">
-            <p style="font-size:1.4rem;color:var(--terracotta);margin-bottom:20px;">
+            <p style="font-size:1.6rem;color:var(--terracotta);margin-bottom:20px;">
               FLUCHT VOR EYER!
             </p>
-            <p style="font-size:1rem;color:#666;margin-bottom:30px;">
-              Lauf vor dem Eyer weg und sammle alle Dots!<br>
+            <p style="font-size:1.1rem;color:#666;margin-bottom:30px;">
+              Lauf vor dem Eyer weg und sammle Dots!<br>
               Benutze die Pfeiltasten ← ↑ → ↓<br>
-              Sammle alle Dots ohne erwischt zu werden!
+              Sammle >88% der kleinen Dots und 4 große Dots zum Gewinnen!
             </p>
             <button class="play-btn" onclick="startSchoolGame()">▶ Play</button>
           </div>
 
           <!-- Pac-Man Game Arena -->
-          <div id="school-game-arena" style="display:none;margin:20px auto;max-width:100%;overflow:visible;">
+          <div id="school-game-arena" style="display:none;position:fixed;top:6%;left:6%;width:88vw;height:88vh;z-index:100;">
             <!-- Score Display -->
-            <div style="text-align:center;margin-bottom:10px;font-family:'Nineteen Ninety Seven',monospace;font-size:1.5rem;color:#000;">
+            <div style="text-align:center;margin-bottom:15px;font-family:'Nineteen Ninety Seven',monospace;font-size:2rem;color:#fff;text-shadow:2px 2px 4px #000;">
               SCORE: <span id="pacman-score">0</span>
             </div>
 
             <!-- Canvas -->
-            <canvas id="pacman-canvas" width="560" height="560" style="display:block;margin:0 auto;background:#000;border:4px solid #2121de;box-shadow:4px 4px 0 #000;max-width:100%;height:auto;"></canvas>
+            <canvas id="pacman-canvas" width="700" height="700" style="display:block;margin:0 auto;background:#000;border:6px solid #2121de;box-shadow:6px 6px 0 #000;width:88%;height:calc(88% - 80px);"></canvas>
 
             <!-- Victory Message -->
             <div id="school-victory" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,215,0,0.95);color:#000;padding:30px 50px;font-family:'Nineteen Ninety Seven',monospace;font-size:1.5rem;border:5px solid #000;box-shadow:0 0 30px rgba(255,215,0,0.8);display:none;text-align:center;z-index:200;">
@@ -4023,7 +4085,7 @@
         <div class="riddle-note location-message-box">
           Unsere Schule, wo wir so viele Stunden verbracht haben.
         </div>
-        <div class="location-sprites">
+        <div class="location-sprites" style="opacity:0;pointer-events:none;">
           <img src="/assets/sprites/people/jenSprite.png" alt="Jen" class="jen-sprite" />
           <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite-static" />
         </div>
