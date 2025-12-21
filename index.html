@@ -2141,7 +2141,7 @@
 
   <!-- Home Page -->
   <div id="home" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
-    <img src="/assets/sprites/extra/10.png" style="position:absolute;bottom:200px;left:50%;transform:translateX(-50%);width:160px;height:160px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
+    <img src="/assets/sprites/extra/10.png" style="position:absolute;top:110px;right:20px;width:160px;height:160px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
     <div class="page-header">
       <h2>Home</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -2241,7 +2241,7 @@
                   <div id="wallgame-wall" style="position:absolute;right:0;top:0;bottom:0;width:80px;background:#8B4513;font-family:monospace;font-size:20px;line-height:20px;color:#654321;overflow:hidden;white-space:pre;padding:5px;"></div>
                   
                   <!-- Jen Head -->
-                  <img id="wallgame-jen" src="/assets/sprites/people/jenHead.png" alt="Jen" style="position:absolute;top:50%;transform:translateY(-50%) scaleY(-1) rotate(90deg);height:100px;width:auto;left:20px;transition:left 0.05s linear;" />
+                  <img id="wallgame-jen" src="/assets/sprites/people/jenHead.png" alt="Jen" style="position:absolute;top:50%;right:90px;transform:translateY(-50%) scaleY(-1) rotate(90deg);height:100px;width:auto;" />
 
                   <!-- Counter Display -->
                   <div id="wallgame-counter" style="position:absolute;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:#fff;padding:15px 30px;font-family:'Nineteen Ninety Seven',monospace;font-size:2rem;border:3px solid #fff;box-shadow:0 0 20px rgba(255,255,255,0.5);">
@@ -2751,7 +2751,7 @@
         const counter = document.getElementById('wallgame-counter');
         const victory = document.getElementById('wallgame-victory');
 
-        if (jen) jen.style.left = '20px';
+        // jen bleibt an fester Position, kein reset nötig
         if (counter) counter.textContent = '0 / 26';
         if (victory) victory.style.display = 'none';
 
@@ -2797,16 +2797,14 @@
               }
             }
 
-            // Move Jen right (rapid movement)
+            // Jen hämmert mit Shake-Effekt (bleibt an Position)
             if (jen) {
-              const currentLeft = parseInt(jen.style.left) || 20;
-              const newLeft = currentLeft + 15; // Move 15px right each hit
-              jen.style.left = newLeft + 'px';
-
               // Add shake effect
               jen.style.filter = 'brightness(1.2)';
+              jen.style.transform = 'translateY(-50%) scaleY(-1) rotate(90deg) translateX(-5px)';
               setTimeout(() => {
                 jen.style.filter = 'brightness(1)';
+                jen.style.transform = 'translateY(-50%) scaleY(-1) rotate(90deg)';
               }, 50);
             }
 
@@ -3714,7 +3712,7 @@
 
   <!-- Oma Shelya Page (Level 7) -->
   <div id="oma-shelya" class="page" style="align-items: flex-start; justify-content: flex-start; background-color:#ebd7fa;">
-    <img src="/assets/sprites/extra/6.png" style="position:absolute;top:80px;right:30px;width:110px;height:110px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
+    <img src="/assets/sprites/extra/6.png" style="position:absolute;top:80px;right:30px;width:200px;height:200px;object-fit:contain;z-index:5;opacity:0.85;pointer-events:none;" />
     <div class="page-header">
       <h2>Oma Shelya</h2>
       <button class="back-btn" data-target="landing-page">← Zurück</button>
@@ -4121,13 +4119,13 @@
               window.DiasiteInventory.removeItem('snail');
             }
             nodHead();
-            showSalamanderBubble('Ich hatte eigentlich einen guten Witz über Arsch essen... Aber die Punchline hat einen schlechten Beigeschmack bei mir hinterlassen.', 4000);
-            document.getElementById('bunker-response').textContent = '😂 Der Salamander hat einen Witz erzählt!';
+            showSalamanderBubble('ich hatte eigentlich einen guten witz über arsch essen... aber die punchline hat einen schlechten beigeschmack bei mir hinterlassen.', 4000);
+            document.getElementById('bunker-response').textContent = '😂 der salamander hat einen witz erzählt!';
             localStorage.setItem('salamander_snail_dialogue_done', 'true');
             
             // Zeige Bunker Items Section nach Witz
             setTimeout(() => {
-              showSalamanderBubble('Was möchtest du dieses Jahr in den Bunker werfen? 🦎', 3000);
+              showSalamanderBubble('was möchtest du dieses jahr in den bunker werfen? 🦎', 3000);
               const itemsSection = document.getElementById('bunker-items-section');
               if (itemsSection) {
                 itemsSection.style.display = 'block';
@@ -4139,8 +4137,8 @@
             // Don't give snail - gehe direkt weiter
             document.removeEventListener('keydown', handleKeyPress);
             nodHead();
-            showSalamanderBubble('Schade... dann eben nicht!', 2000);
-            document.getElementById('bunker-response').textContent = '😕 Salamander ist enttäuscht';
+            showSalamanderBubble('schade... dann eben nicht!', 2000);
+            document.getElementById('bunker-response').textContent = '😕 salamander ist enttäuscht';
             localStorage.setItem('salamander_snail_dialogue_done', 'true');
             completeSnailDialogue(); // Gehe zur nächsten Location
           }
@@ -4910,7 +4908,7 @@
     <div class="location-content">
       <div class="location-top-row">
         <div class="location-image-container">
-          <img src="/assets/sprites/objects/cherryCola.png" alt="Tanke" class="location-image" onerror="this.style.display='none'" />
+          <img src="/assets/sprites/objects/cherryCola.png" alt="tanke" class="location-image" style="object-fit:contain;max-height:300px;width:auto;" onerror="this.style.display='none'" />
         </div>
         <div class="game-container">
           <div style="text-align:center;padding:40px;">

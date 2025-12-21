@@ -30,6 +30,7 @@ body {
   color: var(--ink-black);
   overflow: hidden;
   font-family: 'Nineteen Ninety Seven';
+  text-transform: lowercase;
   /* Subtle paper texture */
   background-image: 
     repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(139, 111, 71, 0.03) 2px, rgba(139, 111, 71, 0.03) 4px),
@@ -725,9 +726,10 @@ body.app-ready .page {
   flex: 1;
   align-self: flex-end;
   overflow-y: auto;
-  max-height: 160px;
-  padding: 20px 25px;
-  padding-left: 25px;
+  max-height: 200px;
+  max-width: 500px;
+  padding: 20px;
+  line-height: 1.6;
   background: rgba(245, 240, 232, 0.95);
   border: 3px solid #b8a898;
   border-radius: 4px;
