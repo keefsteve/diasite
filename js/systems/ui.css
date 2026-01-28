@@ -473,3 +473,16 @@
   color: var(--ink-black);
   font-weight: 600;
 }
+
+.collectible-image {
+  width: 100px;
+  height: 100px;
+  max-width: 100px;
+  max-height: 100px;
+  object-fit: contain;
+  margin-bottom: 20px;
+  animation: emojiFloat 0.8s ease-in-out 0.3s;
+  display: inline-block;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
+}
