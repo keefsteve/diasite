@@ -165,13 +165,13 @@ class InventoryManager {
 
     // Map item IDs to image filenames
     const spriteMap = {
-      'magnifying-glass': '/assets/sprites/objects/lupe.png',
-      'camera': '/assets/sprites/objects/cam.png',
-      'nudeCalendar': '/assets/sprites/objects/nudeCalendar.png',
-      'snail': '/assets/sprites/objects/schnecke.png',
-      'nesquik': '/assets/sprites/objects/nesquik.png',
-      'salamander': '/assets/sprites/objects/salamanderKopf.png',
-      'yellow-shorts': '/assets/sprites/objects/boxers.png',
+      'magnifying-glass': 'assets/sprites/objects/lupe.png',
+      'camera': 'assets/sprites/objects/cam.png',
+      'nudeCalendar': 'assets/sprites/objects/nudeCalendar.png',
+      'snail': 'assets/sprites/objects/schnecke.png',
+      'nesquik': 'assets/sprites/objects/nesquik.png',
+      'salamander': 'assets/sprites/objects/salamanderKopf.png',
+      'yellow-shorts': 'assets/sprites/objects/boxers.png',
     };
 
     // Show ONLY collected items (no empty slots)

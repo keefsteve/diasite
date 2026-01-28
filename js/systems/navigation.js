@@ -132,7 +132,7 @@ class NavigationManager {
     const greeting = document.createElement('div');
     greeting.className = 'steve-greeting';
     greeting.innerHTML = `
-      <img src="/assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite" />
+      <img src="assets/sprites/people/steveSprite.png" alt="Steve" class="steve-sprite" />
       <div class="steve-bubble">Hey!</div>
     `;
     

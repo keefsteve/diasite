@@ -56,7 +56,7 @@ class GameFlow {
     animContainer.className = 'collectible-animation';
     animContainer.innerHTML = `
       <div class="collectible-box">
-        <img src="/assets/sprites/objects/${collectibleName}.png" alt="${collectibleName}" 
+        <img src="assets/sprites/objects/${collectibleName}.png" alt="${collectibleName}" 
              class="collectible-image" 
              style="width: 150px; height: 150px; object-fit: contain; margin-bottom: 15px;" />
         <div class="collectible-text">bekommen:</div>

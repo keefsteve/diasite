@@ -29,7 +29,7 @@ class DialogueManager {
     dialogBox.className = 'dia-dialogue';
     dialogBox.innerHTML = `
       <div class="dia-sprite-container">
-        <img src="/assets/sprites/${sprite}" 
+        <img src="assets/sprites/${sprite}" 
              class="dia-sprite" 
              alt="Klein-Dia"
              onerror="this.style.display='none'">
