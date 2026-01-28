@@ -127,7 +127,7 @@ class InventoryManager {
       'yellow-shorts': 'boxers.png'
     };
 
-    const imagePath = `/assets/sprites/objects/${imageMap[itemId] || itemId + '.png'}`;
+    const imagePath = `assets/sprites/objects/${imageMap[itemId] || itemId + '.png'}`;
     displayContent = `<img src="${imagePath}" alt="${itemName}" class="collectible-image" />`;
 
     // Create animation container
